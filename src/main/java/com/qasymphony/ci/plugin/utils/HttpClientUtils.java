@@ -1,24 +1,27 @@
 package com.qasymphony.ci.plugin.utils;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.HttpContext;
+import org.apache.http.impl.NoConnectionReuseStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
+import javax.net.ssl.SSLContext;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.List;
+import java.util.Map;
+
+import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
 /**
  * @author trongle
@@ -26,54 +29,96 @@ import java.util.List;
  * @since 1.0
  */
 public class HttpClientUtils {
-
-  public HttpRequestBase createRequestBase(HttpRequestMethod httpRequestMethod) throws IOException {
-    return null;
+  private HttpClientUtils() {
   }
 
-  private HttpEntity makeEntity(List<NameValuePair> params) throws
-    UnsupportedEncodingException {
-    return new UrlEncodedFormEntity(params);
+  private static HttpClient CLIENT;
+
+  private static HttpClient getClient() throws Exception {
+    initClient();
+    return CLIENT;
   }
 
-  public HttpResponse execute(DefaultHttpClient client, HttpContext context, HttpRequestBase method,
-    PrintStream logger, Integer timeout) throws IOException, InterruptedException {
-    doSecurity(client, method.getURI());
-
-    logger.println("Sending request to url: " + method.getURI());
-
-    if (timeout != null) {
-      Integer timeoutNumber = timeout * 1000;
-      client.getParams().setParameter("http.socket.timeout", timeoutNumber);
-      client.getParams().setParameter("http.connection.timeout", timeoutNumber);
-      client.getParams().setParameter("http.connection-manager.timeout", timeoutNumber);
-      client.getParams().setParameter("http.protocol.head-body-timeout", timeoutNumber);
+  private static synchronized void initClient() throws Exception {
+    if (null == CLIENT) {
+      CLIENT = getHttpClient();
     }
-
-    final HttpResponse httpResponse = client.execute(method, context);
-    logger.println("Response Code: " + httpResponse.getStatusLine());
-
-    return httpResponse;
   }
 
-  private void doSecurity(DefaultHttpClient base, URI uri) throws IOException {
-    if (!uri.getScheme().equals("https")) {
-      return;
+  public static HttpResponse get(String url, Map<String, String> headers) throws Exception {
+    HttpGet request = new HttpGet(url);
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        request.addHeader(entry.getKey(), entry.getValue());
+      }
     }
+    return getClient().execute(request);
+  }
 
-    try {
-      final SSLSocketFactory ssf = new SSLSocketFactory(new TrustStrategy() {
-        public boolean isTrusted(X509Certificate[] chain,
-          String authType) throws CertificateException {
-          return true;
-        }
-      }, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+  public static HttpResponse post(String url, Map<String, String> headers) throws Exception {
+    HttpPost request = new HttpPost(url);
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        request.addHeader(entry.getKey(), entry.getValue());
+      }
+    }
+    return getClient().execute(request);
+  }
 
-      final SchemeRegistry schemeRegistry = base.getConnectionManager().getSchemeRegistry();
-      final int port = uri.getPort() < 0 ? 443 : uri.getPort();
-      schemeRegistry.register(new Scheme(uri.getScheme(), port, ssf));
-    } catch (Exception ex) {
-      throw new IOException("Error unknown", ex);
+  public static HttpResponse put(String url, Map<String, String> headers) throws Exception {
+    HttpPut request = new HttpPut(url);
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        request.addHeader(entry.getKey(), entry.getValue());
+      }
+    }
+    return getClient().execute(request);
+  }
+
+  public static HttpResponse delete(String url, Map<String, String> headers) throws Exception {
+    HttpDelete request = new HttpDelete(url);
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        request.addHeader(entry.getKey(), entry.getValue());
+      }
+    }
+    return getClient().execute(request);
+  }
+
+  public static HttpClient getHttpClient() throws Exception {
+
+    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+    SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
+    httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
+      .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+    return httpClientBuilder.build();
+  }
+
+  private static SSLConnectionSocketFactory getSslSocketFactory()
+    throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    SSLContext sslContext = getSslContext();
+    SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
+      ALLOW_ALL_HOSTNAME_VERIFIER);
+    return sslSocketFactory;
+  }
+
+  public static SSLContext getSslContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+    KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+    TrustStrategy trustStrategy = new TrustAllStrategy();
+    sslContextBuilder.loadTrustMaterial(keyStore, trustStrategy);
+    SSLContext sslContext = sslContextBuilder.build();
+    return sslContext;
+  }
+
+  /**
+   * Trust all certificates.
+   */
+  public static class TrustAllStrategy implements TrustStrategy {
+
+    @Override
+    public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+      return true;
     }
   }
 }
