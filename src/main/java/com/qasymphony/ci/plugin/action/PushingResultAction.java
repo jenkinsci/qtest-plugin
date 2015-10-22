@@ -3,14 +3,16 @@
  */
 package com.qasymphony.ci.plugin.action;
 
+import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.store.Impl.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.submitter.Impl.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
-import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.Extension;
 import hudson.FilePath;
@@ -18,21 +20,17 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -100,26 +98,9 @@ public class PushingResultAction extends Notifier {
       LOG.log(Level.WARNING, "Cannot save project with suite:" + e.getMessage());
     }
     final FilePath filePath = build.getWorkspace();
-    FilePath projectPath = filePath.getParent();
-    FilePath resultFolder = new FilePath(projectPath, "jqtest_result");
-    resultFolder.mkdirs();
-    FilePath resultFile = new FilePath(resultFolder, "result");
-
-    resultFile.act(new FilePath.FileCallable<String>() {
-      @Override public String invoke(File file, VirtualChannel virtualChannel)
-        throws IOException, InterruptedException {
-        file.createNewFile();
-        FileWriter wr = new FileWriter(file.getPath());
-        wr.write(JsonUtils.toJson(configuration));
-        wr.close();
-        return null;
-      }
-
-      @Override public void checkRoles(RoleChecker roleChecker) throws SecurityException {
-
-      }
-    });
-    logger.println(projectPath.toURI());
+    StoreResultService storeResultService = new StoreResultServiceImpl();
+    storeResultService.store(filePath, configuration);
+    logger.println(filePath.toURI());
     return true;
   }
 
@@ -157,7 +138,12 @@ public class PushingResultAction extends Notifier {
       throws IOException, ServletException {
       try {
         new URL(value);
-        return FormValidation.ok();
+        Boolean isQtestUrl = ConfigService.validateQtestUrl(value);
+        if (isQtestUrl) {
+          return FormValidation.ok();
+        } else {
+          return FormValidation.error("Please set a valid qTest URL");
+        }
       } catch (Exception e) {
         return FormValidation.error("Please set a valid qTest URL");
       }
@@ -186,8 +172,6 @@ public class PushingResultAction extends Notifier {
 
     public FormValidation doCheckEnvironment(@QueryParameter String value)
       throws IOException, ServletException {
-      if (value.length() <= 0)
-        return FormValidation.error("Please select a environment.");
       return FormValidation.ok();
     }
 

@@ -43,7 +43,7 @@ public class HttpClientUtils {
     return CLIENT;
   }
 
-  private static synchronized void initClient() {
+  private static synchronized void initClient() throws ClientRequestException {
     if (null == CLIENT) {
       try {
         CLIENT = getHttpClient();
@@ -62,7 +62,7 @@ public class HttpClientUtils {
   public static ResponseEntity get(String url, Map<String, String> headers) throws ClientRequestException {
     HttpGet request = new HttpGet(url);
     addHeader(request, headers);
-    return doWithResponse(execute(request));
+    return execute(request);
   }
 
   /**
@@ -77,40 +77,76 @@ public class HttpClientUtils {
     return post(url, headers, data, ContentType.APPLICATION_JSON);
   }
 
+  /**
+   * @param url
+   * @param headers
+   * @param data
+   * @param contentType
+   * @return
+   * @throws ClientRequestException
+   */
   public static ResponseEntity post(String url, Map<String, String> headers, String data, ContentType contentType)
     throws ClientRequestException {
     HttpPost request = new HttpPost(url);
     addHeader(request, headers);
     if (!StringUtils.isEmpty(data))
       request.setEntity(new StringEntity(data, contentType));
-    return doWithResponse(execute(request));
+    return execute(request);
   }
 
+  /**
+   * @param url
+   * @param headers
+   * @param data
+   * @return
+   * @throws ClientRequestException
+   */
   public static ResponseEntity put(String url, Map<String, String> headers, String data) throws ClientRequestException {
     return put(url, headers, data, ContentType.APPLICATION_JSON);
   }
 
+  /**
+   * @param url
+   * @param headers
+   * @param data
+   * @param contentType
+   * @return
+   * @throws ClientRequestException
+   */
   public static ResponseEntity put(String url, Map<String, String> headers, String data, ContentType contentType)
     throws ClientRequestException {
     HttpPut request = new HttpPut(url);
     addHeader(request, headers);
     if (!StringUtils.isEmpty(data))
       request.setEntity(new StringEntity(data, contentType));
-    return doWithResponse(execute(request));
+    return execute(request);
   }
 
+  /**
+   * @param url
+   * @param headers
+   * @return
+   * @throws ClientRequestException
+   */
   public static ResponseEntity delete(String url, Map<String, String> headers) throws ClientRequestException {
     return delete(url, headers, ContentType.APPLICATION_JSON);
   }
 
+  /**
+   * @param url
+   * @param headers
+   * @param contentType
+   * @return
+   * @throws ClientRequestException
+   */
   public static ResponseEntity delete(String url, Map<String, String> headers, ContentType contentType)
     throws ClientRequestException {
     HttpDelete request = new HttpDelete(url);
     addHeader(request, headers);
-    return doWithResponse(execute(request));
+    return execute(request);
   }
 
-  private static ResponseEntity doWithResponse(HttpResponse response) throws ClientRequestException {
+  private static ResponseEntity doExecute(HttpResponse response) throws ClientRequestException {
     if (null == response) {
       throw new ClientRequestException("response is null.");
     }
@@ -141,20 +177,27 @@ public class HttpClientUtils {
    * @return
    * @throws ClientRequestException
    */
-  public static HttpResponse execute(HttpUriRequest request) throws ClientRequestException {
+  public static ResponseEntity execute(HttpUriRequest request) throws ClientRequestException {
     HttpClient client;
     try {
       client = getClient();
     } catch (Exception e) {
-      throw new ClientRequestException("Cannot get HttpClient" + e.getMessage(), e);
+      throw new ClientRequestException("Cannot get HttpClient." + e.getMessage(), e);
     }
-    HttpResponse response;
+    HttpResponse response = null;
+    ResponseEntity responseEntity;
+
     try {
       response = client.execute(request);
+      responseEntity = doExecute(response);
     } catch (IOException e) {
       throw new ClientRequestException(e.getMessage(), e);
+    } finally {
+      if (null != response)
+        org.apache.http.client.utils.HttpClientUtils.closeQuietly(response);
     }
-    return response;
+
+    return responseEntity;
   }
 
   private static void addHeader(HttpRequestBase httpRequestBase, Map<String, String> headers) {

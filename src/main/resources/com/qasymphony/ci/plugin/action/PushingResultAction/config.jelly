@@ -1,8 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <j:set var="pluginName" value="jqtest"/>
-  <link href="${resURL}/plugin/${pluginName}/css/table-style.css" rel="stylesheet" type="text/css"/>
   <link href="${resURL}/plugin/${pluginName}/css/selectize.default.css" rel="stylesheet" type="text/css"/>
-  <link href="${resURL}/plugin/${pluginName}/css/main.css" rel="stylesheet" type="text/css"></link>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-1.11.1.min.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.js"></script>
   <script>

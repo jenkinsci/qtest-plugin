@@ -62,7 +62,7 @@ public class StoreResultServiceImpl implements StoreResultService {
     return node == null ? "" : node.toString();
   }
 
-  @Override public Map<Long, SubmitResult> fetchAll() {
+  @Override public Map<Long, SubmitResult> fetchAll(FilePath filePath) {
     Map<Long, SubmitResult> buildResults = new HashMap<>();
     buildResults.put(1L, new SubmitResult()
       .setBuildNumber(1L)

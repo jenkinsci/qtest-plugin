@@ -4,6 +4,10 @@
 package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.model.SubmitResult;
+import com.qasymphony.ci.plugin.store.Impl.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.store.StoreResultService;
+import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Actionable;
@@ -11,16 +15,23 @@ import hudson.model.Item;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author anpham
  */
+@ExportedBean
 public class StatisticsAction extends Actionable implements Action {
   @SuppressWarnings("rawtypes") AbstractProject project;
   private List<Integer> builds = new ArrayList<Integer>();
+  private StoreResultService storeResultService = new StoreResultServiceImpl();
+  private Map<Long, SubmitResult> results = new HashMap<>();
 
   public StatisticsAction(@SuppressWarnings("rawtypes") AbstractProject project) {
     this.project = project;
@@ -125,11 +136,17 @@ public class StatisticsAction extends Actionable implements Action {
 
   }
 
-  @JavaScriptMethod
-  public JSONObject getTreeResult(String noOfBuildsNeeded) {
-    int noOfBuilds = getNoOfBuildRequired(noOfBuildsNeeded);
-    List<Integer> buildList = getBuildList(noOfBuilds);
+  @Exported(name = "results", inline = true)
+  public List<SubmitResult> getResult() {
+    return new ArrayList<>(getSubmitResults().values());
+  }
 
-    return new JSONObject();
+  @JavaScriptMethod
+  public JSONObject getSubmitResults() {
+    FilePath workspace = this.getProject().getWorkspace();
+    results = storeResultService.fetchAll(workspace);
+    JSONObject resonObject = new JSONObject();
+    resonObject.putAll(results);
+    return resonObject;
   }
 }

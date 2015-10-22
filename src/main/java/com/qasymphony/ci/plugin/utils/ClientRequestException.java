@@ -5,7 +5,7 @@ package com.qasymphony.ci.plugin.utils;
  * @version 10/22/2015 8:14 PM trongle $
  * @since 1.0
  */
-public class ClientRequestException extends RuntimeException {
+public class ClientRequestException extends Exception {
   public ClientRequestException() {
     super();
   }

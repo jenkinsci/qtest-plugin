@@ -113,6 +113,32 @@
         resetCharts();
         });
       </script>
+
+      <table style="width:95%;" class="sortable pane bigtable">
+        <thead>
+          <tr>
+            <th style="text-align: left;" class="pane-header">Build Number</th>
+            <th style="text-align: left;" class="pane-header">Status</th>
+            <th style="text-align: left;" class="pane-header">qTest Test Suite</th>
+            <th style="text-align: left;" class="pane-header"># of Tests</th>
+            <th style="text-align: left;" class="pane-header"># of qTest Test Runs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <j:forEach items="${it.results.values()}" var="r">
+            <tr>
+              <td style="text-align:left;">
+                    <img src="${rootURL}/plugin/${it.getPluginName()}/images/ok.png"/>
+                <span style="padding-left:15px;">Success
+                </span>
+              </td>
+              <td>
+                <a class="inside" href="reports/${r.id}">Id</a>
+              </td>
+            </tr>
+          </j:forEach>
+        </tbody>
+      </table>
     </l:main-panel>
   </l:layout>
 </j:jelly>
