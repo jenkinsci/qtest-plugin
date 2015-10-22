@@ -1,0 +1,118 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout title="Test Result Graph">
+    <st:include it="${it.project}" page="sidepanel.jelly" />
+    <st:bind var="remoteAction" value="${it}"/>
+    <j:set var="pluginName" value="jqtest"/>
+    <j:set var="resBase" value="${resURL}/plugin/${pluginName}"/>
+    <l:main-panel>
+      <link href="${resBase}/css/table-style.css" rel="stylesheet" type="text/css"/>
+      <script type="text/javascript" src="${resBase}/jquery/js/jquery-1.11.1.min.js"></script>
+      <script type="text/javascript" src="${resBase}/js/handlebars-v2.0.0.js"></script>
+      <script type="text/javascript" src="${resBase}/js/highcharts.js"></script>
+      <script src="http://code.highcharts.com/modules/exporting.js"></script>
+      <script type="text/javascript" src="${resBase}/js/testresult.js"></script>
+      <script type="text/javascript" src="${resBase}/js/chart-generator.js"></script>
+      <script type="text/javascript" src="${resBase}/js/test-result-analyzer-template.js"></script>
+      <script>
+        var $j = jQuery.noConflict();
+      </script>
+      <j:set var="temp" value="${it.jsonLoadData}"/>
+      <j:set var="builds" value="${it.builds}"/>
+      <div>
+        Select
+        <select id="noofbuilds">
+          <option value="all">All</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+        </select>
+        Last builds and show
+
+        <select id="teststatus">
+          <option value="all">All</option>
+          <option value="FAILED">FAILED</option>
+          <option value="PASSED">PASSED</option>
+          <option value="SKIPPED">SKIPPED</option>
+        </select>
+        tests.
+        Display duration: <input type="checkbox" id="show-durations" name="show-durations" value="durations"/>
+
+        <button id="getbuildreport">Get Build Report</button>
+        <div class="extrabuttons">
+          <button id="expandall">Expand All</button>
+          <button id="collapseall">Collapse All</button>
+        </div>
+      </div>
+      <div class="chartbuttons">
+        Select chart type:
+
+        <select id="reporttype">
+          <option value="all">All</option>
+          <option value="line">Line</option>
+          <option value="bar">Bar</option>
+          <option value="pie">Pie</option>
+        </select>
+
+        <button class = "charts" id="generatechart">Generate Charts</button>
+        <button class = "charts" id="hidecharts">Hide Charts</button>
+      </div>
+      <br/>
+      <br/>
+
+      <div id="charts">
+        <div id="linechart">
+
+        </div>
+        <br/>
+
+        <div id="piechart">
+
+        </div>
+        <br/>
+
+        <div id="barchart">
+
+        </div>
+
+      </div>
+
+      <br/>
+      <div id="tree">
+        <div class="table">
+
+        </div>
+      </div>
+      <div id="builddetail">
+
+      </div>
+
+      <script>
+        remoteAction.getTreeResult(10,$j.proxy(function(t) {
+          var itemsResponse = t.responseObject();
+          treeMarkup = analyzerTemplate(itemsResponse);
+          $j(".table").html(treeMarkup);
+          addEvents();
+        },this));
+
+        $j("#getbuildreport").click(function () {
+        populateTemplate(displayValues);
+        });
+
+        $j("#expandall").click(function () {
+        expandAll();
+        });
+
+        $j("#collapseall").click(function () {
+        collapseAll();
+        });
+        $j("#generatechart").click(function () {
+        var chartType = $j('#reporttype').val();
+        generateChart(chartType);
+        });
+        $j("#hidecharts").click(function () {
+        resetCharts();
+        });
+      </script>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.qasymphony.ci.plugin;
 
@@ -7,19 +7,18 @@ import org.jvnet.localizer.ResourceBundleHolder;
 
 /**
  * @author anpham
- *
  */
-public enum ResourceBundle {
-  INSTANCE;
-  
+public class ResourceBundle {
   public static final String DISPLAY_NAME = "displayName";
   private final ResourceBundleHolder holder;
-  
-  ResourceBundle(){
+
+  private ResourceBundle() {
     holder = ResourceBundleHolder.get(this.getClass());
   }
-  
-  public String get(String key, Object ...args){
-    return holder.format(key, args);
+
+  private static ResourceBundle INSTANCE = new ResourceBundle();
+
+  public static String get(String key, Object... args) {
+    return INSTANCE.holder.format(key, args);
   }
 }

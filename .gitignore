@@ -1,4 +1,34 @@
+# Maven
 /target
+
+# IntelliJ
+/.idea
+classes/**
+*.iml
+
+# Eclipse project files
 /.settings
 /.classpath
 /.project
+/.springBeans
+/.externalToolBuilders
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+# Log
+logs/**
+
+# JRebel
+src/main/resources/rebel.xml
+sonar-project.properties
+.sonar
+.sonartmp
+/work/**

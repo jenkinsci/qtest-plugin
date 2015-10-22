@@ -1,82 +1,63 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:d="jelly:define">
- 
-  <script type="text/javascript" src="${resURL}/plugin/jqtest/js/jquery-1.11.1.min.js"></script>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <j:set var="pluginName" value="jqtest"/>
+  <link href="${resURL}/plugin/${pluginName}/css/table-style.css" rel="stylesheet" type="text/css"/>
+  <link href="${resURL}/plugin/${pluginName}/css/selectize.default.css" rel="stylesheet" type="text/css"/>
+  <link href="${resURL}/plugin/${pluginName}/css/main.css" rel="stylesheet" type="text/css"></link>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.js"></script>
   <script>
     var $j = jQuery.noConflict();
-    
-    $j(document).ready(function () {
-   		$j('head').append('<link rel="stylesheet" href="${resURL}/plugin/jqtest/css/main.css" type="text/css" />');
-    });
   </script>
-  
-  <st:bind var="remoteAction" value="${descriptor}"/>
-    <f:entry>
-      	<div class="jqtest-config-panel">
-	  	<div class="input-fragment">
-	  		<table>
-	  			<tr>
-	  				<td>
-	  					<span>${%label.url}</span>
-	  					<span class="mandatory">*</span>
-	  				</td>
-	  				<td>
-	  					<f:textbox name="com.qasymphony.ci.plugin.configuration.url" value="${instance.configuration.url}" />
-	  				</td>
-	  			</tr>
-	  			<tr>
-	  				<td>
-	  					<span>${%label.apiKey}</span>
-	  					<span class="mandatory">*</span>
-	  				</td>
-	  				<td>
-	  					<f:textbox name="com.qasymphony.ci.plugin.configuration.appSecretKey" value="${instance.configuration.appSecretKey}" />
-	  				</td>
-	  			</tr>
-	  			<tr>
-	  				<td></td>
-	  				<td>
-	  					<input type="button" value="${%label.retrieveProjects}" />
-	  				</td>
-	  			</tr>
-	  			<tr>
-	  				<td>
-	  					<span>${%label.selectedProject}</span>
-	  					<span class="mandatory">*</span>
-	  				</td>
-	  				<td>
-	  					<f:textbox name="com.qasymphony.ci.plugin.configuration.projectId" />
-	  				</td>
-	  			</tr>
-	  			<tr>
-	  				<td></td>
-	  				<td>
-	  					<input type="button" value="${%label.retrieveData}" />
-	  				</td>
-	  			</tr>
-	  			<tr>
-	  				<td>
-	  					<span>${%label.release}</span>
-	  					<span class="mandatory">*</span>
-	  				</td>
-	  				<td>
-	  					<div>
-	  						<f:textbox name="com.qasymphony.ci.plugin.configuration.releaseName" value="${instance.configuration.releaseName}" />
-	  					</div>
-	  					<div>
-	  						<p>${%instruction.testLog}</p>
-	  					</div>
-	  				</td>
-	  			</tr>
-	  			<tr>
-	  				<td>
-	  					<span>${%label.environment}</span>
-	  				</td>
-	  				<td>
-	  					<f:textbox name="com.qasymphony.ci.plugin.configuration.environment" value="${instance.configuration.environment}" />
-	  				</td>
-	  			</tr>
-	  		</table>
-	  	</div>
-	  </div>
+
+  <form>
+    <st:bind var="remoteAction" value="${descriptor}"/>
+    <j:set var="p" value="${it.project}"/>
+
+    <f:entry title="${%label.url}" field="url">
+      <f:textbox name="config.url" value="${instance.configuration.url}"/>
     </f:entry>
+    <f:entry title="${%label.apiKey}" field="appSecretKey">
+      <f:password name="config.appSecretKey"
+                  value="${instance.configuration.appSecretKey}"/>
+    </f:entry>
+
+    <f:entry>
+      <span class="yui-button yui-push-button apply-button applyButton">
+        <button id="fetchProject">${%label.retrieveProjects}</button>
+      </span>
+      <span style="display: none;" class="yui-button">
+        <img src="/jenkins/static/ba336d75/images/spinner.gif"/>
+      </span>
+    </f:entry>
+    <f:invisibleEntry>
+      <f:textbox name="config.projectId" field="projectId"
+                 value="${instance.configuration.projectId}"/>
+      <f:textbox name="config.releaseId" field="releaseId"
+                 value="${instance.configuration.releaseId}"/>
+    </f:invisibleEntry>
+    <f:entry title="${%label.selectedProject}" field="projectName">
+      <f:textbox name="config.projectName" value="${instance.configuration.projectName}"/>
+    </f:entry>
+
+    <f:entry>
+      <span class="yui-button yui-push-button apply-button applyButton">
+        <button id="fetchProjectData">${%label.retrieveData}</button>
+      </span>
+      <span style="display: none;" class="yui-button">
+        <img src="/jenkins/static/ba336d75/images/spinner.gif"/>
+      </span>
+    </f:entry>
+
+    <f:entry title="${%label.release}" field="releaseName">
+      <f:textbox name="config.releaseName"
+                 value="${instance.configuration.releaseName}"/>
+    </f:entry>
+
+    <f:entry title="${%label.environment}" field="environment">
+      <f:textbox name="config.environment"
+                 value="${instance.configuration.environment}"/>
+    </f:entry>
+  </form>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/qtest-service.js"></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js"></script>
 </j:jelly>

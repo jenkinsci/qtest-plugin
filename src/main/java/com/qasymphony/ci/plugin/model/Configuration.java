@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.qasymphony.ci.plugin.model;
 
@@ -7,7 +7,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author anpham
- * 
  */
 public class Configuration {
   private String url;
@@ -18,11 +17,11 @@ public class Configuration {
   private String releaseName;
   private String environment;
   private long testSuiteId;
-  
+
   @DataBoundConstructor
   public Configuration(String url, String appSecretKey, long projectId,
-      String projectName, long releaseId, String releaseName,
-      String environment, long testSuiteId) {
+    String projectName, long releaseId, String releaseName,
+    String environment, long testSuiteId) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -96,9 +95,9 @@ public class Configuration {
   public void setTestSuiteId(long testSuiteId) {
     this.testSuiteId = testSuiteId;
   }
-  
+
   @Override public String toString() {
-    return "ProjectSetting{" +
+    return "Configuration{" +
       "url='" + url + '\'' +
       ", appSecretKey='" + appSecretKey + '\'' +
       ", projectId=" + projectId +
