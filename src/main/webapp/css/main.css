@@ -1,0 +1,18 @@
+.jqtest-config-panel{
+	display: inherit;
+}
+
+.jqtest-config-panel span.mandatory{
+	color: #FF0000;
+	margin-left: 10px;
+}
+
+.jqtest-config-panel .input-fragment table{
+	width: 100%;
+	border-spacing: 10px;
+}
+
+.jqtest-config-panel .input-fragment table tr td:first-child{
+	font-weight: bold;
+	width: 200px;
+}

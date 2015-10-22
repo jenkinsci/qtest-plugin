@@ -3,6 +3,8 @@
  */
 package com.qasymphony.ci.plugin.model;
 
+import org.kohsuke.stapler.DataBoundConstructor;
+
 /**
  * @author anpham
  * 
@@ -16,6 +18,20 @@ public class Configuration {
   private String releaseName;
   private String environment;
   private long testSuiteId;
+  
+  @DataBoundConstructor
+  public Configuration(String url, String appSecretKey, long projectId,
+      String projectName, long releaseId, String releaseName,
+      String environment, long testSuiteId) {
+    this.url = url;
+    this.appSecretKey = appSecretKey;
+    this.projectId = projectId;
+    this.projectName = projectName;
+    this.releaseId = releaseId;
+    this.releaseName = releaseName;
+    this.environment = environment;
+    this.testSuiteId = testSuiteId;
+  }
 
   public String getUrl() {
     return url;
@@ -79,6 +95,19 @@ public class Configuration {
 
   public void setTestSuiteId(long testSuiteId) {
     this.testSuiteId = testSuiteId;
+  }
+  
+  @Override public String toString() {
+    return "ProjectSetting{" +
+      "url='" + url + '\'' +
+      ", appSecretKey='" + appSecretKey + '\'' +
+      ", projectId=" + projectId +
+      ", projectName='" + projectName + '\'' +
+      ", releaseId=" + releaseId +
+      ", releaseName='" + releaseName + '\'' +
+      ", environment='" + environment + '\'' +
+      ", testSuiteId=" + testSuiteId +
+      '}';
   }
 
 }
