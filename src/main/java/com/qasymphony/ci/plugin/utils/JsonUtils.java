@@ -164,6 +164,18 @@ public class JsonUtils {
     }
   }
 
+  public static JsonNode read(InputStream inputStream) {
+    try {
+      if (null == inputStream) {
+        return null;
+      }
+      return mapper.readTree(inputStream);
+    } catch (IOException ex) {
+      LOG.log(Level.WARNING, "Cannot read from file.", ex);
+      return null;
+    }
+  }
+
   /**
    * Get instance of valueType from JSON data
    *

@@ -10,23 +10,29 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -93,6 +99,27 @@ public class PushingResultAction extends Notifier {
     } catch (IOException e) {
       LOG.log(Level.WARNING, "Cannot save project with suite:" + e.getMessage());
     }
+    final FilePath filePath = build.getWorkspace();
+    FilePath projectPath = filePath.getParent();
+    FilePath resultFolder = new FilePath(projectPath, "jqtest_result");
+    resultFolder.mkdirs();
+    FilePath resultFile = new FilePath(resultFolder, "result");
+
+    resultFile.act(new FilePath.FileCallable<String>() {
+      @Override public String invoke(File file, VirtualChannel virtualChannel)
+        throws IOException, InterruptedException {
+        file.createNewFile();
+        FileWriter wr = new FileWriter(file.getPath());
+        wr.write(JsonUtils.toJson(configuration));
+        wr.close();
+        return null;
+      }
+
+      @Override public void checkRoles(RoleChecker roleChecker) throws SecurityException {
+
+      }
+    });
+    logger.println(projectPath.toURI());
     return true;
   }
 
