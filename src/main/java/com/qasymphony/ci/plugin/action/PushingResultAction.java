@@ -10,6 +10,7 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
+import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -21,15 +22,12 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.apache.http.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -72,20 +70,11 @@ public class PushingResultAction extends Notifier {
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", configuration.getAppSecretKey());
     try {
-      HttpResponse response = HttpClientUtils.get(configuration.getUrl() + "/version", headers);
-      if (response != null) {
-        BufferedReader rd = new BufferedReader(
-          new InputStreamReader(response.getEntity().getContent()));
-
-        StringBuilder result = new StringBuilder();
-        String line = "";
-        while ((line = rd.readLine()) != null) {
-          result.append(line);
-        }
-        LOG.info(result.toString());
-      }
+      ResponseEntity response = HttpClientUtils.get(configuration.getUrl() + "/version", headers);
+      LOG.info(response.getBody());
+      logger.println(response.getBody());
     } catch (Exception e) {
-      logger.print(e.getMessage());
+      logger.println(e.getMessage());
     }
 
     //TODO: collect test result and submit to qTest here.
