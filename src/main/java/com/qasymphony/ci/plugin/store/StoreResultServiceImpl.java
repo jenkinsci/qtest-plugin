@@ -1,18 +1,21 @@
-package com.qasymphony.ci.plugin.store.Impl;
+package com.qasymphony.ci.plugin.store;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.model.SubmitResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
+import com.qasymphony.ci.plugin.store.file.FileReader;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import org.jenkinsci.remoting.RoleChecker;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * @author trongle
@@ -39,15 +42,14 @@ public class StoreResultServiceImpl implements StoreResultService {
     resultFile.act(new FilePath.FileCallable<String>() {
       @Override public String invoke(File file, VirtualChannel virtualChannel)
         throws IOException, InterruptedException {
-        file.createNewFile();
-        FileWriter wr = new FileWriter(file.getPath());
-        wr.write(JsonUtils.toJson(result));
-        wr.close();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file.getPath(), true));
+        writer.newLine();
+        writer.write(JsonUtils.toJson(result));
+        writer.close();
         return null;
       }
 
       @Override public void checkRoles(RoleChecker roleChecker) throws SecurityException {
-
       }
     });
     return true;
@@ -57,18 +59,29 @@ public class StoreResultServiceImpl implements StoreResultService {
     FilePath projectPath = workspace.getParent();
     FilePath resultFolder = new FilePath(projectPath, RESULT_FOLDER);
     FilePath resultFile = new FilePath(resultFolder, RESULT_FILE);
-    final String data = "";
     JsonNode node = JsonUtils.read(resultFile.read());
     return node == null ? "" : node.toString();
   }
 
-  @Override public Map<Long, SubmitResult> fetchAll(FilePath filePath) {
-    Map<Long, SubmitResult> buildResults = new HashMap<>();
-    buildResults.put(1L, new SubmitResult()
-      .setBuildNumber(1L)
-      .setTestSuiteName("Test Suite ")
-      .setStatusBuild("SUCCESS")
-      .setSubmitStatus("SUCCESS"));
+  @Override public Map<Integer, SubmitResult> fetchAll(FilePath filePath) throws IOException, InterruptedException {
+    Map<Integer, SubmitResult> buildResults = new HashMap<>();
+    FilePath resultPath = new FilePath(filePath.getParent(), RESULT_FOLDER);
+    FilePath resultFile = new FilePath(resultPath, RESULT_FILE);
+    SortedMap<Integer, String> lines = resultFile.act(new FilePath.FileCallable<SortedMap<Integer, String>>() {
+      @Override public SortedMap<Integer, String> invoke(File file, VirtualChannel virtualChannel)
+        throws IOException, InterruptedException {
+        return new FileReader(file).readAll();
+      }
+
+      @Override public void checkRoles(RoleChecker roleChecker) throws SecurityException {
+
+      }
+    });
+    for (Map.Entry<Integer, String> entry : lines.entrySet()) {
+      SubmitResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmitResult.class);
+      if (null != submitResult)
+        buildResults.put(submitResult.getBuildNumber(), submitResult);
+    }
     return buildResults;
   }
 }

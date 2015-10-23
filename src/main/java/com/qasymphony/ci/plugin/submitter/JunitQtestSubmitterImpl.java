@@ -1,4 +1,4 @@
-package com.qasymphony.ci.plugin.submitter.Impl;
+package com.qasymphony.ci.plugin.submitter;
 
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;

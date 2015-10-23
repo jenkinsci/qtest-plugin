@@ -5,8 +5,8 @@ package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.SubmitResult;
-import com.qasymphony.ci.plugin.store.Impl.StoreResultServiceImpl;
 import com.qasymphony.ci.plugin.store.StoreResultService;
+import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -31,7 +31,7 @@ public class StatisticsAction extends Actionable implements Action {
   @SuppressWarnings("rawtypes") AbstractProject project;
   private List<Integer> builds = new ArrayList<Integer>();
   private StoreResultService storeResultService = new StoreResultServiceImpl();
-  private Map<Long, SubmitResult> results = new HashMap<>();
+  private Map<Integer, SubmitResult> results = new HashMap<>();
 
   public StatisticsAction(@SuppressWarnings("rawtypes") AbstractProject project) {
     this.project = project;
@@ -138,15 +138,19 @@ public class StatisticsAction extends Actionable implements Action {
 
   @Exported(name = "results", inline = true)
   public List<SubmitResult> getResult() {
-    return new ArrayList<>(getSubmitResults().values());
+    return new ArrayList<>(getTreeResult(20).values());
   }
 
   @JavaScriptMethod
-  public JSONObject getSubmitResults() {
+  public JSONObject getTreeResult(int page) {
     FilePath workspace = this.getProject().getWorkspace();
-    results = storeResultService.fetchAll(workspace);
-    JSONObject resonObject = new JSONObject();
-    resonObject.putAll(results);
-    return resonObject;
+    try {
+      results = storeResultService.fetchAll(workspace);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("data", results.values());
+    return jsonObject;
   }
 }

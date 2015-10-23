@@ -1,21 +1,26 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * @author trongle
  * @version 10/22/2015 9:37 PM trongle $
  * @since 1.0
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmitResult {
-  private Long buildNumber;
+  private int buildNumber;
   private String statusBuild;
   private String testSuiteName;
   private String submitStatus;
+  private int numberTestResult;
+  private int numberTestRun;
 
-  public Long getBuildNumber() {
+  public int getBuildNumber() {
     return buildNumber;
   }
 
-  public SubmitResult setBuildNumber(Long buildNumber) {
+  public SubmitResult setBuildNumber(int buildNumber) {
     this.buildNumber = buildNumber;
     return this;
   }
@@ -44,6 +49,24 @@ public class SubmitResult {
 
   public SubmitResult setSubmitStatus(String submitStatus) {
     this.submitStatus = submitStatus;
+    return this;
+  }
+
+  public int getNumberTestResult() {
+    return numberTestResult;
+  }
+
+  public SubmitResult setNumberTestResult(int numberTestResult) {
+    this.numberTestResult = numberTestResult;
+    return this;
+  }
+
+  public int getNumberTestRun() {
+    return numberTestRun;
+  }
+
+  public SubmitResult setNumberTestRun(int numberTestRun) {
+    this.numberTestRun = numberTestRun;
     return this;
   }
 }

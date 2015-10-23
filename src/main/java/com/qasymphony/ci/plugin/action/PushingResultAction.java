@@ -6,9 +6,10 @@ package com.qasymphony.ci.plugin.action;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.store.Impl.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.model.SubmitResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
-import com.qasymphony.ci.plugin.submitter.Impl.JunitQtestSubmitterImpl;
+import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
@@ -99,7 +100,14 @@ public class PushingResultAction extends Notifier {
     }
     final FilePath filePath = build.getWorkspace();
     StoreResultService storeResultService = new StoreResultServiceImpl();
-    storeResultService.store(filePath, configuration);
+    SubmitResult submitResult = new SubmitResult()
+      .setBuildNumber(build.getNumber())
+      .setSubmitStatus("SUCCESS")
+      .setStatusBuild(build.getBuildStatusSummary().message)
+      .setTestSuiteName(build.getProject().getName())
+      .setNumberTestRun(1)
+      .setNumberTestResult(1);
+    storeResultService.store(filePath, submitResult);
     logger.println(filePath.toURI());
     return true;
   }

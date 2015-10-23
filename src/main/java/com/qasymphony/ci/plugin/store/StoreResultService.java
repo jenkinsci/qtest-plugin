@@ -16,5 +16,5 @@ public interface StoreResultService {
 
   String load(FilePath workspace) throws IOException, InterruptedException;
 
-  Map<Long, SubmitResult> fetchAll(FilePath filePath);
+  Map<Integer, SubmitResult> fetchAll(FilePath filePath) throws IOException, InterruptedException;
 }
