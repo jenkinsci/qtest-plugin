@@ -103,7 +103,7 @@ public class PushingResultAction extends Notifier {
     SubmitResult submitResult = new SubmitResult()
       .setBuildNumber(build.getNumber())
       .setSubmitStatus("SUCCESS")
-      .setStatusBuild(build.getBuildStatusSummary().message)
+      .setStatusBuild(build.getResult().toString())
       .setTestSuiteName(build.getProject().getName())
       .setNumberTestRun(1)
       .setNumberTestResult(1);

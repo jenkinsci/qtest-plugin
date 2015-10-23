@@ -17,6 +17,10 @@ import java.util.logging.Logger;
  */
 public class ConfigService {
   private static final Logger LOG = Logger.getLogger(ConfigService.class.getName());
+  /**
+   * Client secret key name, application name
+   */
+  public static final String CLIENT_SECRET_KEY = "qTestJenkins";
 
   private ConfigService() {
 
