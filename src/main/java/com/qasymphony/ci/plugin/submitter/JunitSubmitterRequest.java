@@ -22,4 +22,5 @@ public class JunitSubmitterRequest {
   public JunitSubmitterRequest withSetting(Configuration configuration) {
     return setConfiguration(configuration);
   }
+
 }

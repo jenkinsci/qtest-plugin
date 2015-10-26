@@ -85,8 +85,11 @@ public class PushingResultAction extends Notifier {
     //TODO: collect test result and submit to qTest here.
 
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
+    
+    junitSubmitter.push(null, build, build.getWorkspace(), launcher, listener);
     JunitSubmitterResult junitSubmitterResult = junitSubmitter.submit(
       new JunitSubmitterRequest().withSetting(configuration));
+    
 
     logger.println("Configuration:" + configuration);
     logger.println("Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
