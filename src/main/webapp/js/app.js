@@ -1,91 +1,97 @@
-qTestJenkin.init();
-remoteAction.getProjects(qTestJenkin.getUrl(), qTestJenkin.getAppKey(), $j.proxy(function (t) {
-  var itemsResponse = t.responseObject();
-  console.log("data:", itemsResponse);
-}, this));
-
-$j("#fetchProject").click(function (e) {
-  e.preventDefault();
-  var btn = this;
-  qTestJenkin.showLoading(this);
-  qTestJenkin.fetchProjects(function (data) {
-    //var projectList = $j('#projectList');
-    var projectList = $j("input[name='config.projectName']");
-    projectList.html('');
-
-    projectList.selectize({
-      maxItems: 1,
-      valueField: 'name',
-      labelField: 'name',
-      searchField: 'name',
-      options: data,
-      create: false
-    });
-    //iterate over the data and append a select option
-    //$j.each(data, function (key, val) {
-    //  projectList.append('<option value="' + val.id + '">' + val.name + '</option>');
-    //});
-    //select first project
-    if (data && data.length > 0) {
-      qTestJenkin.projectId = data[0].id;
-    }
-    qTestJenkin.hideLoading(btn);
-  }, function () {
-    qTestJenkin.hideLoading(btn);
-  })
+qtest.init();
+$j(document).ready(function () {
+  setTimeout(function () {
+    onLoadProject();
+    onLoadProjectData();
+    bindSelectizeChange();
+  }, 1000)
 });
 
-$j("#fetchProjectData").click(function (e) {
-  e.preventDefault();
-  qTestJenkin.showLoading(this);
-  if (qTestJenkin.projectId <= 0) {
+function onLoadProject() {
+  $j("#fetchProject").on('click', function (e) {
+    e.preventDefault();
+    var btn = this;
+    qtest.showLoading(btn);
+    qtest.fetchProjects(function (data) {
+      var projects = [];
+      if (data.projects && data.projects != "") {
+        projects = JSON.parse(data.projects);
+      }
+      qtest.initSelectize("input[name='config.projectName']", 'selectizeProject', projects);
+
+      //Saved configuration from qTest for this project of jenkins instance
+      qtest.setting = {};
+      if (data.setting && data.setting != "") {
+        qtest.setting = JSON.parse(data.setting);
+      }
+
+      //TODO: query configured project.
+      var selectedProject = qtest.find(qtest.setting, "projectId", qtest.setting.projectId);
+      if (!selectedProject) {
+        //select first project
+        selectedProject = projects.length > 0 ? projects[0] : null;
+      }
+      if (selectedProject)
+        qtest.selectizeProject.setValue(selectedProject.name);
+
+      loadProjectData();
+
+      qtest.hideLoading(btn);
+    }, function () {
+      qtest.hideLoading(btn);
+    })
+  });
+}
+
+function onLoadProjectData() {
+  $j("#fetchProjectData").on('click', function (e) {
+    e.preventDefault();
+    var btn = this;
+    qtest.showLoading(btn);
+    loadProjectData(btn);
+  });
+}
+function loadProjectData(btn) {
+  if (qtest.getProjectId() <= 0) {
     console.log("No project selected.")
     return;
   }
-  qTestJenkin.fetchModules(function (data) {
-    var projectModuleList = $j("input[name='config.releaseName']");
-    projectModuleList.html('');
-    //iterate over the data and append a select option
-    //$j.each(data, function (key, val) {
-    //  projectModuleList.append('<option value="' + val.id + '">' + val.pid + ' ' + val.name + '</option>');
-    //})
+  qtest.fetchProjectData(function (data) {
+    //load release
+    var releases = [];
+    if (data.releases && data.releases != "") {
+      releases = JSON.parse(data.releases);
+    }
+    qtest.initSelectize("input[name='config.releaseName']", 'selectizeRelease', releases);
 
-    projectModuleList.selectize({
-      maxItems: 1,
-      valueField: 'name',
-      labelField: 'name',
-      searchField: 'name',
-      options: data,
-      create: false
-    });
+    var selectedRelease = qtest.find(qtest.setting, "releaseId", qtest.setting.releaseId);
+    if (!selectedRelease) {
+      selectedRelease = releases.length > 0 ? releases[0] : null;
+    }
+    if (selectedRelease)
+      qtest.selectizeRelease.setValue(selectedRelease.name);
+
+    //load environment
+    var environments = [];
+    if (data.environments && data.environments != "") {
+      environments = JSON.parse(data.environments);
+    }
+    qtest.initSelectize("input[name='config.environment']", 'selectizeEnvironment', environments, true);
+
+    var selectedEnvironment = qtest.find(qtest.setting, "environmentId", qtest.setting.environmentId);
+    if (!selectedEnvironment) {
+      selectedEnvironment = environments.length > 0 ? environments[0] : null;
+    }
+    if (selectedEnvironment)
+      qtest.selectizeEnvironment.setValue(selectedEnvironment.name);
+
+    qtest.hideLoading(btn);
   }, function () {
+    qtest.hideLoading(btn);
   })
-  qTestJenkin.hideLoading(this);
-});
-var projectId = $j("input[name='config.projectName']");
-projectId.on('change', function () {
-  var item = this.selectize.options[this.value];
-  if (!item) return;
-  qTestJenkin.projectId = item.id;
-  console.log("selected:", item.name);
-  var projectName = $j("input[name='config.projectId']");
-  projectName.val(item.id);
-});
-//var projectName = $j("input[name='projectName']");
-//if (projectName && projectName.val()) {
-//  projectId.val(projectName.val());
-//}
+}
 
-var release = $j("input[name='config.releaseName']");
-release.on('change', function () {
-  var item = this.selectize.options[this.value];
-  if (!item) return;
-  var releaseName = $j("input[name='config.releaseId']");
-  console.log("selected release:", item.name);
-  releaseName.val(item.id);
-});
-//var releaseName = $j("input[name='releaseName']");
-//if (releaseName && releaseName.val()) {
-//  release.val(releaseName.val());
-//}
-
+function bindSelectizeChange() {
+  qtest.bindSelectizeValue("input[name='config.projectName']", "input[name='config.projectId']", "id");
+  qtest.bindSelectizeValue("input[name='config.releaseName']", "input[name='config.releaseId']", "id");
+}

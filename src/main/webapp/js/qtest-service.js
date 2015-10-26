@@ -1,50 +1,79 @@
-var qTestJenkin = (function ($j) {
+var qtest = (function ($j) {
   var module = {};
-  module.projectId = 0;
-  module.basedUrl = "https://qtest-dev.qtestnet.com";
-  var accessToken = "bmVwaGVsZXxuZXBoZWxlbG9jYWxAZ21haWwuY29tOjE0NzY1MTM2NzU0ODM6MjdiNjRiMzUwMGEzNDAyYzY5Y2RiZTQ0M2QyZjQwY2U";
   module.init = function () {
     console.log("qTest module created.");
   }
-  module.getUrl = function () {
-    return module.basedUrl;
-  }
-  module.getAppKey = function () {
-    return accessToken;
-  }
-  module.get = function (url, onSuccess, onError) {
-    $j.ajax({
-      url: url,
-      dataType: 'JSON',
-      headers: {
-        'Authorization': accessToken,
-        'Content-Type': 'application/json'
-      },
-      method: 'GET',
-      success: function (data) {
-        if (onSuccess)
-          onSuccess(data);
-      },
-      error: function () {
-        if (onError)
-          onError();
-      }
+  var getUrl = function () {
+    return $j("input[name='config.url']").val();
+  };
+  var getAppKey = function () {
+    return $j("input[name='config.appSecretKey']").val();
+  };
+  module.getProjectId = function () {
+    return $j("input[name='config.projectId']").val();
+  };
+  module.bindSelectizeValue = function (src, dest, field) {
+    var srcNode = $j(src);
+    srcNode.on('change', function () {
+      var item = this.selectize.options[this.value];
+      if (!item) return;
+      console.log("selected value:", item);
+      var destNode = $j(dest);
+      if (destNode)
+        destNode.val(item[field]);
     });
+  };
+  module.initSelectize = function (inputName, selectizeId, data, created) {
+    var selectizeNode = $j(inputName);
+    var selectizeItem = qtest[selectizeId];
+    if (selectizeItem) {
+      selectizeItem.clear();
+      selectizeItem.clearOptions();
+      selectizeItem.addOption(data);
+    } else {
+      var control = selectizeNode.selectize({
+        maxItems: 1,
+        valueField: 'name',
+        labelField: 'name',
+        searchField: 'name',
+        options: data,
+        create: created ? created : false
+      });
+      qtest[selectizeId] = control[0].selectize;
+    }
+    return qtest[selectizeId];
+  };
+  module.find = function (src, field, value) {
+    var res = null;
+    $j.each(src, function (index) {
+      if (src[index][field] == value) {
+        res = src[index];
+        return res;
+      }
+    })
+    return res;
   };
   module.showLoading = function (node) {
     if (!node) return;
     node.parentElement.next().style.display = '';
   };
+
   module.hideLoading = function (node) {
     if (!node) return;
     node.parentElement.next().style.display = 'none';
   };
+
   module.fetchProjects = function (onSuccess, onError) {
-    return this.get(this.basedUrl + '/api/v3/projects', onSuccess, onError);
+    remoteAction.getProjects(getUrl(), getAppKey(), $j.proxy(function (t) {
+      if (onSuccess)
+        onSuccess(t.responseObject());
+    }, this));
   };
-  module.fetchModules = function (onSuccess, onError) {
-    var url = this.basedUrl + '/api/v3/projects/' + this.projectId + "/releases";
-    return this.get(url, onSuccess, onError);
+  module.fetchProjectData = function (onSuccess, onError) {
+    remoteAction.getProjectData(getUrl(), getAppKey(), this.getProjectId(), $j.proxy(function (t) {
+      if (onSuccess)
+        onSuccess(t.responseObject());
+    }, this));
   };
   return module;
 }($j));

@@ -27,6 +27,7 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
@@ -85,11 +86,10 @@ public class PushingResultAction extends Notifier {
     //TODO: collect test result and submit to qTest here.
 
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
-    
+
     junitSubmitter.push(null, build, build.getWorkspace(), launcher, listener);
     JunitSubmitterResult junitSubmitterResult = junitSubmitter.submit(
       new JunitSubmitterRequest().withSetting(configuration));
-    
 
     logger.println("Configuration:" + configuration);
     logger.println("Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
@@ -142,6 +142,7 @@ public class PushingResultAction extends Notifier {
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
+      ConfigService.saveConfiguration(configuration);
       return new PushingResultAction(configuration);
     }
 
@@ -160,9 +161,9 @@ public class PushingResultAction extends Notifier {
       }
     }
 
-    public FormValidation doCheckAppSecretKey(@QueryParameter String value)
+    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter String url)
       throws IOException, ServletException {
-      if (value.length() <= 0)
+      if (StringUtils.isEmpty(value))
         return FormValidation.error("Please set a API key");
       return FormValidation.ok();
     }
@@ -186,10 +187,33 @@ public class PushingResultAction extends Notifier {
       return FormValidation.ok();
     }
 
+    /**
+     * @param qTestUrl
+     * @param apiKey
+     * @return
+     */
     @JavaScriptMethod
-    public static JSONObject getProjects(String qTestUrl, String appKey) {
-      //TODO: get project from qTest
+    public static JSONObject getProjects(String qTestUrl, String apiKey) {
       JSONObject res = new JSONObject();
+      //TODO: need apply executor
+      //get project from qTest
+      res.put("projects", ConfigService.getProjects(qTestUrl, apiKey));
+      //get saved setting from qtest
+      res.put("setting", ConfigService.getConfiguration(qTestUrl, apiKey));
+      return res;
+    }
+
+    /**
+     * @param qTestUrl
+     * @param apiKey
+     * @param projectId
+     * @return
+     */
+    @JavaScriptMethod
+    public static JSONObject getProjectData(String qTestUrl, String apiKey, Long projectId) {
+      JSONObject res = new JSONObject();
+      res.put("releases", ConfigService.getReleases(qTestUrl, apiKey, projectId));
+      res.put("environments", ConfigService.getEnvironments(qTestUrl, apiKey, projectId));
       return res;
     }
   }
