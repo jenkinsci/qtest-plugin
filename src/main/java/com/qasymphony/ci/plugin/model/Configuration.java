@@ -18,6 +18,7 @@ public class Configuration {
   private long environmentId;
   private String environmentName;
   private long testSuiteId;
+  private long moduleId;
 
   @DataBoundConstructor
   public Configuration(String url, String appSecretKey, long projectId,
@@ -105,6 +106,14 @@ public class Configuration {
 
   public void setTestSuiteId(long testSuiteId) {
     this.testSuiteId = testSuiteId;
+  }
+
+  public long getModuleId() {
+    return moduleId;
+  }
+
+  public void setModuleId(long moduleId) {
+    this.moduleId = moduleId;
   }
 
   @Override public String toString() {

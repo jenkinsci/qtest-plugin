@@ -10,6 +10,7 @@ import org.jvnet.localizer.ResourceBundleHolder;
  */
 public class ResourceBundle {
   public static final String DISPLAY_NAME = "displayName";
+  public static final String GLOBAL_ERROR_MESSAGE = "global.error.message";
   private final ResourceBundleHolder holder;
 
   private ResourceBundle() {

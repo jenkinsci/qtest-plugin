@@ -20,6 +20,8 @@ public class AutomationTestResult {
   @JsonProperty("automation_content")
   private String automationContent;
   private String status;
+  private String name;
+  @JsonProperty("test_step_logs")
   private List<AutomationTestLog> testLogs;
 
   public Date getExecutedStartDate() {
@@ -60,6 +62,14 @@ public class AutomationTestResult {
 
   public void setTestLogs(List<AutomationTestLog> testLogs) {
     this.testLogs = testLogs;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
 }
