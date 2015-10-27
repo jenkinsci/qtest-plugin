@@ -2,10 +2,13 @@ package com.qasymphony.ci.plugin.submitter;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.model.Run;
 
-import java.io.IOException;
+import java.util.Map;
+
+import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.utils.ResponseEntity;
 
 /**
  * @author trongle
@@ -17,5 +20,5 @@ public interface JunitSubmitter {
 
   void storeSubmitterResult();
   
-  public void push(String testResultLocations, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException;
+  public ResponseEntity push(String testResultLocations, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, Configuration configuration, Map<String, String> headers) throws Exception;
 }

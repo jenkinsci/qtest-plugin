@@ -1,4 +1,7 @@
-package com.qasymphony.ci.plugin.submitter;
+/**
+ * 
+ */
+package com.qasymphony.ci.plugin;
 
 import hudson.FilePath;
 import hudson.Launcher;
@@ -13,37 +16,55 @@ import hudson.tasks.junit.CaseResult.Status;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
 
 import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.Error;
+import com.qasymphony.ci.plugin.model.Module;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-
 /**
- * @author trongle
- * @version 10/21/2015 2:09 PM trongle $
- * @since 1.0
+ * @author anpham
+ *
  */
-public class JunitQtestSubmitterImpl implements JunitSubmitter {
+public class AutomationTestService {
+  private static final String HEADER_AUTHORIZATION = "Authorization";
   private static String AUTO_TEST_LOG_ENDPOINT = "api/v3/projects/{0}/test-runs/{1}/auto-test-logs?suitePerDay=false";
+  private static String CI_MODULE_ENDPOINT = "api/v3/projects/{0}/modules/ci/jenkins";
   
-  @Override public JunitSubmitterResult submit(JunitSubmitterRequest junitSubmitterRequest) {
-    //TODO: submit to qTest and receive test suite id
-    JunitSubmitterResult junitSubmitterResult = new JunitSubmitterResult();
-    junitSubmitterResult.setTestSuiteId(System.currentTimeMillis());
-    return junitSubmitterResult;
+  public static Configuration createModule(String name, Configuration configuration) throws Exception{
+    Module module = new Module();
+    module.setName(name);
+    
+    Map<String, String> headers = new HashMap<>();
+    headers.put(HEADER_AUTHORIZATION, configuration.getAppSecretKey());
+    
+    String endpoint = MessageFormat.format(CI_MODULE_ENDPOINT, new Object[]{configuration.getProjectId()});
+    if(configuration.getModuleId() > 0){
+      endpoint = endpoint.concat("/").concat(String.valueOf(configuration.getModuleId()));
+    }
+    
+    ResponseEntity responseEntity = HttpClientUtils.post(configuration.getUrl().concat("/").concat(endpoint)
+        , headers, JsonUtils.toJson(module));
+    
+    if(responseEntity.getStatusCode() != HttpStatus.SC_OK){
+      Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
+      throw new Exception(error.getMessage());
+    }
+    module = JsonUtils.fromJson(responseEntity.getBody(), Module.class);
+    
+    configuration.setModuleId(module.getId());
+    return configuration;
   }
-
-  @Override public void storeSubmitterResult() {
-
-  }
-
-  @Override
-  public ResponseEntity push(String testResultLocations, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, Configuration configuration, Map<String, String> headers) throws Exception {
+  
+  public static ResponseEntity push(String testResultLocations, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, Configuration configuration, Map<String, String> headers) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
     
     testResultLocations = (testResultLocations == null ? "/target/surefire-reports/*.xml" : testResultLocations);
@@ -87,9 +108,16 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       
       automationTestResults.add(automationTestResult);
       if(automationTestResults.size() > 0){
-        return HttpClientUtils.post(configuration.getUrl().concat("/")
+        ResponseEntity responseEntity = HttpClientUtils.post(configuration.getUrl().concat("/")
             .concat(MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[]{configuration.getProjectId(), 0}))
             , headers, JsonUtils.toJson(automationTestResults.get(0)));
+        
+        if(responseEntity.getStatusCode() != HttpStatus.SC_OK){
+          Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
+          throw new Exception(error.getMessage());
+        }else {
+          return responseEntity;
+        }
       }
     }
     

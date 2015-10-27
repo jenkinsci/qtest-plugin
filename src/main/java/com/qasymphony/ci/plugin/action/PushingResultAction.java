@@ -3,6 +3,7 @@
  */
 package com.qasymphony.ci.plugin.action;
 
+import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.Configuration;
@@ -15,6 +16,7 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -27,12 +29,14 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -63,7 +67,9 @@ public class PushingResultAction extends Notifier {
 
   @Override
   public DescriptorImpl getDescriptor() {
-    return (DescriptorImpl) super.getDescriptor();
+    DescriptorImpl descriptor = (DescriptorImpl) super.getDescriptor();
+    descriptor.setConfiguration(configuration);
+    return descriptor;
   }
 
   @SuppressWarnings("rawtypes")
@@ -87,7 +93,11 @@ public class PushingResultAction extends Notifier {
 
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
 
-    junitSubmitter.push(null, build, build.getWorkspace(), launcher, listener);
+    try {
+      AutomationTestService.push(null, build, build.getWorkspace(), launcher, listener, configuration, headers);
+    } catch (Exception e1) {
+      e1.printStackTrace();
+    }
     JunitSubmitterResult junitSubmitterResult = junitSubmitter.submit(
       new JunitSubmitterRequest().withSetting(configuration));
 
@@ -117,11 +127,13 @@ public class PushingResultAction extends Notifier {
 
   @Extension
   public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    private Configuration configuration;
+    
     public DescriptorImpl() {
       super(PushingResultAction.class);
       load();
     }
-
+    
     @SuppressWarnings("rawtypes")
     @Override
     public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -142,8 +154,17 @@ public class PushingResultAction extends Notifier {
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
-      ConfigService.saveConfiguration(configuration);
-      return new PushingResultAction(configuration);
+      if(this.configuration != null){
+        configuration.setModuleId(this.configuration.getModuleId());
+      }
+      
+      try {
+        configuration = AutomationTestService.createModule(req.getParameter("name"), configuration);
+        ConfigService.saveConfiguration(configuration);
+        return new PushingResultAction(configuration);
+      } catch (Exception e) {
+        throw new hudson.model.Descriptor.FormException( ResourceBundle.get(ResourceBundle.GLOBAL_ERROR_MESSAGE).concat(": ").concat(e.getMessage()), "config.url");
+      }
     }
 
     public FormValidation doCheckUrl(@QueryParameter String value)
@@ -216,5 +237,14 @@ public class PushingResultAction extends Notifier {
       res.put("environments", ConfigService.getEnvironments(qTestUrl, apiKey, projectId));
       return res;
     }
+
+    public Configuration getConfiguration() {
+      return configuration;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+      this.configuration = configuration;
+    }
+ 
   }
 }
