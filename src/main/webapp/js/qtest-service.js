@@ -19,11 +19,10 @@ var qtest = (function ($j) {
       if (!item) return;
       console.log("selected value:", item);
       var destNode = $j(dest);
-      if (destNode)
-        destNode.val(item[field]);
+      destNode.val(destNode ? item[field] : null);
     });
   };
-  module.initSelectize = function (inputName, selectizeId, data, created) {
+  module.initSelectize = function (inputName, selectizeId, data, options) {
     var selectizeNode = $j(inputName);
     var selectizeItem = qtest[selectizeId];
     if (selectizeItem) {
@@ -31,14 +30,15 @@ var qtest = (function ($j) {
       selectizeItem.clearOptions();
       selectizeItem.addOption(data);
     } else {
-      var control = selectizeNode.selectize({
+      var opts = $j.extend({
         maxItems: 1,
         valueField: 'name',
         labelField: 'name',
         searchField: 'name',
         options: data,
-        create: created ? created : false
-      });
+        create: false
+      }, options);
+      var control = selectizeNode.selectize(opts);
       qtest[selectizeId] = control[0].selectize;
     }
     return qtest[selectizeId];

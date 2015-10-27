@@ -15,20 +15,22 @@ public class Configuration {
   private String projectName;
   private long releaseId;
   private String releaseName;
-  private String environment;
+  private long environmentId;
+  private String environmentName;
   private long testSuiteId;
 
   @DataBoundConstructor
   public Configuration(String url, String appSecretKey, long projectId,
-    String projectName, long releaseId, String releaseName,
-    String environment, long testSuiteId) {
+    String projectName, long releaseId, String releaseName, long environmentId,
+    String environmentName, long testSuiteId) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
     this.projectName = projectName;
     this.releaseId = releaseId;
     this.releaseName = releaseName;
-    this.environment = environment;
+    this.environmentId = environmentId;
+    this.environmentName = environmentName;
     this.testSuiteId = testSuiteId;
   }
 
@@ -80,12 +82,21 @@ public class Configuration {
     this.releaseName = releaseName;
   }
 
-  public String getEnvironment() {
-    return environment;
+  public String getEnvironmentName() {
+    return environmentName;
   }
 
-  public void setEnvironment(String environment) {
-    this.environment = environment;
+  public void setEnvironmentName(String environmentName) {
+    this.environmentName = environmentName;
+  }
+
+  public long getEnvironmentId() {
+    return environmentId;
+  }
+
+  public Configuration setEnvironmentId(long environmentId) {
+    this.environmentId = environmentId;
+    return this;
   }
 
   public long getTestSuiteId() {
@@ -104,9 +115,9 @@ public class Configuration {
       ", projectName='" + projectName + '\'' +
       ", releaseId=" + releaseId +
       ", releaseName='" + releaseName + '\'' +
-      ", environment='" + environment + '\'' +
+      ", environmentId=" + environmentId +
+      ", environmentName='" + environmentName + '\'' +
       ", testSuiteId=" + testSuiteId +
       '}';
   }
-
 }

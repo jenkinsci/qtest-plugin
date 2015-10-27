@@ -26,6 +26,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.QueryParameter;
@@ -197,9 +198,12 @@ public class PushingResultAction extends Notifier {
       JSONObject res = new JSONObject();
       //TODO: need apply executor
       //get project from qTest
-      res.put("projects", ConfigService.getProjects(qTestUrl, apiKey));
+      Object projects = ConfigService.getProjects(qTestUrl, apiKey);
+      res.put("projects", null == projects ? "" : JSONArray.fromObject(projects));
       //get saved setting from qtest
-      res.put("setting", ConfigService.getConfiguration(qTestUrl, apiKey));
+      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey);
+      res.put("setting", null == setting ? "" : JSONArray.fromObject(setting));
+      JSONObject obj = new JSONObject();
       return res;
     }
 
@@ -212,8 +216,10 @@ public class PushingResultAction extends Notifier {
     @JavaScriptMethod
     public static JSONObject getProjectData(String qTestUrl, String apiKey, Long projectId) {
       JSONObject res = new JSONObject();
-      res.put("releases", ConfigService.getReleases(qTestUrl, apiKey, projectId));
-      res.put("environments", ConfigService.getEnvironments(qTestUrl, apiKey, projectId));
+      Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);
+      res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
+      Object environments = ConfigService.getEnvironments(qTestUrl, apiKey, projectId);
+      res.put("environments", null == environments ? "" : environments);
       return res;
     }
   }
