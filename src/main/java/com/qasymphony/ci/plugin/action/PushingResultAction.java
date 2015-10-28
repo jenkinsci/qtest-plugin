@@ -3,41 +3,17 @@
  */
 package com.qasymphony.ci.plugin.action;
 
-import com.qasymphony.ci.plugin.AutomationTestService;
-import com.qasymphony.ci.plugin.ConfigService;
-import com.qasymphony.ci.plugin.ResourceBundle;
-import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.model.SubmitResult;
-import com.qasymphony.ci.plugin.store.StoreResultService;
-import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
-import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
-import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
-import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
-import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
-import com.qasymphony.ci.plugin.utils.HttpClientUtils;
-import com.qasymphony.ci.plugin.utils.ResponseEntity;
-
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.jinterop.winreg.IJIWinReg.saveFile;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
-
-import javax.servlet.ServletException;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -46,6 +22,31 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+
+import com.qasymphony.ci.plugin.AutomationTestService;
+import com.qasymphony.ci.plugin.ConfigService;
+import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.SubmitResult;
+import com.qasymphony.ci.plugin.parse.MavenJunitParse;
+import com.qasymphony.ci.plugin.store.StoreResultService;
+import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
+import com.qasymphony.ci.plugin.utils.HttpClientUtils;
+import com.qasymphony.ci.plugin.utils.ResponseEntity;
 
 /**
  * @author anpham
@@ -96,7 +97,7 @@ public class PushingResultAction extends Notifier {
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
 
     try {
-      AutomationTestService.push(null, build, build.getWorkspace(), launcher, listener, configuration, headers);
+      AutomationTestService.push(new MavenJunitParse(build, launcher, listener, configuration), configuration, headers);
     } catch (Exception e1) {
       e1.printStackTrace();
     }
