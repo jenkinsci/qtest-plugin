@@ -12,7 +12,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Item;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.export.Exported;
@@ -22,12 +21,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author anpham
  */
 @ExportedBean
 public class StatisticsAction extends Actionable implements Action {
+  private static final Logger LOG = Logger.getLogger(StatisticsAction.class.getName());
+
   @SuppressWarnings("rawtypes") AbstractProject project;
   private List<Integer> builds = new ArrayList<Integer>();
   private StoreResultService storeResultService = new StoreResultServiceImpl();
@@ -87,55 +90,6 @@ public class StatisticsAction extends Actionable implements Action {
     return this.project;
   }
 
-  @JavaScriptMethod
-  public JSONArray getNoOfBuilds(String noOfbuildsNeeded) {
-    JSONArray jsonArray;
-    int noOfBuilds = getNoOfBuildRequired(noOfbuildsNeeded);
-
-    jsonArray = getBuildsArray(getBuildList(noOfBuilds));
-
-    return jsonArray;
-  }
-
-  private JSONArray getBuildsArray(List<Integer> buildList) {
-    JSONArray jsonArray = new JSONArray();
-    for (Integer build : buildList) {
-      jsonArray.add(build);
-    }
-    return jsonArray;
-  }
-
-  private List<Integer> getBuildList(int noOfBuilds) {
-    if ((noOfBuilds <= 0) || (noOfBuilds >= builds.size())) {
-      return builds;
-    }
-    List<Integer> buildList = new ArrayList<Integer>();
-    for (int i = (noOfBuilds - 1); i >= 0; i--) {
-      buildList.add(builds.get(i));
-    }
-    return buildList;
-  }
-
-  private int getNoOfBuildRequired(String noOfbuildsNeeded) {
-    int noOfBuilds;
-    try {
-      noOfBuilds = Integer.parseInt(noOfbuildsNeeded);
-    } catch (NumberFormatException e) {
-      noOfBuilds = -1;
-    }
-    return noOfBuilds;
-  }
-
-  public boolean isUpdated() {
-    int latestBuildNumber = project.getLastBuild().getNumber();
-    return !(builds.contains(latestBuildNumber));
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public void getJsonLoadData() {
-
-  }
-
   @Exported(name = "results", inline = true)
   public List<SubmittedResult> getResult() {
     return new ArrayList<>(getTreeResult(20).values());
@@ -147,7 +101,7 @@ public class StatisticsAction extends Actionable implements Action {
     try {
       results = storeResultService.fetchAll(workspace);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.log(Level.WARNING, e.getMessage());
     }
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("data", results.values());

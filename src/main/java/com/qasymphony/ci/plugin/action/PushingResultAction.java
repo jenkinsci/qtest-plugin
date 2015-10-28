@@ -14,6 +14,7 @@ import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
+import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -113,8 +114,8 @@ public class PushingResultAction extends Notifier {
         .setNumberOfTestRun(0);
     } finally {
       stopwatch.stop();
-      logger.println(String.format("[INFO] End submit test result to qTest:time=%s, testRuns=%s, testResult=%s",
-        stopwatch.elapsedTime(TimeUnit.MINUTES),
+      logger.println(String.format("[INFO] End submit test result to qTest: time=%s (s), testRuns=%s, testResult=%s",
+        stopwatch.elapsedTime(TimeUnit.SECONDS),
         result.getNumberOfTestRun(),
         result.getNumberOfTestResult()));
     }
@@ -246,7 +247,8 @@ public class PushingResultAction extends Notifier {
       String jenkinsServerName = getServerUrl(request);
 
       //get saved setting from qtest
-      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, jenkinsServerName, jenkinsProjectName, projectId);
+      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, jenkinsServerName,
+        HttpClientUtils.encode(jenkinsProjectName), projectId);
       res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
 
       Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);

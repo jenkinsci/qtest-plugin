@@ -17,6 +17,8 @@ import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -50,6 +52,20 @@ public class HttpClientUtils {
       } catch (Exception e) {
         throw new ClientRequestException(e.getMessage());
       }
+    }
+  }
+
+  /**
+   * Encode url
+   *
+   * @param url
+   * @return
+   */
+  public static String encode(String url) {
+    try {
+      return URLEncoder.encode(url, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      return url;
     }
   }
 
