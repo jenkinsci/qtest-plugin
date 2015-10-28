@@ -36,7 +36,7 @@ import com.qasymphony.ci.plugin.utils.ResponseEntity;
  */
 public class AutomationTestService {
   private static final String HEADER_AUTHORIZATION = "Authorization";
-  private static String AUTO_TEST_LOG_ENDPOINT = "api/v3/projects/{0}/test-runs/{1}/auto-test-logs?suitePerDay=false";
+  private static String AUTO_TEST_LOG_ENDPOINT = "api/v3/projects/{0}/test-runs/{1}/auto-test-logs/ci/jenkins";
   private static String CI_MODULE_ENDPOINT = "api/v3/projects/{0}/modules/ci/jenkins";
   
   public static Configuration createModule(String name, Configuration configuration) throws Exception{
@@ -64,7 +64,7 @@ public class AutomationTestService {
     return configuration;
   }
   
-  public static ResponseEntity push(String testResultLocations, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, Configuration configuration, Map<String, String> headers) throws Exception {
+  public static List<AutomationTestResult> push(String testResultLocations, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, Configuration configuration, Map<String, String> headers) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
     
     testResultLocations = (testResultLocations == null ? "/target/surefire-reports/*.xml" : testResultLocations);
@@ -83,6 +83,8 @@ public class AutomationTestService {
       automationTestLogs = new ArrayList<AutomationTestLog>();
       
       automationTestResult = new AutomationTestResult();
+      automationTestResult.setModuleId(configuration.getModuleId());
+      automationTestResult.setReleaseId(configuration.getReleaseId());
       automationTestResult.setName(suite.getName());
       automationTestResult.setAutomationContent(suite.getName());
       automationTestResult.setExecutedEndDate(current);
@@ -107,20 +109,21 @@ public class AutomationTestService {
       }
       
       automationTestResults.add(automationTestResult);
-      if(automationTestResults.size() > 0){
-        ResponseEntity responseEntity = HttpClientUtils.post(configuration.getUrl().concat("/")
-            .concat(MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[]{configuration.getProjectId(), 0}))
-            , headers, JsonUtils.toJson(automationTestResults.get(0)));
-        
-        if(responseEntity.getStatusCode() != HttpStatus.SC_OK){
-          Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
-          throw new Exception(error.getMessage());
-        }else {
-          return responseEntity;
-        }
+    }
+    
+    if(automationTestResults.size() > 0){
+      ResponseEntity responseEntity = HttpClientUtils.post(configuration.getUrl().concat("/")
+          .concat(MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[]{configuration.getProjectId(), 0}))
+          , headers, JsonUtils.toJson(automationTestResults));
+      
+      if(responseEntity.getStatusCode() != HttpStatus.SC_OK){
+        Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
+        throw new Exception(error.getMessage());
+      }else {
+        return null;
       }
     }
     
-    return null;
+    return automationTestResults;
   }
 }

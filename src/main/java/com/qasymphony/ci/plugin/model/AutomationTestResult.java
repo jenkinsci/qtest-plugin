@@ -21,6 +21,10 @@ public class AutomationTestResult {
   private String automationContent;
   private String status;
   private String name;
+  @JsonProperty("module_id")
+  private long moduleId;
+  @JsonProperty("release_id")
+  private long releaseId;
   @JsonProperty("test_step_logs")
   private List<AutomationTestLog> testLogs;
 
@@ -70,6 +74,22 @@ public class AutomationTestResult {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public long getModuleId() {
+    return moduleId;
+  }
+
+  public void setModuleId(long moduleId) {
+    this.moduleId = moduleId;
+  }
+
+  public long getReleaseId() {
+    return releaseId;
+  }
+
+  public void setReleaseId(long releaseId) {
+    this.releaseId = releaseId;
   }
 
 }
