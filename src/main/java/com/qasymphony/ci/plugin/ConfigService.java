@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
@@ -11,6 +12,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -154,8 +156,23 @@ public class ConfigService {
    * @param configuration
    * @return
    */
-  public static Object saveConfiguration(Configuration configuration) {
+  public static Long saveConfiguration(Configuration configuration) {
     LOG.info("Save configuration to qTest:" + configuration);
-    return configuration;
+    String url = String.format("%s/api/v3/projects/%s/ci", configuration.getUrl(), configuration.getProjectId());
+    try {
+      Map<String, String> headers = OauthProvider.buildHeader(configuration.getAppSecretKey(), null);
+      Setting setting = configuration.toSetting();
+      ResponseEntity responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+        LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
+          responseEntity.getStatusCode(), responseEntity.getBody()));
+        return null;
+      }
+      Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
+      return null == res ? null : res.getModuleId();
+    } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Cannot save configuration to qTest: " + configuration.getUrl() + "," + e.getMessage());
+      return null;
+    }
   }
 }
