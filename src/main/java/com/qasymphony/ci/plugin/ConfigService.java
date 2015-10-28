@@ -147,9 +147,25 @@ public class ConfigService {
    * @param apiKey
    * @return
    */
-  public static Object getConfiguration(String qTestUrl, String apiKey) {
+  public static Object getConfiguration(String qTestUrl, String apiKey, String serverName, String projectName, Long projectId) {
     //TODO: get configuration from qTest API
-    return null;
+    String url = String.format("%s/api/v3/projects/%s/ci", qTestUrl, apiKey, projectId);
+    try {
+      Map<String, String> headers = OauthProvider.buildHeader(configuration.getAppSecretKey(), null);
+      Setting setting = configuration.toSetting();
+      ResponseEntity responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+        LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
+          responseEntity.getStatusCode(), responseEntity.getBody()));
+        return null;
+      }
+      Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
+      LOG.info("Saved from qTest:" + responseEntity.getBody());
+      return null == res ? null : res.getModuleId();
+    } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Cannot save configuration to qTest: " + configuration.getUrl() + "," + e.getMessage());
+      return null;
+    }
   }
 
   /**

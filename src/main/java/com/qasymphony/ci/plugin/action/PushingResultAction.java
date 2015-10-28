@@ -220,10 +220,6 @@ public class PushingResultAction extends Notifier {
       //get project from qTest
       Object projects = ConfigService.getProjects(qTestUrl, apiKey);
       res.put("projects", null == projects ? "" : JSONArray.fromObject(projects));
-      //get saved setting from qtest
-      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey);
-      res.put("setting", null == setting ? "" : JSONArray.fromObject(setting));
-      JSONObject obj = new JSONObject();
       return res;
     }
 
@@ -236,8 +232,16 @@ public class PushingResultAction extends Notifier {
     @JavaScriptMethod
     public static JSONObject getProjectData(String qTestUrl, String apiKey, Long projectId) {
       JSONObject res = new JSONObject();
+
+      String serverName = "";
+      String projectName = "";
+      //get saved setting from qtest
+      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, serverName, projectName, projectId);
+      res.put("setting", null == setting ? "" : JSONArray.fromObject(setting));
+
       Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);
       res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
+
       Object environments = ConfigService.getEnvironments(qTestUrl, apiKey, projectId);
       res.put("environments", null == environments ? "" : environments);
       return res;
