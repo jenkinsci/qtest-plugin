@@ -12,6 +12,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Setting {
+  @JsonProperty("ci_type")
+  public String getCiType() {
+    return "jenkins";
+  }
+
   @JsonProperty("ci_server")
   private String jenkinServer;
 
