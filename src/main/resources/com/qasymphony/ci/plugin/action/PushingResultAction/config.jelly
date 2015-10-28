@@ -37,6 +37,8 @@
                  value="${instance.configuration.projectId}"/>
       <f:textbox name="config.releaseId" field="releaseId"
                  value="${instance.configuration.releaseId}"/>
+      <f:textbox name="config.environmentId" field="environmentId"
+                 value="${instance.configuration.environmentId}"/>
     </f:invisibleEntry>
     <f:entry title="${%label.selectedProject}" field="projectName">
       <f:textbox name="config.projectName" value="${instance.configuration.projectName}"/>
@@ -56,9 +58,9 @@
                  value="${instance.configuration.releaseName}"/>
     </f:entry>
 
-    <f:entry title="${%label.environment}" field="environment">
-      <f:textbox name="config.environment"
-                 value="${instance.configuration.environment}"/>
+    <f:entry title="${%label.environment}" field="environmentName">
+      <f:textbox name="config.environmentName"
+                 value="${instance.configuration.environmentName}"/>
     </f:entry>
   </form>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/qtest-service.js"></script>
