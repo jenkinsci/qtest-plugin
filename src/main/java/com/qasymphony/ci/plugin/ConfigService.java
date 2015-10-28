@@ -59,7 +59,7 @@ public class ConfigService {
       if (!StringUtils.isEmpty(entity.getBody())) {
         JsonNode node = JsonUtils.readTree(entity.getBody());
         String name = JsonUtils.getText(node, "name");
-        return "test-conductor".equalsIgnoreCase(name);
+        return "test-conductor".equalsIgnoreCase(name) || "${pom.name}".equalsIgnoreCase(name);
       }
     } catch (ClientRequestException e) {
       LOG.log(Level.WARNING, "Cannot connect to qTest." + e.getMessage());
@@ -169,6 +169,7 @@ public class ConfigService {
         return null;
       }
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
+      LOG.info("Saved from qTest:" + responseEntity.getBody());
       return null == res ? null : res.getModuleId();
     } catch (ClientRequestException e) {
       LOG.log(Level.WARNING, "Cannot save configuration to qTest: " + configuration.getUrl() + "," + e.getMessage());
