@@ -1,14 +1,9 @@
 package com.qasymphony.ci.plugin.submitter;
 
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.TaskListener;
-import hudson.model.Run;
+import com.qasymphony.ci.plugin.model.SubmittedResult;
+import hudson.model.AbstractBuild;
 
-import java.util.Map;
-
-import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.utils.ResponseEntity;
+import java.io.IOException;
 
 /**
  * @author trongle
@@ -16,9 +11,15 @@ import com.qasymphony.ci.plugin.utils.ResponseEntity;
  * @since 1.0
  */
 public interface JunitSubmitter {
-  JunitSubmitterResult submit(JunitSubmitterRequest junitSubmitterRequest);
+  /**
+   * Submit test result to qTest
+   *
+   * @param junitSubmitterRequest
+   * @return
+   * @throws Exception
+   */
+  JunitSubmitterResult submit(JunitSubmitterRequest junitSubmitterRequest) throws Exception;
 
-  void storeSubmitterResult();
-  
-  public ResponseEntity push(String testResultLocations, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, Configuration configuration, Map<String, String> headers) throws Exception;
+  SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
+    throws IOException, InterruptedException;
 }

@@ -4,7 +4,7 @@
 package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ResourceBundle;
-import com.qasymphony.ci.plugin.model.SubmitResult;
+import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.FilePath;
@@ -31,7 +31,7 @@ public class StatisticsAction extends Actionable implements Action {
   @SuppressWarnings("rawtypes") AbstractProject project;
   private List<Integer> builds = new ArrayList<Integer>();
   private StoreResultService storeResultService = new StoreResultServiceImpl();
-  private Map<Integer, SubmitResult> results = new HashMap<>();
+  private Map<Integer, SubmittedResult> results = new HashMap<>();
 
   public StatisticsAction(@SuppressWarnings("rawtypes") AbstractProject project) {
     this.project = project;
@@ -137,7 +137,7 @@ public class StatisticsAction extends Actionable implements Action {
   }
 
   @Exported(name = "results", inline = true)
-  public List<SubmitResult> getResult() {
+  public List<SubmittedResult> getResult() {
     return new ArrayList<>(getTreeResult(20).values());
   }
 

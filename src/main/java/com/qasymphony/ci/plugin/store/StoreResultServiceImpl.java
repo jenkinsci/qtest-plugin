@@ -1,8 +1,7 @@
 package com.qasymphony.ci.plugin.store;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.qasymphony.ci.plugin.model.SubmitResult;
-import com.qasymphony.ci.plugin.store.StoreResultService;
+import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.file.FileReader;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.FilePath;
@@ -63,8 +62,8 @@ public class StoreResultServiceImpl implements StoreResultService {
     return node == null ? "" : node.toString();
   }
 
-  @Override public Map<Integer, SubmitResult> fetchAll(FilePath filePath) throws IOException, InterruptedException {
-    Map<Integer, SubmitResult> buildResults = new HashMap<>();
+  @Override public Map<Integer, SubmittedResult> fetchAll(FilePath filePath) throws IOException, InterruptedException {
+    Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     FilePath resultPath = new FilePath(filePath.getParent(), RESULT_FOLDER);
     FilePath resultFile = new FilePath(resultPath, RESULT_FILE);
     SortedMap<Integer, String> lines = resultFile.act(new FilePath.FileCallable<SortedMap<Integer, String>>() {
@@ -78,7 +77,7 @@ public class StoreResultServiceImpl implements StoreResultService {
       }
     });
     for (Map.Entry<Integer, String> entry : lines.entrySet()) {
-      SubmitResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmitResult.class);
+      SubmittedResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmittedResult.class);
       if (null != submitResult)
         buildResults.put(submitResult.getBuildNumber(), submitResult);
     }

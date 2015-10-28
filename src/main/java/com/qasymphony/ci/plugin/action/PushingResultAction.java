@@ -3,22 +3,18 @@
  */
 package com.qasymphony.ci.plugin.action;
 
-import com.qasymphony.ci.plugin.AutomationTestService;
+import com.google.common.base.Stopwatch;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.model.SubmitResult;
 import com.qasymphony.ci.plugin.parse.MavenJunitParse;
-import com.qasymphony.ci.plugin.store.StoreResultService;
-import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.parse.TestResultParse;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
-import com.qasymphony.ci.plugin.utils.HttpClientUtils;
-import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -40,8 +36,9 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,51 +73,64 @@ public class PushingResultAction extends Notifier {
   public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
-    logger.println("Submit Junit to qTest at:" + configuration.getUrl() + ".");
+    logger.println("");
+    logger.println("---------------------------------------------------------------------------------------------");
+    logger.println(String.format("[INFO] Submit Junit to qTest at:%s, project:%s.", configuration.getUrl(), configuration.getProjectId()));
+    logger.println("[INFO] " + configuration);
+    logger.println("[INFO] Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
 
-    Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", configuration.getAppSecretKey());
+    TestResultParse testResultParse = new MavenJunitParse(build, launcher, listener, configuration);
+    List<AutomationTestResult> automationTestResults;
     try {
-      ResponseEntity response = HttpClientUtils.get(configuration.getUrl() + "/version", headers);
-      LOG.info(response.getBody());
-      logger.println(response.getBody());
+      automationTestResults = testResultParse.parse();
     } catch (Exception e) {
-      logger.println(e.getMessage());
+      LOG.log(Level.WARNING, e.getMessage());
+      automationTestResults = Collections.emptyList();
     }
 
-    //TODO: collect test result and submit to qTest here.
+    if (automationTestResults.isEmpty()) {
+      logger.println("[ERROR] No junit test result found.");
+      return true;
+    }
+    logger.println(String.format("[INFO] Junit test result found: %s", automationTestResults.size()));
 
+    JunitSubmitterResult result = null;
+    Stopwatch stopwatch = new Stopwatch();
+    stopwatch.start();
+    logger.println("[INFO] Begin submit test result to qTest.");
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
-
     try {
-      AutomationTestService.push(new MavenJunitParse(build, launcher, listener, configuration), configuration, headers);
-    } catch (Exception e1) {
-      e1.printStackTrace();
+      result = junitSubmitter.submit(
+        new JunitSubmitterRequest()
+          .setConfiguration(configuration)
+          .setTestResults(automationTestResults));
+    } catch (Exception e) {
+      logger.println("[ERROR] Cannot submit test result to qTest:" + e.getMessage());
+      result = new JunitSubmitterResult()
+        .setTestSuiteId(null)
+        .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
+        .setNumberOfTestResult(automationTestResults.size())
+        .setNumberOfTestRun(0);
+    } finally {
+      stopwatch.stop();
+      logger.println(String.format("[INFO] End submit test result to qTest:time=%s, testRuns=%s, testResult=%s",
+        stopwatch.elapsedTime(TimeUnit.MINUTES),
+        result.getNumberOfTestRun(),
+        result.getNumberOfTestResult()));
     }
-    JunitSubmitterResult junitSubmitterResult = junitSubmitter.submit(
-      new JunitSubmitterRequest().withSetting(configuration));
 
-    logger.println("Configuration:" + configuration);
-    logger.println("Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
-
-    configuration.setTestSuiteId(junitSubmitterResult.getTestSuiteId());
+    //set testSuite id created from qTest
+    configuration.setTestSuiteId(null == result.getTestSuiteId() ? configuration.getTestSuiteId() : result.getTestSuiteId());
     try {
       build.getProject().save();
-      LOG.info("Save project config with suite:" + configuration.getTestSuiteId());
+      logger.println(String.format("[INFO] Save test suite to configuration, testSuiteId=%s", configuration.getTestSuiteId()));
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "Cannot save project with suite:" + e.getMessage());
+      logger.println(String.format("[ERROR] Cannot save test suite to configuration of project:%s", e.getMessage()));
     }
-    final FilePath filePath = build.getWorkspace();
-    StoreResultService storeResultService = new StoreResultServiceImpl();
-    SubmitResult submitResult = new SubmitResult()
-      .setBuildNumber(build.getNumber())
-      .setSubmitStatus("SUCCESS")
-      .setStatusBuild(build.getResult().toString())
-      .setTestSuiteName(build.getProject().getName())
-      .setNumberTestRun(1)
-      .setNumberTestResult(1);
-    storeResultService.store(filePath, submitResult);
-    logger.println(filePath.toURI());
+
+    logger.println("[INFO] Begin store submitted result to workspace.");
+    junitSubmitter.storeSubmittedResult(build, result);
+    logger.println("[INFO] End store submitted result.");
     return true;
   }
 

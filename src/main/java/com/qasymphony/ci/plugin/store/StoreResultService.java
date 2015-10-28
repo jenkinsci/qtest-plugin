@@ -1,6 +1,6 @@
 package com.qasymphony.ci.plugin.store;
 
-import com.qasymphony.ci.plugin.model.SubmitResult;
+import com.qasymphony.ci.plugin.model.SubmittedResult;
 import hudson.FilePath;
 
 import java.io.IOException;
@@ -16,5 +16,5 @@ public interface StoreResultService {
 
   String load(FilePath workspace) throws IOException, InterruptedException;
 
-  Map<Integer, SubmitResult> fetchAll(FilePath filePath) throws IOException, InterruptedException;
+  Map<Integer, SubmittedResult> fetchAll(FilePath filePath) throws IOException, InterruptedException;
 }

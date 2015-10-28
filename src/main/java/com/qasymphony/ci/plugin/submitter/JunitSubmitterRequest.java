@@ -1,6 +1,9 @@
 package com.qasymphony.ci.plugin.submitter;
 
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
+
+import java.util.List;
 
 /**
  * @author trongle
@@ -9,6 +12,7 @@ import com.qasymphony.ci.plugin.model.Configuration;
  */
 public class JunitSubmitterRequest {
   private Configuration configuration;
+  private List<AutomationTestResult> testResults;
 
   public Configuration getConfiguration() {
     return configuration;
@@ -19,8 +23,12 @@ public class JunitSubmitterRequest {
     return this;
   }
 
-  public JunitSubmitterRequest withSetting(Configuration configuration) {
-    return setConfiguration(configuration);
+  public List<AutomationTestResult> getTestResults() {
+    return testResults;
   }
 
+  public JunitSubmitterRequest setTestResults(List<AutomationTestResult> testResults) {
+    this.testResults = testResults;
+    return this;
+  }
 }

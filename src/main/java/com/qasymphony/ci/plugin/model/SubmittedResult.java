@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubmitResult {
+public class SubmittedResult {
   private int buildNumber;
   private String statusBuild;
   private String testSuiteName;
@@ -20,7 +20,7 @@ public class SubmitResult {
     return buildNumber;
   }
 
-  public SubmitResult setBuildNumber(int buildNumber) {
+  public SubmittedResult setBuildNumber(int buildNumber) {
     this.buildNumber = buildNumber;
     return this;
   }
@@ -29,7 +29,7 @@ public class SubmitResult {
     return statusBuild;
   }
 
-  public SubmitResult setStatusBuild(String statusBuild) {
+  public SubmittedResult setStatusBuild(String statusBuild) {
     this.statusBuild = statusBuild;
     return this;
   }
@@ -38,7 +38,7 @@ public class SubmitResult {
     return testSuiteName;
   }
 
-  public SubmitResult setTestSuiteName(String testSuiteName) {
+  public SubmittedResult setTestSuiteName(String testSuiteName) {
     this.testSuiteName = testSuiteName;
     return this;
   }
@@ -47,7 +47,7 @@ public class SubmitResult {
     return submitStatus;
   }
 
-  public SubmitResult setSubmitStatus(String submitStatus) {
+  public SubmittedResult setSubmitStatus(String submitStatus) {
     this.submitStatus = submitStatus;
     return this;
   }
@@ -56,7 +56,7 @@ public class SubmitResult {
     return numberTestResult;
   }
 
-  public SubmitResult setNumberTestResult(int numberTestResult) {
+  public SubmittedResult setNumberTestResult(int numberTestResult) {
     this.numberTestResult = numberTestResult;
     return this;
   }
@@ -65,7 +65,7 @@ public class SubmitResult {
     return numberTestRun;
   }
 
-  public SubmitResult setNumberTestRun(int numberTestRun) {
+  public SubmittedResult setNumberTestRun(int numberTestRun) {
     this.numberTestRun = numberTestRun;
     return this;
   }
