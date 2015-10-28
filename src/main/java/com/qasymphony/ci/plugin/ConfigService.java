@@ -149,21 +149,18 @@ public class ConfigService {
    */
   public static Object getConfiguration(String qTestUrl, String apiKey, String serverName, String projectName, Long projectId) {
     //TODO: get configuration from qTest API
-    String url = String.format("%s/api/v3/projects/%s/ci", qTestUrl, apiKey, projectId);
+    String url = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins",
+      qTestUrl, projectId, serverName, projectName);
     try {
-      Map<String, String> headers = OauthProvider.buildHeader(configuration.getAppSecretKey(), null);
-      Setting setting = configuration.toSetting();
-      ResponseEntity responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
+      Map<String, String> headers = OauthProvider.buildHeader(apiKey, null);
+      ResponseEntity responseEntity = HttpClientUtils.get(url, headers);
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
-        LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
-          responseEntity.getStatusCode(), responseEntity.getBody()));
+        LOG.log(Level.WARNING, String.format("Cannot get config from qTest:%s, server:%s, project:%s", qTestUrl, serverName, projectName));
         return null;
       }
-      Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
-      LOG.info("Saved from qTest:" + responseEntity.getBody());
-      return null == res ? null : res.getModuleId();
+      LOG.info(String.format("Get config from qTest:%s,%s", qTestUrl, responseEntity.getBody()));
+      return responseEntity.getBody();
     } catch (ClientRequestException e) {
-      LOG.log(Level.WARNING, "Cannot save configuration to qTest: " + configuration.getUrl() + "," + e.getMessage());
       return null;
     }
   }

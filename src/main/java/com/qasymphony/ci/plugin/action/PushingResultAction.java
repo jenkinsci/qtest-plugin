@@ -3,37 +3,6 @@
  */
 package com.qasymphony.ci.plugin.action;
 
-
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Notifier;
-import hudson.tasks.Publisher;
-import hudson.util.FormValidation;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
-
 import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
@@ -48,6 +17,34 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Notifier;
+import hudson.tasks.Publisher;
+import hudson.util.FormValidation;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * @author anpham
  */
@@ -71,7 +68,6 @@ public class PushingResultAction extends Notifier {
   @Override
   public DescriptorImpl getDescriptor() {
     DescriptorImpl descriptor = (DescriptorImpl) super.getDescriptor();
-    descriptor.setConfiguration(configuration);
     return descriptor;
   }
 
@@ -130,7 +126,6 @@ public class PushingResultAction extends Notifier {
 
   @Extension
   public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-    private Configuration configuration;
 
     public DescriptorImpl() {
       super(PushingResultAction.class);
@@ -153,7 +148,6 @@ public class PushingResultAction extends Notifier {
       return "/plugin/jqtest/help/main.html";
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
@@ -187,8 +181,9 @@ public class PushingResultAction extends Notifier {
       }
     }
 
-    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter String url)
+    public FormValidation doCheckAppSecretKey(@QueryParameter String value)
       throws IOException, ServletException {
+      StaplerRequest request = Stapler.getCurrentRequest();
       if (StringUtils.isEmpty(value))
         return FormValidation.error("Please set a API key");
       return FormValidation.ok();
@@ -219,7 +214,7 @@ public class PushingResultAction extends Notifier {
      * @return
      */
     @JavaScriptMethod
-    public static JSONObject getProjects(String qTestUrl, String apiKey) {
+    public JSONObject getProjects(String qTestUrl, String apiKey) {
       JSONObject res = new JSONObject();
       //TODO: need apply executor
       //get project from qTest
@@ -235,14 +230,14 @@ public class PushingResultAction extends Notifier {
      * @return
      */
     @JavaScriptMethod
-    public static JSONObject getProjectData(String qTestUrl, String apiKey, Long projectId) {
+    public JSONObject getProjectData(String qTestUrl, String apiKey, Long projectId, String jenkinsProjectName) {
       JSONObject res = new JSONObject();
+      StaplerRequest request = Stapler.getCurrentRequest();
+      String jenkinsServerName = getServerUrl(request);
 
-      String serverName = "";
-      String projectName = "";
       //get saved setting from qtest
-      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, serverName, projectName, projectId);
-      res.put("setting", null == setting ? "" : JSONArray.fromObject(setting));
+      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, jenkinsServerName, jenkinsProjectName, projectId);
+      res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
 
       Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);
       res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
@@ -251,14 +246,5 @@ public class PushingResultAction extends Notifier {
       res.put("environments", null == environments ? "" : environments);
       return res;
     }
-
-    public Configuration getConfiguration() {
-      return configuration;
-    }
-
-    public void setConfiguration(Configuration configuration) {
-      this.configuration = configuration;
-    }
-
   }
 }

@@ -30,18 +30,7 @@ function loadProject() {
     }
     qtest.initSelectize("input[name='config.projectName']", 'selectizeProject', projects);
 
-    //Saved configuration from qTest for this project of jenkins instance
-    qtest.setting = {};
-    if (data.setting && data.setting != "") {
-      qtest.setting = data.setting;
-    }
-
-    //TODO: query configured project.
-    var selectedProject = qtest.find(qtest.setting, "projectId", qtest.setting.projectId);
-    if (!selectedProject) {
-      //select first project
-      selectedProject = projects.length > 0 ? projects[0] : null;
-    }
+    var selectedProject = projects.length > 0 ? projects[0] : null;
     if (selectedProject)
       qtest.selectizeProject.setValue(selectedProject.name);
     loadProjectData();
@@ -64,17 +53,18 @@ function loadProjectData() {
     return;
   }
   var btn = $j("#fetchProjectData")[0];
-  if (!qtest.setting) {
-    loadProject();
-  } else {
-    qtest.fetchProjectData(function (data) {
-      loadRelease(data);
-      loadEnvironment(data);
-      qtest.hideLoading(btn);
-    }, function () {
-      qtest.hideLoading(btn);
-    })
-  }
+  qtest.fetchProjectData(function (data) {
+    //Saved configuration from qTest for this project of jenkins instance
+    qtest.setting = {};
+    if (data.setting && data.setting != "") {
+      qtest.setting = data.setting;
+    }
+    loadRelease(data);
+    loadEnvironment(data);
+    qtest.hideLoading(btn);
+  }, function () {
+    qtest.hideLoading(btn);
+  })
 }
 
 function loadRelease(data) {
@@ -85,7 +75,7 @@ function loadRelease(data) {
   }
   qtest.initSelectize("input[name='config.releaseName']", 'selectizeRelease', releases);
 
-  var selectedRelease = qtest.find(qtest.setting, "releaseId", qtest.setting.releaseId);
+  var selectedRelease = qtest.find(releases, "id", qtest.setting.release_id);
   if (!selectedRelease) {
     selectedRelease = releases.length > 0 ? releases[0] : null;
   }
@@ -107,7 +97,7 @@ function loadEnvironment(data) {
       searchField: 'label'
     });
 
-  var selectedEnvironment = qtest.find(qtest.setting, "environmentId", qtest.setting.environmentId);
+  var selectedEnvironment = qtest.find(environments, "value", qtest.setting.environment_id);
   if (selectedEnvironment)
     qtest.selectizeEnvironment.setValue(selectedEnvironment.label);
 }

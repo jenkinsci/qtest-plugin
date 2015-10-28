@@ -70,10 +70,12 @@ var qtest = (function ($j) {
     }, this));
   };
   module.fetchProjectData = function (onSuccess, onError) {
-    remoteAction.getProjectData(getUrl(), getAppKey(), this.getProjectId(), $j.proxy(function (t) {
-      if (onSuccess)
-        onSuccess(t.responseObject());
-    }, this));
+    var jenkinsProjectName = $j("input[name='name']").val();
+    remoteAction.getProjectData(getUrl(), getAppKey(), this.getProjectId(), jenkinsProjectName,
+      $j.proxy(function (t) {
+        if (onSuccess)
+          onSuccess(t.responseObject());
+      }, this));
   };
   return module;
 }($j));
