@@ -3,6 +3,7 @@
  */
 package com.qasymphony.ci.plugin.action;
 
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -47,7 +48,6 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-
 /**
  * @author anpham
  */
@@ -131,12 +131,12 @@ public class PushingResultAction extends Notifier {
   @Extension
   public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
     private Configuration configuration;
-    
+
     public DescriptorImpl() {
       super(PushingResultAction.class);
       load();
     }
-    
+
     @SuppressWarnings("rawtypes")
     @Override
     public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -157,17 +157,19 @@ public class PushingResultAction extends Notifier {
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
-      if(this.configuration != null){
-        configuration.setModuleId(this.configuration.getModuleId());
-      }
-      
-      try {
-        configuration = AutomationTestService.createModule(req.getParameter("name"), configuration);
-        ConfigService.saveConfiguration(configuration);
-        return new PushingResultAction(configuration);
-      } catch (Exception e) {
-        throw new hudson.model.Descriptor.FormException( ResourceBundle.get(ResourceBundle.GLOBAL_ERROR_MESSAGE).concat(": ").concat(e.getMessage()), "config.url");
-      }
+      configuration.setJenkinsServerUrl(getServerUrl(req));
+      configuration.setJenkinsProjectName(req.getParameter("name"));
+
+      Long moduleId = ConfigService.saveConfiguration(configuration);
+      if (null != moduleId)
+        configuration.setModuleId(moduleId);
+      return new PushingResultAction(configuration);
+    }
+
+    private String getServerUrl(StaplerRequest request) {
+      Boolean isDefaultPort = request.getServerPort() == 443 || request.getServerPort() == 80;
+      return String.format("%s://%s%s%s%s", request.getScheme(), request.getServerName(),
+        isDefaultPort ? "" : ":", request.getServerPort(), request.getContextPath());
     }
 
     public FormValidation doCheckUrl(@QueryParameter String value)
@@ -253,6 +255,6 @@ public class PushingResultAction extends Notifier {
     public void setConfiguration(Configuration configuration) {
       this.configuration = configuration;
     }
- 
+
   }
 }

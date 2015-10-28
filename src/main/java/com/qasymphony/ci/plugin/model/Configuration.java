@@ -3,6 +3,7 @@
  */
 package com.qasymphony.ci.plugin.model;
 
+import com.qasymphony.ci.plugin.model.qtest.Setting;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -19,11 +20,13 @@ public class Configuration {
   private String environmentName;
   private long testSuiteId;
   private long moduleId;
+  private String jenkinsServerUrl;
+  private String jenkinsProjectName;
 
   @DataBoundConstructor
   public Configuration(String url, String appSecretKey, long projectId,
     String projectName, long releaseId, String releaseName, long environmentId,
-    String environmentName, long testSuiteId) {
+    String environmentName, long testSuiteId, long moduleId) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -33,6 +36,7 @@ public class Configuration {
     this.environmentId = environmentId;
     this.environmentName = environmentName;
     this.testSuiteId = testSuiteId;
+    this.moduleId = moduleId;
   }
 
   public String getUrl() {
@@ -116,6 +120,24 @@ public class Configuration {
     this.moduleId = moduleId;
   }
 
+  public String getJenkinsServerUrl() {
+    return jenkinsServerUrl;
+  }
+
+  public Configuration setJenkinsServerUrl(String jenkinsServerUrl) {
+    this.jenkinsServerUrl = jenkinsServerUrl;
+    return this;
+  }
+
+  public String getJenkinsProjectName() {
+    return jenkinsProjectName;
+  }
+
+  public Configuration setJenkinsProjectName(String jenkinsProjectName) {
+    this.jenkinsProjectName = jenkinsProjectName;
+    return this;
+  }
+
   @Override public String toString() {
     return "Configuration{" +
       "url='" + url + '\'' +
@@ -127,6 +149,22 @@ public class Configuration {
       ", environmentId=" + environmentId +
       ", environmentName='" + environmentName + '\'' +
       ", testSuiteId=" + testSuiteId +
+      ", moduleId=" + moduleId +
       '}';
+  }
+
+  /**
+   * @return
+   */
+  public Setting toSetting() {
+    Setting setting = new Setting()
+      .setJenkinServer(this.jenkinsServerUrl)
+      .setJenkinProjectName(this.jenkinsProjectName)
+      .setProjectId(this.projectId)
+      .setReleaseId(this.releaseId)
+      .setModuleId(this.moduleId)
+      .setEnvironmentId(this.environmentId)
+      .setTestSuiteId(this.testSuiteId);
+    return setting;
   }
 }

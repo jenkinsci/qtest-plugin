@@ -39,6 +39,8 @@
                  value="${instance.configuration.releaseId}"/>
       <f:textbox name="config.environmentId" field="environmentId"
                  value="${instance.configuration.environmentId}"/>
+      <f:textbox name="config.moduleId" field="moduleId"
+                 value="${instance.configuration.moduleId}"/>
     </f:invisibleEntry>
     <f:entry title="${%label.selectedProject}" field="projectName">
       <f:textbox name="config.projectName" value="${instance.configuration.projectName}"/>
