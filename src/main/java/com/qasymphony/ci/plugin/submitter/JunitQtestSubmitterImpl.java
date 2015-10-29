@@ -1,17 +1,17 @@
 package com.qasymphony.ci.plugin.submitter;
 
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
+
+import java.io.IOException;
+
 import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
+import com.qasymphony.ci.plugin.model.AutomationTestResponse;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
-import com.qasymphony.ci.plugin.utils.ResponseEntity;
-import hudson.FilePath;
-import hudson.model.AbstractBuild;
-import net.sf.json.JSONObject;
-
-import java.io.IOException;
 
 /**
  * @author trongle
@@ -22,7 +22,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
-    ResponseEntity entity = AutomationTestService.push(request.getTestResults(), request.getConfiguration(),
+    AutomationTestResponse response = AutomationTestService.push(request.getTestResults(), request.getConfiguration(),
       OauthProvider.buildHeader(request.getConfiguration().getAppSecretKey(), null));
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
@@ -30,17 +30,14 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       .setNumberOfTestRun(request.getTestResults().size())
       .setNumberOfTestResult(request.getTestResults().size())
       .setTestSuiteName("");
-    if (null == entity)
+    if (response == null)
       return result;
-    JSONObject jsonObject = JSONObject.fromObject(entity.getBody());
-    Long testSuiteId = jsonObject.getLong("test_suite_id");
-    String testSuiteName = jsonObject.getString("test_suite_name");
-    Integer testRuns = jsonObject.getInt("test_runs");
 
-    result.setTestSuiteId(testSuiteId)
-      .setNumberOfTestRun(null == testRuns ? 0 : testRuns)
+    result.setTestSuiteId(response.getTestSuiteId())
+      .setNumberOfTestRun(response.getTotalTestRuns())
       .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
-      .setTestSuiteName(testSuiteName == null ? "" : testSuiteName);
+      .setTestSuiteName(response.getTestSuiteName())
+      .setNumberOfTestResult(response.getTotalTestCases());
     return result;
   }
 

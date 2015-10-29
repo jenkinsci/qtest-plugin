@@ -82,7 +82,7 @@ public class PushingResultAction extends Notifier {
     logger.println("[INFO] " + configuration);
     logger.println("[INFO] Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
 
-    TestResultParse testResultParse = new MavenJunitParse(build, launcher, listener, configuration);
+    TestResultParse testResultParse = new MavenJunitParse(build, launcher, listener);
     List<AutomationTestResult> automationTestResults;
     try {
       automationTestResults = testResultParse.parse();

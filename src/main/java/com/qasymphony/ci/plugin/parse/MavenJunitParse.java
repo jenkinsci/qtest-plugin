@@ -18,7 +18,6 @@ import java.util.List;
 
 import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
 
 /**
  * @author anpham
@@ -30,14 +29,12 @@ public class MavenJunitParse implements TestResultParse {
   private AbstractBuild build;
   private Launcher launcher;
   private BuildListener listener;
-  private Configuration configuration;
   
   @SuppressWarnings("rawtypes")
-  public MavenJunitParse(AbstractBuild build, Launcher launcher, BuildListener listener, Configuration configuration) {
+  public MavenJunitParse(AbstractBuild build, Launcher launcher, BuildListener listener) {
     this.build = build;
     this.launcher = launcher;
     this.listener = listener;
-    this.configuration = configuration;
   }
 
   @Override
@@ -58,8 +55,6 @@ public class MavenJunitParse implements TestResultParse {
       automationTestLogs = new ArrayList<AutomationTestLog>();
       
       automationTestResult = new AutomationTestResult();
-      automationTestResult.setModuleId(configuration.getModuleId());
-      automationTestResult.setReleaseId(configuration.getReleaseId());
       automationTestResult.setName(suite.getName());
       automationTestResult.setAutomationContent(suite.getName());
       automationTestResult.setExecutedEndDate(current);
