@@ -6,8 +6,10 @@ package com.qasymphony.ci.plugin.action;
 import com.google.common.base.Stopwatch;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.MavenJunitParse;
 import com.qasymphony.ci.plugin.parse.TestResultParse;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
@@ -130,7 +132,11 @@ public class PushingResultAction extends Notifier {
     }
 
     logger.println("[INFO] Begin store submitted result to workspace.");
-    junitSubmitter.storeSubmittedResult(build, result);
+    try {
+      junitSubmitter.storeSubmittedResult(build, result);
+    } catch (StoreResultException e) {
+      logger.println("[ERROR] Cannot store submitted result." + e.getMessage());
+    }
     logger.println("[INFO] End store submitted result.");
     return true;
   }
@@ -165,9 +171,11 @@ public class PushingResultAction extends Notifier {
       configuration.setJenkinsServerUrl(getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
 
-      Long moduleId = ConfigService.saveConfiguration(configuration);
-      if (null != moduleId)
-        configuration.setModuleId(moduleId);
+      Setting setting = ConfigService.saveConfiguration(configuration);
+      if (null != setting) {
+        configuration.setModuleId(setting.getModuleId());
+        configuration.setId(setting.getId());
+      }
       return new PushingResultAction(configuration);
     }
 

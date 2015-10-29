@@ -169,7 +169,7 @@ public class ConfigService {
    * @param configuration
    * @return
    */
-  public static Long saveConfiguration(Configuration configuration) {
+  public static Setting saveConfiguration(Configuration configuration) {
     LOG.info("Save configuration to qTest:" + configuration);
     String url = String.format("%s/api/v3/projects/%s/ci", configuration.getUrl(), configuration.getProjectId());
     try {
@@ -183,7 +183,7 @@ public class ConfigService {
       }
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
       LOG.info("Saved from qTest:" + responseEntity.getBody());
-      return null == res ? null : res.getModuleId();
+      return res;
     } catch (ClientRequestException e) {
       LOG.log(Level.WARNING, "Cannot save configuration to qTest: " + configuration.getUrl() + "," + e.getMessage());
       return null;

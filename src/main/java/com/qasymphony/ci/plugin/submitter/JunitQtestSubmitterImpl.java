@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.submitter;
 
 import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.OauthProvider;
+import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
@@ -44,7 +45,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   }
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
-    throws IOException, InterruptedException {
+    throws IOException, InterruptedException, StoreResultException {
     final FilePath filePath = build.getWorkspace();
     SubmittedResult submitResult = new SubmittedResult()
       .setBuildNumber(build.getNumber())

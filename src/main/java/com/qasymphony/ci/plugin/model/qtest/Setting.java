@@ -17,6 +17,9 @@ public class Setting {
     return "jenkins";
   }
 
+  @JsonProperty("id")
+  private Long id;
+
   @JsonProperty("ci_server")
   private String jenkinServer;
 
@@ -40,6 +43,15 @@ public class Setting {
 
   @JsonProperty("consolidate_test_run")
   private Boolean consolidateTestRun;
+
+  public Long getId() {
+    return id;
+  }
+
+  public Setting setId(Long id) {
+    this.id = id;
+    return this;
+  }
 
   public String getJenkinServer() {
     return jenkinServer;

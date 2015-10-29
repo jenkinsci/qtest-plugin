@@ -10,6 +10,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author anpham
  */
 public class Configuration {
+  private Long id;
   private String url;
   private String appSecretKey;
   private long projectId;
@@ -24,7 +25,7 @@ public class Configuration {
   private String jenkinsProjectName;
 
   @DataBoundConstructor
-  public Configuration(String url, String appSecretKey, long projectId,
+  public Configuration(Long id, String url, String appSecretKey, long projectId,
     String projectName, long releaseId, String releaseName, long environmentId,
     String environmentName, long testSuiteId, long moduleId) {
     this.url = url;
@@ -37,6 +38,15 @@ public class Configuration {
     this.environmentName = environmentName;
     this.testSuiteId = testSuiteId;
     this.moduleId = moduleId;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public Configuration setId(Long id) {
+    this.id = id;
+    return this;
   }
 
   public String getUrl() {
@@ -140,7 +150,8 @@ public class Configuration {
 
   @Override public String toString() {
     return "Configuration{" +
-      "url='" + url + '\'' +
+      "id=" + id +
+      ", url='" + url + '\'' +
       ", appSecretKey='" + appSecretKey + '\'' +
       ", projectId=" + projectId +
       ", projectName='" + projectName + '\'' +
@@ -150,6 +161,8 @@ public class Configuration {
       ", environmentName='" + environmentName + '\'' +
       ", testSuiteId=" + testSuiteId +
       ", moduleId=" + moduleId +
+      ", jenkinsServerUrl='" + jenkinsServerUrl + '\'' +
+      ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
       '}';
   }
 
@@ -158,6 +171,7 @@ public class Configuration {
    */
   public Setting toSetting() {
     Setting setting = new Setting()
+      .setId(this.id)
       .setJenkinServer(this.jenkinsServerUrl)
       .setJenkinProjectName(this.jenkinsProjectName)
       .setProjectId(this.projectId)
