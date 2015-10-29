@@ -38,6 +38,7 @@ public class Configuration {
     this.environmentName = environmentName;
     this.testSuiteId = testSuiteId;
     this.moduleId = moduleId;
+    this.id = id;
   }
 
   public Long getId() {
