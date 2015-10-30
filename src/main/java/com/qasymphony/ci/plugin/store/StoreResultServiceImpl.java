@@ -24,14 +24,15 @@ import java.util.SortedMap;
  */
 public class StoreResultServiceImpl implements StoreResultService {
   /**
-   * Folder store data for plugin
+   * <p>
+   * Folder store data for plugin, we make folder located in jobs/projectName
+   * </p>
    */
-  private static final String RESULT_FOLDER = "jqtest_submitted_result";
-
+  private static final String RESULT_FOLDER = "jqtest_results";
   /**
-   * File name contain data submitted to qTest
+   * Result file
    */
-  private static final String RESULT_FILE_EXT = ".result";
+  private static final String RESULT_FILE = "submitted.result";
 
   @Override public Boolean store(AbstractProject project, final Object result)
     throws StoreResultException {
@@ -41,7 +42,7 @@ public class StoreResultServiceImpl implements StoreResultService {
     } catch (Exception e) {
       throw new StoreResultException(String.format("Cannot make result folder:%s, %s", resultFolder.getName(), e.getMessage()));
     }
-    FilePath resultFile = getResultFile(resultFolder, project.getName());
+    FilePath resultFile = getResultFile(resultFolder);
 
     try {
       resultFile.act(new FilePath.FileCallable<String>() {
@@ -67,7 +68,7 @@ public class StoreResultServiceImpl implements StoreResultService {
     throws StoreResultException {
     Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     FilePath resultPath = getResultFolder(project);
-    FilePath resultFile = getResultFile(resultPath, project.getName());
+    FilePath resultFile = getResultFile(resultPath);
     SortedMap<Integer, String> lines = null;
     try {
       lines = resultFile.act(new FilePath.FileCallable<SortedMap<Integer, String>>() {
@@ -96,7 +97,7 @@ public class StoreResultServiceImpl implements StoreResultService {
     return new FilePath(projectFolder, RESULT_FOLDER);
   }
 
-  private FilePath getResultFile(FilePath resultFolder, String projectName) {
-    return new FilePath(resultFolder, projectName + RESULT_FILE_EXT);
+  private FilePath getResultFile(FilePath resultFolder) {
+    return new FilePath(resultFolder, RESULT_FILE);
   }
 }
