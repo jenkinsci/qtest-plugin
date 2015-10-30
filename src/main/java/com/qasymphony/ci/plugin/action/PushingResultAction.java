@@ -5,7 +5,6 @@ package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
-import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
@@ -83,10 +82,29 @@ public class PushingResultAction extends Notifier {
     logger.println("---------------------------------------------------------------------------------------------");
     logger.println(String.format("[INFO] Submit Junit to qTest at:%s, project:%s.", configuration.getUrl(), configuration.getProjectId()));
     logger.println("[INFO] " + configuration);
-    logger.println("[INFO] Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
-
     validateJobName(build, logger);
 
+    JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
+    JunitSubmitterResult result = submitTestResult(build, launcher, listener, logger, junitSubmitter);
+    if (null == result) {
+      //if have no test result, we do not break build flow
+      return true;
+    }
+    saveConfiguration(build, result, logger);
+    storeResult(build, junitSubmitter, result, logger);
+    return true;
+  }
+
+  private void validateJobName(AbstractBuild build, PrintStream logger) {
+    String currentJenkinProjectName = build.getProject().getName();
+    if (!configuration.getJenkinsProjectName().equals(currentJenkinProjectName)) {
+      logger.println(String.format("[INFO] Current job name [%s] is changed with previous configuration.", currentJenkinProjectName));
+      configuration.setJenkinsProjectName(currentJenkinProjectName);
+      ConfigService.saveConfiguration(configuration);
+    }
+  }
+
+  private JunitSubmitterResult submitTestResult(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     TestResultParse testResultParse = new MavenJunitParse(build, launcher, listener);
     List<AutomationTestResult> automationTestResults;
     try {
@@ -98,13 +116,12 @@ public class PushingResultAction extends Notifier {
 
     if (automationTestResults.isEmpty()) {
       logger.println("[ERROR] No junit test result found.");
-      return true;
+      return null;
     }
     logger.println(String.format("[INFO] Junit test result found: %s", automationTestResults.size()));
 
     JunitSubmitterResult result = null;
     logger.println("[INFO] Begin submit test result to qTest, start at:" + new Date().toString());
-    JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     try {
       result = junitSubmitter.submit(
         new JunitSubmitterRequest()
@@ -123,7 +140,10 @@ public class PushingResultAction extends Notifier {
         result.getNumberOfTestRun(),
         result.getNumberOfTestResult()));
     }
+    return result;
+  }
 
+  private void saveConfiguration(AbstractBuild build, JunitSubmitterResult result, PrintStream logger) {
     //set testSuite id created from qTest
     configuration.setTestSuiteId(null == result.getTestSuiteId() ? configuration.getTestSuiteId() : result.getTestSuiteId());
     try {
@@ -132,24 +152,16 @@ public class PushingResultAction extends Notifier {
     } catch (IOException e) {
       logger.println(String.format("[ERROR] Cannot save test suite to configuration of project:%s", e.getMessage()));
     }
+  }
 
+  private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
     logger.println("[INFO] Begin store submitted result to workspace.");
     try {
       junitSubmitter.storeSubmittedResult(build, result);
-    } catch (StoreResultException e) {
+    } catch (Exception e) {
       logger.println("[ERROR] Cannot store submitted result." + e.getMessage());
     }
     logger.println("[INFO] End store submitted result.");
-    return true;
-  }
-
-  private void validateJobName(AbstractBuild build, PrintStream logger) {
-    String jobName = ConfigService.getJobName(build);
-    if (!jobName.equals(build.getProject().getName())) {
-      logger.println(String.format("[INFO] Current job name [%s]is changed with previous configuration.", jobName));
-      configuration.setJenkinsProjectName(jobName);
-      ConfigService.saveConfiguration(configuration);
-    }
   }
 
   @Extension
@@ -180,7 +192,6 @@ public class PushingResultAction extends Notifier {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
       configuration.setJenkinsServerUrl(getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
-
       Setting setting = ConfigService.saveConfiguration(configuration);
       if (null != setting) {
         configuration.setModuleId(setting.getModuleId());

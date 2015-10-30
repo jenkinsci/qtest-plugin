@@ -1,10 +1,5 @@
 package com.qasymphony.ci.plugin.submitter;
 
-import hudson.FilePath;
-import hudson.model.AbstractBuild;
-
-import java.io.IOException;
-
 import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
@@ -12,6 +7,9 @@ import com.qasymphony.ci.plugin.model.AutomationTestResponse;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
+import hudson.model.AbstractBuild;
+
+import java.io.IOException;
 
 /**
  * @author trongle
@@ -43,7 +41,6 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
     throws IOException, InterruptedException, StoreResultException {
-    final FilePath filePath = build.getWorkspace();
     SubmittedResult submitResult = new SubmittedResult()
       .setBuildNumber(build.getNumber())
       .setStatusBuild(build.getResult().toString())
@@ -51,7 +48,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       .setSubmitStatus(result.getSubmittedStatus())
       .setNumberTestRun(result.getNumberOfTestRun())
       .setNumberTestResult(result.getNumberOfTestResult());
-    storeResultService.store(filePath, submitResult);
+    storeResultService.store(build.getProject(), submitResult);
     return submitResult;
   }
 }

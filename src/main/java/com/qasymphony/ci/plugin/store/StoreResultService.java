@@ -2,9 +2,8 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
-import hudson.FilePath;
+import hudson.model.AbstractProject;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -13,9 +12,23 @@ import java.util.Map;
  * @since 1.0
  */
 public interface StoreResultService {
-  Boolean store(FilePath workspace, Object result) throws StoreResultException;
+  /**
+   * Store result
+   *
+   * @param project
+   * @param result
+   * @return
+   * @throws StoreResultException
+   */
+  Boolean store(AbstractProject project, Object result) throws StoreResultException;
 
-  String load(FilePath workspace) throws StoreResultException;
-
-  Map<Integer, SubmittedResult> fetchAll(FilePath filePath) throws StoreResultException;
+  /**
+   * Load all result
+   *
+   * @param project
+   * @return
+   * @throws StoreResultException
+   */
+  Map<Integer, SubmittedResult> fetchAll(AbstractProject project)
+    throws StoreResultException;
 }

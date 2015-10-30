@@ -7,7 +7,6 @@ import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
-import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Actionable;
@@ -97,9 +96,8 @@ public class StatisticsAction extends Actionable implements Action {
 
   @JavaScriptMethod
   public JSONObject getTreeResult(int page) {
-    FilePath workspace = this.getProject().getWorkspace();
     try {
-      results = storeResultService.fetchAll(workspace);
+      results = storeResultService.fetchAll(this.getProject());
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
     }
