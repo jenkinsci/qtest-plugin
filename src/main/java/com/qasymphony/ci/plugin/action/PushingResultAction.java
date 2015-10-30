@@ -137,7 +137,7 @@ public class PushingResultAction extends Notifier {
         .setNumberOfTestResult(automationTestResults.size())
         .setNumberOfTestRun(0);
     } finally {
-      logger.println(String.format("[INFO] End submit test result to qTest: time=%s (s), testRuns=%s, testResult=%s",
+      logger.println(String.format("[INFO] End submit test result to qTest at=%s, testRuns=%s, testResult=%s",
         new Date().toString(),
         result.getNumberOfTestRun(),
         result.getNumberOfTestResult()));

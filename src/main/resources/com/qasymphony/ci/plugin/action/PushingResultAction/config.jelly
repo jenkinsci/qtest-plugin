@@ -32,6 +32,8 @@
       </span>
     </f:entry>
     <f:invisibleEntry>
+      <f:textbox name="config.id" field="id"
+                 value="${instance.configuration.id}"/>
       <f:textbox name="config.projectId" field="projectId"
                  value="${instance.configuration.projectId}"/>
       <f:textbox name="config.releaseId" field="releaseId"

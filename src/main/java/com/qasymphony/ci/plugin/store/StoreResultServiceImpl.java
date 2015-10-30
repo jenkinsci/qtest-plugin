@@ -48,11 +48,17 @@ public class StoreResultServiceImpl implements StoreResultService {
       resultFile.act(new FilePath.FileCallable<String>() {
         @Override public String invoke(File file, VirtualChannel virtualChannel)
           throws IOException, InterruptedException {
-          BufferedWriter writer = new BufferedWriter(new FileWriter(file.getPath(), true));
-          writer.newLine();
-          writer.write(JsonUtils.toJson(result));
-          writer.close();
-          return null;
+          BufferedWriter writer = null;
+          try {
+            writer = new BufferedWriter(new FileWriter(file.getPath(), true));
+            writer.newLine();
+            writer.write(JsonUtils.toJson(result));
+            writer.close();
+            return null;
+          } finally {
+            if (null != writer)
+              writer.close();
+          }
         }
 
         @Override public void checkRoles(RoleChecker roleChecker) throws SecurityException {
@@ -74,7 +80,10 @@ public class StoreResultServiceImpl implements StoreResultService {
       lines = resultFile.act(new FilePath.FileCallable<SortedMap<Integer, String>>() {
         @Override public SortedMap<Integer, String> invoke(File file, VirtualChannel virtualChannel)
           throws IOException, InterruptedException {
-          return new FileReader(file).readAll();
+          FileReader fileReader = new FileReader(file);
+          SortedMap<Integer, String> lines = fileReader.readAll();
+          fileReader.close();
+          return lines;
         }
 
         @Override public void checkRoles(RoleChecker roleChecker) throws SecurityException {
