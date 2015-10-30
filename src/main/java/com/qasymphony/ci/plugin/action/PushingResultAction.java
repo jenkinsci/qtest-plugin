@@ -3,7 +3,6 @@
  */
 package com.qasymphony.ci.plugin.action;
 
-import com.google.common.base.Stopwatch;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
@@ -40,8 +39,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,9 +103,7 @@ public class PushingResultAction extends Notifier {
     logger.println(String.format("[INFO] Junit test result found: %s", automationTestResults.size()));
 
     JunitSubmitterResult result = null;
-    Stopwatch stopwatch = new Stopwatch();
-    stopwatch.start();
-    logger.println("[INFO] Begin submit test result to qTest.");
+    logger.println("[INFO] Begin submit test result to qTest, start at:" + new Date().toString());
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     try {
       result = junitSubmitter.submit(
@@ -117,9 +118,8 @@ public class PushingResultAction extends Notifier {
         .setNumberOfTestResult(automationTestResults.size())
         .setNumberOfTestRun(0);
     } finally {
-      stopwatch.stop();
       logger.println(String.format("[INFO] End submit test result to qTest: time=%s (s), testRuns=%s, testResult=%s",
-        stopwatch.elapsedTime(TimeUnit.SECONDS),
+        new Date().toString(),
         result.getNumberOfTestRun(),
         result.getNumberOfTestResult()));
     }
