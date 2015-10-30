@@ -41,7 +41,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,6 +81,8 @@ public class PushingResultAction extends Notifier {
     logger.println(String.format("[INFO] Submit Junit to qTest at:%s, project:%s.", configuration.getUrl(), configuration.getProjectId()));
     logger.println("[INFO] " + configuration);
     logger.println("[INFO] Project:" + build.getProject().getName() + ", previous testSuite:" + configuration.getTestSuiteId());
+
+    validateJobName(build, logger);
 
     TestResultParse testResultParse = new MavenJunitParse(build, launcher, listener);
     List<AutomationTestResult> automationTestResults;
@@ -141,6 +143,15 @@ public class PushingResultAction extends Notifier {
     return true;
   }
 
+  private void validateJobName(AbstractBuild build, PrintStream logger) {
+    String jobName = ConfigService.getJobName(build);
+    if (!jobName.equals(build.getProject().getName())) {
+      logger.println(String.format("[INFO] Current job name [%s]is changed with previous configuration.", jobName));
+      configuration.setJenkinsProjectName(jobName);
+      ConfigService.saveConfiguration(configuration);
+    }
+  }
+
   @Extension
   public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
@@ -149,7 +160,6 @@ public class PushingResultAction extends Notifier {
       load();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public boolean isApplicable(Class<? extends AbstractProject> jobType) {
       return true;
@@ -235,7 +245,6 @@ public class PushingResultAction extends Notifier {
     @JavaScriptMethod
     public JSONObject getProjects(String qTestUrl, String apiKey) {
       JSONObject res = new JSONObject();
-      //TODO: need apply executor
       //get project from qTest
       Object projects = ConfigService.getProjects(qTestUrl, apiKey);
       res.put("projects", null == projects ? "" : JSONArray.fromObject(projects));
@@ -249,22 +258,60 @@ public class PushingResultAction extends Notifier {
      * @return
      */
     @JavaScriptMethod
-    public JSONObject getProjectData(String qTestUrl, String apiKey, Long projectId, String jenkinsProjectName) {
-      JSONObject res = new JSONObject();
+    public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
+      final JSONObject res = new JSONObject();
       StaplerRequest request = Stapler.getCurrentRequest();
-      String jenkinsServerName = getServerUrl(request);
+      final String jenkinsServerName = getServerUrl(request);
 
-      //get saved setting from qtest
-      Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, jenkinsServerName,
-        HttpClientUtils.encode(jenkinsProjectName), projectId);
-      res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
+      final CountDownLatch countDownLatch = new CountDownLatch(3);
+      ExecutorService fixedPool = Executors.newFixedThreadPool(3);
 
-      Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);
-      res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
-
-      Object environments = ConfigService.getEnvironments(qTestUrl, apiKey, projectId);
-      res.put("environments", null == environments ? "" : environments);
-      return res;
+      Callable<Object> caGetSetting = new Callable<Object>() {
+        @Override public Object call() throws Exception {
+          try {
+            //get saved setting from qtest
+            Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, jenkinsServerName,
+              HttpClientUtils.encode(jenkinsProjectName), projectId);
+            res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
+            return setting;
+          } finally {
+            countDownLatch.countDown();
+          }
+        }
+      };
+      Callable<Object> caGetReleases = new Callable<Object>() {
+        @Override public Object call() throws Exception {
+          try {
+            Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);
+            res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
+            return releases;
+          } finally {
+            countDownLatch.countDown();
+          }
+        }
+      };
+      Callable<Object> caGetEnvs = new Callable<Object>() {
+        @Override public Object call() throws Exception {
+          try {
+            Object environments = ConfigService.getEnvironments(qTestUrl, apiKey, projectId);
+            res.put("environments", null == environments ? "" : environments);
+            return environments;
+          } finally {
+            countDownLatch.countDown();
+          }
+        }
+      };
+      fixedPool.submit(caGetSetting);
+      fixedPool.submit(caGetReleases);
+      fixedPool.submit(caGetEnvs);
+      try {
+        countDownLatch.await();
+      } catch (InterruptedException e) {
+        LOG.log(Level.WARNING, e.getMessage());
+      } finally {
+        fixedPool.shutdownNow();
+        return res;
+      }
     }
   }
 }

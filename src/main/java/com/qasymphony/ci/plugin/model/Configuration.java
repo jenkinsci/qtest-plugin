@@ -4,12 +4,15 @@
 package com.qasymphony.ci.plugin.model;
 
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import hudson.Extension;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author anpham
  */
-public class Configuration {
+public class Configuration extends AbstractDescribableImpl<Configuration> {
   private Long id;
   private String url;
   private String appSecretKey;
@@ -181,5 +184,12 @@ public class Configuration {
       .setEnvironmentId(this.environmentId)
       .setTestSuiteId(this.testSuiteId);
     return setting;
+  }
+
+  @Extension
+  public static class DescriptorImpl extends Descriptor<Configuration> {
+    public String getDisplayName() {
+      return "";
+    }
   }
 }

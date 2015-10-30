@@ -7,6 +7,8 @@ import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
@@ -44,6 +46,18 @@ public class ConfigService {
 
   private ConfigService() {
 
+  }
+
+  /**
+   * Get job name of current build
+   *
+   * @param build
+   * @return
+   */
+  public static String getJobName(AbstractBuild build) {
+    FilePath workspace = build.getWorkspace();
+    FilePath jobFolder = workspace.getParent();
+    return jobFolder.getName();
   }
 
   /**

@@ -13,7 +13,6 @@
   </script>
 
   <form>
-    <st:bind var="jenkinsProjectName" value="${it.project.name}"/>
     <st:bind var="remoteAction" value="${descriptor}"/>
 
     <f:entry title="${%label.url}" field="url">

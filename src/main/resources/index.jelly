@@ -3,5 +3,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is used to push test results to QTest after project is build
+  This plugin is used to push test results to qTest after project is build
 </div>
