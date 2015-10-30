@@ -22,7 +22,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
-    AutomationTestResponse response = AutomationTestService.push(request.getTestResults(), request.getConfiguration(),
+    AutomationTestResponse response = AutomationTestService.push(request.getBuildId(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
       OauthProvider.buildHeader(request.getConfiguration().getAppSecretKey(), null));
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
