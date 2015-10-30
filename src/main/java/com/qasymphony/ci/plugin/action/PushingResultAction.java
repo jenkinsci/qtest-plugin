@@ -126,7 +126,9 @@ public class PushingResultAction extends Notifier {
       result = junitSubmitter.submit(
         new JunitSubmitterRequest()
           .setConfiguration(configuration)
-          .setTestResults(automationTestResults));
+          .setTestResults(automationTestResults)
+          .setBuildId(build.getId())
+          .setBuildPath(build.getUrl()));
     } catch (Exception e) {
       logger.println("[ERROR] Cannot submit test result to qTest:" + e.getMessage());
       result = new JunitSubmitterResult()
