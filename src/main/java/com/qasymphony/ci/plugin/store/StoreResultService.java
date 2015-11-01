@@ -20,7 +20,7 @@ public interface StoreResultService {
    * @return
    * @throws StoreResultException
    */
-  Boolean store(AbstractProject project, Object result) throws StoreResultException;
+  Boolean store(AbstractProject project, final SubmittedResult result) throws StoreResultException;
 
   /**
    * Load all result
@@ -29,6 +29,6 @@ public interface StoreResultService {
    * @return
    * @throws StoreResultException
    */
-  Map<Integer, SubmittedResult> fetchAll(AbstractProject project)
+  Map<Integer, SubmittedResult> fetchAll(AbstractProject project, int currentBuildNumber)
     throws StoreResultException;
 }

@@ -97,7 +97,8 @@ public class StatisticsAction extends Actionable implements Action {
   @JavaScriptMethod
   public JSONObject getTreeResult(int page) {
     try {
-      results = storeResultService.fetchAll(this.getProject());
+      AbstractProject project = this.getProject();
+      results = storeResultService.fetchAll(project, Math.max(project.getNextBuildNumber() - 1, 0));
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
     }
