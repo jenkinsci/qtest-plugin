@@ -6,7 +6,7 @@ package com.qasymphony.ci.plugin.submitter;
  * @since 1.0
  */
 public class JunitSubmitterResult {
-  public static final String STATUS_SUCCESS = "Success";
+  public static final String STATUS_SUCCESS = "Complete";
   public static final String STATUS_CANCELED = "Canceled";
   public static final String STATUS_FAILED = "Failed";
   private Long testSuiteId;

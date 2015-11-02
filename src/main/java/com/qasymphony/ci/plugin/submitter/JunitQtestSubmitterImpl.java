@@ -10,7 +10,8 @@ import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.model.AbstractBuild;
 
-import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author trongle
@@ -18,6 +19,7 @@ import java.io.IOException;
  * @since 1.0
  */
 public class JunitQtestSubmitterImpl implements JunitSubmitter {
+  private static final Logger LOG = Logger.getLogger(JunitQtestSubmitterImpl.class.getName());
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws SubmittedException {
@@ -40,12 +42,13 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
         .setNumberOfTestResult(response.getTotalTestCases());
       return result;
     } catch (Exception e) {
+      LOG.log(Level.WARNING, e.getMessage(), e);
       throw new SubmittedException("Error while submit result:" + e.getMessage(), e);
     }
   }
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
-    throws IOException, InterruptedException, StoreResultException {
+    throws StoreResultException {
     SubmittedResult submitResult = new SubmittedResult()
       .setBuildNumber(build.getNumber())
       .setStatusBuild(build.getResult().toString())
@@ -53,7 +56,12 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       .setSubmitStatus(result.getSubmittedStatus())
       .setNumberTestRun(result.getNumberOfTestRun())
       .setNumberTestResult(result.getNumberOfTestResult());
-    storeResultService.store(build.getProject(), submitResult);
-    return submitResult;
+    try {
+      storeResultService.store(build.getProject(), submitResult);
+      return submitResult;
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, e.getMessage(), e);
+      throw new StoreResultException("Cannot store result." + e.getMessage(), e);
+    }
   }
 }

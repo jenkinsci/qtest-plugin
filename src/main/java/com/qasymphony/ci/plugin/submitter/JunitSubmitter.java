@@ -31,5 +31,5 @@ public interface JunitSubmitter {
    * @throws StoreResultException
    */
   SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
-    throws IOException, InterruptedException, StoreResultException;
+    throws StoreResultException;
 }

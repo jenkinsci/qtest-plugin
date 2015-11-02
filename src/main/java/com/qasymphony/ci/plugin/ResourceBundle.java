@@ -9,7 +9,6 @@ import org.jvnet.localizer.ResourceBundleHolder;
  * @author anpham
  */
 public class ResourceBundle {
-  public static final String DISPLAY_NAME = "displayName";
   public static final String GLOBAL_ERROR_MESSAGE = "global.error.message";
   private final ResourceBundleHolder holder;
 
@@ -22,4 +21,6 @@ public class ResourceBundle {
   public static String get(String key, Object... args) {
     return INSTANCE.holder.format(key, args);
   }
+
+  public static final String DISPLAY_NAME = get("displayName");
 }

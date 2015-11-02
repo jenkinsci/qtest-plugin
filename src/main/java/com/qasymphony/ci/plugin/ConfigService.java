@@ -189,8 +189,4 @@ public class ConfigService {
       return null;
     }
   }
-
-  public static void resolveProjectChange(){
-
-  }
 }

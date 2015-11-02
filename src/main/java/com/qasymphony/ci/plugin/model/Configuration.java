@@ -15,6 +15,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class Configuration extends AbstractDescribableImpl<Configuration> {
   private Long id;
   private String url;
+  /**
+   * Refresh token
+   */
   private String appSecretKey;
   private long projectId;
   private String projectName;

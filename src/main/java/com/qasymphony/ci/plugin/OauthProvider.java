@@ -1,7 +1,5 @@
 package com.qasymphony.ci.plugin;
 
-import com.qasymphony.ci.plugin.model.Configuration;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,30 +14,6 @@ public class OauthProvider {
   }
 
   /**
-   * Get access token from jenkins project configured
-   *
-   * @param configuration
-   * @return
-   */
-  public static String getAccessToken(Configuration configuration) {
-    if (null == configuration)
-      return null;
-    return getAccessToken(configuration.getUrl(), configuration.getAppSecretKey(), ConfigService.CLIENT_SECRET_KEY);
-  }
-
-  /**
-   * Get access token with client key and app key
-   *
-   * @param url
-   * @param appKey
-   * @param clientKey
-   * @return
-   */
-  public static String getAccessToken(String url, String appKey, String clientKey) {
-    return null;
-  }
-
-  /**
    * Build headers
    *
    * @param apiKey
@@ -48,8 +22,8 @@ public class OauthProvider {
    */
   public static Map<String, String> buildHeader(String apiKey, Map<String, String> headers) {
     Map<String, String> map = new HashMap<>();
-    //TODO: integration with oauth in qTest when oauth ready to get access token
-    map.put("Authorization", apiKey);
+    //appSecretKey is refresh token, so we packed with Bearer in header when build headers to qTest
+    map.put("Authorization", "Bearer " + apiKey);
     map.put("Content-Type", "application/json");
     if (null != headers && headers.size() > 0) {
       map.putAll(headers);

@@ -15,6 +15,7 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -38,7 +39,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -78,12 +78,12 @@ public class PushingResultAction extends Notifier {
   public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
-    logger.println("");
-    logger.println("---------------------------------------------------------------------------------------------");
-    logger.println(String.format("[INFO] Submit Junit to qTest at:%s, project:%s.", configuration.getUrl(), configuration.getProjectId()));
-    logger.println("[INFO] " + configuration);
-    logger.println("[INFO] Project is: " + build.getProject().getClass().getName());
-    validateJobName(build, logger);
+    showInfo(logger);
+    if (!validateConfig(configuration)) {
+      formatWarn(logger, "Invalid configuration to qTest, reject submit test result.");
+      return true;
+    }
+    checkProjectNameChanged(build, logger);
 
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     JunitSubmitterResult result = submitTestResult(build, launcher, listener, logger, junitSubmitter);
@@ -96,10 +96,34 @@ public class PushingResultAction extends Notifier {
     return true;
   }
 
-  private void validateJobName(AbstractBuild build, PrintStream logger) {
+  private void showInfo(PrintStream logger) {
+    logger.println("");
+    formatInfo(logger, "------------------------------------------------------------------------");
+    formatInfo(logger, ResourceBundle.DISPLAY_NAME);
+    formatInfo(logger, "------------------------------------------------------------------------");
+    formatInfo(logger, "Submit Junit to qTest at:%s", configuration.getUrl());
+    formatInfo(logger, "With project: %s, %s.", configuration.getProjectId(), configuration.getProjectName());
+    formatInfo(logger, "With release: %s, %s.", configuration.getReleaseId(), configuration.getReleaseName());
+    if (configuration.getEnvironmentId() > 0) {
+      formatInfo(logger, "With environment: %s, %s.", configuration.getEnvironmentId(), configuration.getEnvironmentName());
+    } else {
+      formatInfo(logger, "With no environment.");
+    }
+    logger.println("");
+  }
+
+  private Boolean validateConfig(Configuration configuration) {
+    return configuration != null &&
+      !StringUtils.isEmpty(configuration.getUrl()) &&
+      !StringUtils.isEmpty(configuration.getAppSecretKey()) &&
+      configuration.getProjectId() > 0 &&
+      configuration.getReleaseId() > 0;
+  }
+
+  private void checkProjectNameChanged(AbstractBuild build, PrintStream logger) {
     String currentJenkinProjectName = build.getProject().getName();
     if (!configuration.getJenkinsProjectName().equals(currentJenkinProjectName)) {
-      logger.println(String.format("[INFO] Current job name [%s] is changed with previous configuration.", currentJenkinProjectName));
+      formatInfo(logger, "Current job name [%s] is changed with previous configuration.", currentJenkinProjectName);
       configuration.setJenkinsProjectName(currentJenkinProjectName);
       ConfigService.saveConfiguration(configuration);
     }
@@ -115,13 +139,13 @@ public class PushingResultAction extends Notifier {
     }
 
     if (automationTestResults.isEmpty()) {
-      logger.println("[ERROR] No junit test result found.");
+      formatWarn(logger, "No junit test result found.");
       return null;
     }
-    logger.println(String.format("[INFO] Junit test result found: %s", automationTestResults.size()));
+    formatInfo(logger, "Junit test result found: %s", automationTestResults.size());
 
     JunitSubmitterResult result = null;
-    logger.println("[INFO] Begin submit test result to qTest, start at:" + new Date().toString());
+    formatInfo(logger, "Begin submit test result to qTest,at: " + JsonUtils.getCurrentDateString());
     try {
       result = junitSubmitter.submit(
         new JunitSubmitterRequest()
@@ -130,17 +154,19 @@ public class PushingResultAction extends Notifier {
           .setBuildId(build.getId())
           .setBuildPath(build.getUrl()));
     } catch (SubmittedException e) {
-      logger.println("[ERROR] Cannot submit test result to qTest:" + e.getMessage());
-      result = new JunitSubmitterResult()
-        .setTestSuiteId(null)
-        .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
-        .setNumberOfTestResult(automationTestResults.size())
-        .setNumberOfTestRun(0);
+      formatError(logger, "Cannot submit test result to qTest:" + e.getMessage());
+      e.printStackTrace(logger);
     } finally {
-      logger.println(String.format("[INFO] End submit test result to qTest at=%s, testRuns=%s, testResult=%s",
-        new Date().toString(),
-        result == null ? 0 : result.getNumberOfTestRun(),
-        result == null ? automationTestResults.size() : result.getNumberOfTestResult()));
+      if (null == result) {
+        result = new JunitSubmitterResult()
+          .setTestSuiteId(null)
+          .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
+          .setNumberOfTestResult(automationTestResults.size())
+          .setNumberOfTestRun(0);
+      }
+      formatInfo(logger, "Result after submit: testRuns=%s, testSuiteId:%s, testSuiteName:%s",
+        result.getNumberOfTestRun(), result.getTestSuiteId(), result.getTestSuiteName());
+      formatInfo(logger, "End submit test result to qTest at: %s", JsonUtils.getCurrentDateString());
     }
     return result;
   }
@@ -150,20 +176,41 @@ public class PushingResultAction extends Notifier {
     configuration.setTestSuiteId(null == result.getTestSuiteId() ? configuration.getTestSuiteId() : result.getTestSuiteId());
     try {
       build.getProject().save();
-      logger.println(String.format("[INFO] Save test suite to configuration, testSuiteId=%s", configuration.getTestSuiteId()));
+      formatInfo(logger, "Save test suite to configuration, testSuiteId=%s", configuration.getTestSuiteId());
     } catch (IOException e) {
-      logger.println(String.format("[ERROR] Cannot save test suite to configuration of project:%s", e.getMessage()));
+      formatError(logger, "Cannot save test suite to configuration of project:%s", e.getMessage());
+      e.printStackTrace(logger);
     }
   }
 
   private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
-    logger.println("[INFO] Begin store submitted result to workspace.");
+    logger.println("");
+    formatInfo(logger, "Begin store submitted result to workspace.");
     try {
       junitSubmitter.storeSubmittedResult(build, result);
     } catch (Exception e) {
-      logger.println("[ERROR] Cannot store submitted result." + e.getMessage());
+      formatError(logger, "Cannot store submitted result." + e.getMessage());
+      e.printStackTrace(logger);
     }
-    logger.println("[INFO] End store submitted result.");
+    formatInfo(logger, "End store submitted result.");
+    logger.println("");
+  }
+
+  private void formatInfo(PrintStream logger, String msg, Object... args) {
+    format(logger, "INFO", msg, args);
+  }
+
+  private void formatError(PrintStream logger, String msg, Object... args) {
+
+    format(logger, "ERROR", msg, args);
+  }
+
+  private void formatWarn(PrintStream logger, String msg, Object... args) {
+    format(logger, "WARN", msg, args);
+  }
+
+  private void format(PrintStream logger, String level, String msg, Object... args) {
+    logger.println(String.format("[%s] %s", level, String.format(msg, args)));
   }
 
   @Extension
@@ -181,7 +228,7 @@ public class PushingResultAction extends Notifier {
 
     @Override
     public String getDisplayName() {
-      return ResourceBundle.get(ResourceBundle.DISPLAY_NAME);
+      return ResourceBundle.DISPLAY_NAME;
     }
 
     @Override

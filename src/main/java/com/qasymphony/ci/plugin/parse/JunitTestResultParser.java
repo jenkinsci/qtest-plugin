@@ -3,7 +3,6 @@ package com.qasymphony.ci.plugin.parse;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -28,15 +27,23 @@ public class JunitTestResultParser {
   private static final String JUNIT_PREFIX = "TEST-*";
   private static final String JUNIT_SUFIX = "/*.xml";
 
+  /**
+   * Parse junit result
+   *
+   * @param build
+   * @param launcher
+   * @param listener
+   * @return
+   * @throws Exception
+   */
   public static List<AutomationTestResult> parse(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws Exception {
     AbstractProject project = build.getProject();
-    if (project instanceof AbstractMavenProject) {
+    if (project.getClass().getName().toLowerCase().contains("maven")) {
       return new MavenJunitParse(build, launcher, listener).parse();
     } else {
-      //we'll auto detect test result folder
+      //we'll auto detect test result folder,when project is not maven style
       MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
-
       String basedDir = build.getWorkspace().toURI().getPath();
       List<String> resultFolders = scanJunitTestResultFolder(basedDir);
       LOG.info("Scanning junit test result in dir:" + basedDir);
@@ -49,6 +56,12 @@ public class JunitTestResultParser {
     }
   }
 
+  /**
+   * Scan junit test result folder
+   *
+   * @param basedDir
+   * @return
+   */
   public static List<String> scanJunitTestResultFolder(String basedDir) {
     File currentBasedDir = new File(basedDir);
     FileSet fs = Util.createFileSet(new File(basedDir), JUNIT_PREFIX);

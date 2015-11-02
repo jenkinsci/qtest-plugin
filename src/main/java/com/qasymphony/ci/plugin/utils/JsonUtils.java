@@ -5,14 +5,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +21,7 @@ import java.util.logging.Logger;
  */
 public class JsonUtils {
   private static final Logger LOG = Logger.getLogger(JsonUtils.class.getName());
+  public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
   /**
    * Use for JSON
    */
@@ -34,12 +33,8 @@ public class JsonUtils {
 
   static {
     // mapper
-    mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"));
+    mapper.setDateFormat(new SimpleDateFormat(UTC_DATE_FORMAT));
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-  }
-
-  public static ObjectMapper getMapper() {
-    return mapper;
   }
 
   /**
@@ -51,8 +46,11 @@ public class JsonUtils {
     return mapper.createObjectNode();
   }
 
-  public static ArrayNode newArrayNode() {
-    return mapper.createArrayNode();
+  /**
+   * @return
+   */
+  public static String getCurrentDateString() {
+    return new SimpleDateFormat(UTC_DATE_FORMAT).format(new Date());
   }
 
   /**
@@ -101,27 +99,6 @@ public class JsonUtils {
   }
 
   /**
-   * Get ArrayNode from JSON
-   *
-   * @param body the JSON string
-   * @return
-   * @Param field the field of ArrayNode in JSON
-   */
-  public static ArrayNode getArrayNode(String body, String field) {
-    if (StringUtils.isEmpty(body))
-      return mapper.createArrayNode();
-    try {
-      JsonNode node = mapper.readTree(body);
-      if (null != node) {
-        return (ArrayNode) node.get(field);
-      }
-    } catch (IOException e) {
-      LOG.log(Level.WARNING, "getArrayNode: Cannot get arrayNode from body string with field:" + field, e);
-    }
-    return mapper.createArrayNode();
-  }
-
-  /**
    * Get long from jsonnode
    *
    * @param node
@@ -132,51 +109,6 @@ public class JsonUtils {
     if (null == node)
       return defaultValue;
     return node.asLong(0);
-  }
-
-  /**
-   * Get long from jsonnode
-   *
-   * @param node
-   * @param field
-   * @return
-   */
-  public static Long getLong(JsonNode node, String field) {
-    if (null == node)
-      return 0L;
-    return getLong(node.get(field), 0L);
-  }
-
-  /**
-   * read data from file
-   *
-   * @param file
-   * @return
-   */
-  public static JsonNode fromFile(String file) {
-    try {
-      InputStream inStream = JsonUtils.class.getResourceAsStream(file);
-      if (null == inStream) {
-        LOG.log(Level.WARNING, "File not found: {}", file);
-        return null;
-      }
-      return mapper.readTree(inStream);
-    } catch (IOException ex) {
-      LOG.log(Level.WARNING, "Cannot read from file.", ex);
-      return null;
-    }
-  }
-
-  public static JsonNode read(InputStream inputStream) {
-    try {
-      if (null == inputStream) {
-        return null;
-      }
-      return mapper.readTree(inputStream);
-    } catch (IOException ex) {
-      LOG.log(Level.WARNING, "Cannot read from file.", ex);
-      return null;
-    }
   }
 
   /**
