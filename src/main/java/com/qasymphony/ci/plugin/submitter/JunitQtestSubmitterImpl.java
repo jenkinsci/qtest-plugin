@@ -3,6 +3,7 @@ package com.qasymphony.ci.plugin.submitter;
 import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
+import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResponse;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
@@ -19,24 +20,28 @@ import java.io.IOException;
 public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
-  @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
-    AutomationTestResponse response = AutomationTestService.push(request.getBuildId(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
-      OauthProvider.buildHeader(request.getConfiguration().getAppSecretKey(), null));
-    JunitSubmitterResult result = new JunitSubmitterResult()
-      .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
-      .setTestSuiteId(null)
-      .setNumberOfTestRun(request.getTestResults().size())
-      .setNumberOfTestResult(request.getTestResults().size())
-      .setTestSuiteName("");
-    if (response == null)
-      return result;
+  @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws SubmittedException {
+    try {
+      AutomationTestResponse response = AutomationTestService.push(request.getBuildId(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
+        OauthProvider.buildHeader(request.getConfiguration().getAppSecretKey(), null));
+      JunitSubmitterResult result = new JunitSubmitterResult()
+        .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
+        .setTestSuiteId(null)
+        .setNumberOfTestRun(request.getTestResults().size())
+        .setNumberOfTestResult(request.getTestResults().size())
+        .setTestSuiteName("");
+      if (response == null)
+        return result;
 
-    result.setTestSuiteId(response.getTestSuiteId())
-      .setNumberOfTestRun(response.getTotalTestRuns())
-      .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
-      .setTestSuiteName(response.getTestSuiteName())
-      .setNumberOfTestResult(response.getTotalTestCases());
-    return result;
+      result.setTestSuiteId(response.getTestSuiteId())
+        .setNumberOfTestRun(response.getTotalTestRuns())
+        .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
+        .setTestSuiteName(response.getTestSuiteName())
+        .setNumberOfTestResult(response.getTotalTestCases());
+      return result;
+    } catch (Exception e) {
+      throw new SubmittedException("Error while submit result:" + e.getMessage(), e);
+    }
   }
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)

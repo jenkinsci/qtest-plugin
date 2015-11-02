@@ -5,5 +5,24 @@ package com.qasymphony.ci.plugin.exception;
  * @version 11/2/2015 3:12 PM trongle $
  * @since 1.0
  */
-public class SubmittedException {
+public class SubmittedException extends Exception {
+  public SubmittedException() {
+    super();
+  }
+
+  public SubmittedException(String message) {
+    super(message);
+  }
+
+  public SubmittedException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public SubmittedException(Throwable cause) {
+    super(cause);
+  }
+
+  protected SubmittedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    super(message, cause, enableSuppression, writableStackTrace);
+  }
 }

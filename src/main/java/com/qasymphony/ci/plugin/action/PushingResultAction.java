@@ -5,6 +5,7 @@ package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
@@ -128,7 +129,7 @@ public class PushingResultAction extends Notifier {
           .setTestResults(automationTestResults)
           .setBuildId(build.getId())
           .setBuildPath(build.getUrl()));
-    } catch (Exception e) {
+    } catch (SubmittedException e) {
       logger.println("[ERROR] Cannot submit test result to qTest:" + e.getMessage());
       result = new JunitSubmitterResult()
         .setTestSuiteId(null)
@@ -138,8 +139,8 @@ public class PushingResultAction extends Notifier {
     } finally {
       logger.println(String.format("[INFO] End submit test result to qTest at=%s, testRuns=%s, testResult=%s",
         new Date().toString(),
-        result.getNumberOfTestRun(),
-        result.getNumberOfTestResult()));
+        result == null ? 0 : result.getNumberOfTestRun(),
+        result == null ? automationTestResults.size() : result.getNumberOfTestResult()));
     }
     return result;
   }
