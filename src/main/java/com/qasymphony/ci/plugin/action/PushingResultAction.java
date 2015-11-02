@@ -8,8 +8,7 @@ import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
-import com.qasymphony.ci.plugin.parse.MavenJunitParse;
-import com.qasymphony.ci.plugin.parse.TestResultParse;
+import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
@@ -82,6 +81,7 @@ public class PushingResultAction extends Notifier {
     logger.println("---------------------------------------------------------------------------------------------");
     logger.println(String.format("[INFO] Submit Junit to qTest at:%s, project:%s.", configuration.getUrl(), configuration.getProjectId()));
     logger.println("[INFO] " + configuration);
+    logger.println("[INFO] Project is: " + build.getProject().getClass().getName());
     validateJobName(build, logger);
 
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
@@ -105,10 +105,9 @@ public class PushingResultAction extends Notifier {
   }
 
   private JunitSubmitterResult submitTestResult(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
-    TestResultParse testResultParse = new MavenJunitParse(build, launcher, listener);
     List<AutomationTestResult> automationTestResults;
     try {
-      automationTestResults = testResultParse.parse();
+      automationTestResults = JunitTestResultParser.parse(build, launcher, listener);
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
       automationTestResults = Collections.emptyList();

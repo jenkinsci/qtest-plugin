@@ -20,35 +20,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class StoreResultServiceTests {
-  @Rule public JenkinsRule j = new JenkinsRule() {
-    private boolean origDefaultUseCache = true;
-
-    @Override
-    public void before() throws Throwable {
-      if (Functions.isWindows()) {
-        URLConnection aConnection = new File(".").toURI().toURL().openConnection();
-        origDefaultUseCache = aConnection.getDefaultUseCaches();
-        aConnection.setDefaultUseCaches(false);
-      }
-      super.before();
-    }
-
-    @Override
-    public void after() throws Exception {
-      super.after();
-      if (TestEnvironment.get() != null)
-        try {
-          TestEnvironment.get().dispose();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      if (Functions.isWindows()) {
-        URLConnection aConnection = new File(".").toURI().toURL().openConnection();
-        aConnection.setDefaultUseCaches(origDefaultUseCache);
-      }
-    }
-  };
+public class StoreResultServiceTests extends TestAbstracts {
   private FreeStyleProject project;
   private StoreResultServiceImpl storeResultService;
 

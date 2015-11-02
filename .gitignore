@@ -32,3 +32,4 @@ sonar-project.properties
 .sonar
 .sonartmp
 /work/**
+**.log
