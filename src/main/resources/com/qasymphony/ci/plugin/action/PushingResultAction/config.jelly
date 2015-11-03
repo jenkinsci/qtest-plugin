@@ -3,6 +3,9 @@
 
   <style type="text/css">
     @import url(${resURL}/plugin/${pluginName}/css/selectize.default.css);
+    .qtest-retrieve-data {
+    margin: 0px !important;
+    }
   </style>
 
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-1.11.1.min.js"></script>
@@ -24,8 +27,8 @@
     </f:entry>
 
     <f:entry>
-      <span class="yui-button yui-push-button apply-button applyButton">
-        <button id="fetchProject">${%label.retrieveProjects}</button>
+      <span class="yui-button yui-push-button apply-button applyButton qtest-retrieve-data">
+        <button id="fetchProjectData">${%label.retrieveData}</button>
       </span>
       <span style="display: none;" class="yui-button">
         <img src="/jenkins/static/ba336d75/images/spinner.gif"/>
@@ -45,15 +48,6 @@
     </f:invisibleEntry>
     <f:entry title="${%label.selectedProject}" field="projectName">
       <f:textbox name="config.projectName" value="${instance.configuration.projectName}"/>
-    </f:entry>
-
-    <f:entry>
-      <span class="yui-button yui-push-button apply-button applyButton">
-        <button id="fetchProjectData">${%label.retrieveData}</button>
-      </span>
-      <span style="display: none;" class="yui-button">
-        <img src="/jenkins/static/ba336d75/images/spinner.gif"/>
-      </span>
     </f:entry>
 
     <f:entry title="${%label.release}" field="releaseName">

@@ -155,7 +155,8 @@ public class ConfigService {
       Map<String, String> headers = OauthProvider.buildHeader(apiKey, null);
       ResponseEntity responseEntity = HttpClientUtils.get(url, headers);
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
-        LOG.log(Level.WARNING, String.format("Cannot get config from qTest:%s, server:%s, project:%s", qTestUrl, serverName, projectName));
+        LOG.log(Level.WARNING, String.format("Cannot get config from qTest:%s, server:%s, project:%s, error:%s",
+          qTestUrl, serverName, projectName, responseEntity.getBody()));
         return null;
       }
       LOG.info(String.format("Get config from qTest:%s,%s", qTestUrl, responseEntity.getBody()));

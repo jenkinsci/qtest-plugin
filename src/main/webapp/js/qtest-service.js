@@ -12,14 +12,15 @@ var qtest = (function ($j) {
   module.getProjectId = function () {
     return $j("input[name='config.projectId']").val();
   };
-  module.bindSelectizeValue = function (src, dest, field) {
+  module.bindSelectizeValue = function (src, dest, field, onChange) {
     var srcNode = $j(src);
     srcNode.on('change', function () {
       var item = this.selectize.options[this.value];
       if (!item) return;
-      console.log("selected value:", item);
       var destNode = $j(dest);
       destNode.val(destNode ? item[field] : null);
+      if (onChange)
+        onChange(item);
     });
   };
   module.initSelectize = function (inputName, selectizeId, data, options) {

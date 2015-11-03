@@ -2,19 +2,20 @@ qtest.init();
 $j(document).ready(function () {
   setTimeout(function () {
     onLoadProject();
-    onLoadProjectData();
     bindSelectizeChange();
   }, 1000)
 });
 
 function bindSelectizeChange() {
-  qtest.bindSelectizeValue("input[name='config.projectName']", "input[name='config.projectId']", "id");
+  qtest.bindSelectizeValue("input[name='config.projectName']", "input[name='config.projectId']", "id", function (item) {
+    loadProjectData();
+  });
   qtest.bindSelectizeValue("input[name='config.releaseName']", "input[name='config.releaseId']", "id");
   qtest.bindSelectizeValue("input[name='config.environmentName']", "input[name='config.environmentId']", "value");
 }
 
 function onLoadProject() {
-  $j("#fetchProject").on('click', function (e) {
+  $j("#fetchProjectData").on('click', function (e) {
     e.preventDefault();
     qtest.showLoading(this);
     loadProject();
@@ -22,7 +23,7 @@ function onLoadProject() {
 }
 
 function loadProject() {
-  var btn = $j("#fetchProject")[0];
+  var btn = $j("#fetchProjectData")[0];
   qtest.fetchProjects(function (data) {
     var projects = [];
     if (data.projects && data.projects != "") {
@@ -33,20 +34,13 @@ function loadProject() {
     var selectedProject = projects.length > 0 ? projects[0] : null;
     if (selectedProject)
       qtest.selectizeProject.setValue(selectedProject.name);
-    loadProjectData();
+    //loadProjectData();
     qtest.hideLoading(btn);
   }, function () {
     qtest.hideLoading(btn);
   })
 }
 
-function onLoadProjectData() {
-  $j("#fetchProjectData").on('click', function (e) {
-    e.preventDefault();
-    qtest.showLoading(this);
-    loadProjectData();
-  });
-}
 function loadProjectData() {
   if (qtest.getProjectId() <= 0) {
     console.log("No project selected.")
