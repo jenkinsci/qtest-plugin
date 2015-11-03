@@ -23,6 +23,7 @@ public class AutomationTestResult {
   private String name;
   @JsonProperty("test_step_logs")
   private List<AutomationTestLog> testLogs;
+  private List<AutomationAttachment> attachments;
 
   public Date getExecutedStartDate() {
     return executedStartDate;
@@ -70,6 +71,14 @@ public class AutomationTestResult {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public List<AutomationAttachment> getAttachments() {
+    return attachments;
+  }
+
+  public void setAttachments(List<AutomationAttachment> attachments) {
+    this.attachments = attachments;
   }
 
 }

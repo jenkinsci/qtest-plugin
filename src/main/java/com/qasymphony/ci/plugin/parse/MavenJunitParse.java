@@ -3,8 +3,10 @@
  */
 package com.qasymphony.ci.plugin.parse;
 
+import com.qasymphony.ci.plugin.model.AutomationAttachment;
 import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -17,6 +19,8 @@ import hudson.tasks.junit.TestResult;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author anpham
@@ -46,7 +50,8 @@ public class MavenJunitParse implements TestResultParse {
     Date current = new Date();
 
     TestResult testResult = jUnitParser.parseResult(testResultLocation, build, build.getWorkspace(), launcher, listener);
-
+    List<AutomationAttachment> attachments = new ArrayList<AutomationAttachment>();
+    AutomationAttachment attachment = null;
     for (SuiteResult suite : testResult.getSuites()) {
       automationTestLogs = new ArrayList<AutomationTestLog>();
 
@@ -69,11 +74,23 @@ public class MavenJunitParse implements TestResultParse {
           automationTestLog.setStatus(caseResult.getStatus().toString());
 
           automationTestLogs.add(automationTestLog);
+          
+          if(caseResult.isFailed()){
+            attachment = new AutomationAttachment();
+            attachment.setName(caseResult.getName().concat(".txt"));
+            attachment.setContentType("text/plain");
+            attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
+            
+            attachments.add(attachment);
+          }
 
           testlogOrder++;
         }
       }
 
+      if(attachments.size() > 0){
+        automationTestResult.setAttachments(attachments);
+      }
       automationTestResults.add(automationTestResult);
     }
 
