@@ -10,17 +10,17 @@ import java.util.List;
  * 
  */
 public class AutomationTestResultWrapper {
-  private String buildId;
+  private String buildNumber;
   private String buildPath;
 
   private List<AutomationTestResult> testResults;
 
-  public String getBuildId() {
-    return buildId;
+  public String getBuildNumber() {
+    return buildNumber;
   }
 
-  public void setBuildId(String buildId) {
-    this.buildId = buildId;
+  public void setBuildNumber(String buildNumber) {
+    this.buildNumber = buildNumber;
   }
 
   public String getBuildPath() {

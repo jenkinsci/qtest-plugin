@@ -13,7 +13,7 @@ import java.util.List;
 public class JunitSubmitterRequest {
   private Configuration configuration;
   private List<AutomationTestResult> testResults;
-  private String buildId;
+  private String buildNumber;
   private String buildPath;
 
   public Configuration getConfiguration() {
@@ -34,12 +34,12 @@ public class JunitSubmitterRequest {
     return this;
   }
 
-  public String getBuildId() {
-    return buildId;
+  public String getBuildNumber() {
+    return buildNumber;
   }
 
-  public JunitSubmitterRequest setBuildId(String buildId) {
-    this.buildId = buildId;
+  public JunitSubmitterRequest setBuildNumber(String buildNumber) {
+    this.buildNumber = buildNumber;
     return this;
   }
 
@@ -51,5 +51,5 @@ public class JunitSubmitterRequest {
     this.buildPath = buildPath;
     return this;
   }
-  
+
 }

@@ -24,7 +24,7 @@ import java.util.Map;
 public class AutomationTestService {
   private static String AUTO_TEST_LOG_ENDPOINT = "api/v3/projects/{0}/test-runs/{1}/auto-test-logs/ci/{2}";
 
-  public static AutomationTestResponse push(String buildId, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
+  public static AutomationTestResponse push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
     throws Exception {
 
     if (testResults.size() <= 0)
@@ -32,7 +32,7 @@ public class AutomationTestService {
     
     AutomationTestResultWrapper wrapper = new AutomationTestResultWrapper();
     
-    wrapper.setBuildId(buildId);
+    wrapper.setBuildNumber(buildNumber);
     wrapper.setBuildPath(buildPath);
     wrapper.setTestResults(testResults);
     
