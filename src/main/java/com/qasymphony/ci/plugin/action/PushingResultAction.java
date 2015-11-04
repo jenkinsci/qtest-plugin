@@ -5,6 +5,7 @@ package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
@@ -21,6 +22,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -78,6 +80,22 @@ public class PushingResultAction extends Notifier {
   public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
+    JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
+    if (Result.ABORTED.equals(build.getResult())) {
+      formatWarn(logger, "Abort build action.");
+      try {
+        junitSubmitter.storeSubmittedResult(build, new JunitSubmitterResult()
+          .setNumberOfTestRun(0)
+          .setTestSuiteName("")
+          .setNumberOfTestResult(0)
+          .setTestSuiteId(null)
+          .setSubmittedStatus(JunitSubmitterResult.STATUS_CANCELED));
+      } catch (StoreResultException e) {
+        formatError(logger, e.getMessage());
+        e.printStackTrace(logger);
+      }
+      return true;
+    }
     showInfo(logger);
     if (!validateConfig(configuration)) {
       formatWarn(logger, "Invalid configuration to qTest, reject submit test result.");
@@ -85,7 +103,6 @@ public class PushingResultAction extends Notifier {
     }
     checkProjectNameChanged(build, logger);
 
-    JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     JunitSubmitterResult result = submitTestResult(build, launcher, listener, logger, junitSubmitter);
     if (null == result) {
       //if have no test result, we do not break build flow
