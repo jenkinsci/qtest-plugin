@@ -3,16 +3,14 @@
  */
 package com.qasymphony.ci.plugin;
 
-import com.qasymphony.ci.plugin.model.AutomationTestResponse;
-import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.AutomationTestResultWrapper;
-import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.exception.SubmittedException;
+import com.qasymphony.ci.plugin.model.*;
 import com.qasymphony.ci.plugin.model.Error;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -29,21 +27,21 @@ public class AutomationTestService {
 
     if (testResults.size() <= 0)
       return null;
-    
+
     AutomationTestResultWrapper wrapper = new AutomationTestResultWrapper();
-    
+
     wrapper.setBuildNumber(buildNumber);
     wrapper.setBuildPath(buildPath);
     wrapper.setTestResults(testResults);
-    
+
     ResponseEntity responseEntity = HttpClientUtils.post(configuration.getUrl().concat("/")
       .concat(MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[] {configuration.getProjectId(), 0, configuration.getId()}))
       , headers, JsonUtils.toJson(wrapper));
 
     if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
       Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
-      throw new Exception(error.getMessage());
-    }else {
+      throw new SubmittedException(StringUtils.isEmpty(error.getMessage()) ? responseEntity.getBody() : error.getMessage());
+    } else {
       return JsonUtils.fromJson(responseEntity.getBody(), AutomationTestResponse.class);
     }
   }
