@@ -7,10 +7,9 @@ import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Actionable;
-import hudson.model.Item;
+import hudson.model.*;
+import hudson.tasks.Publisher;
+import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.export.Exported;
@@ -31,7 +30,6 @@ public class StatisticsAction extends Actionable implements Action {
   private static final Logger LOG = Logger.getLogger(StatisticsAction.class.getName());
 
   @SuppressWarnings("rawtypes") AbstractProject project;
-  private List<Integer> builds = new ArrayList<Integer>();
   private StoreResultService storeResultService = new StoreResultServiceImpl();
   private Map<Integer, SubmittedResult> results = new HashMap<>();
 
@@ -76,12 +74,20 @@ public class StatisticsAction extends Actionable implements Action {
   }
 
   /**
-   * Checks if the user has CONFIGURE permission.
+   * Checks if the user has READ permission, and added qTest plugin.
    *
    * @return true - user has permission, false - no permission.
    */
   private boolean hasPermission() {
-    return project.hasPermission(Item.BUILD);
+    DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
+    Boolean hasQtestPlugin = false;
+    for (int i = 0; i < publishers.size(); i++) {
+      if (publishers.get(i) instanceof PushingResultAction) {
+        hasQtestPlugin = true;
+        break;
+      }
+    }
+    return hasQtestPlugin && project.hasPermission(Item.READ);
   }
 
   @SuppressWarnings("rawtypes")

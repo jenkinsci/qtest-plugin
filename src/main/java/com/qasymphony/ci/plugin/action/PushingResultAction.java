@@ -19,18 +19,17 @@ import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
+import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -287,11 +286,17 @@ public class PushingResultAction extends Notifier {
       }
     }
 
-    public FormValidation doCheckAppSecretKey(@QueryParameter String value)
+    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @AncestorInPath AbstractProject project)
       throws IOException, ServletException {
-      StaplerRequest request = Stapler.getCurrentRequest();
       if (StringUtils.isEmpty(value))
         return FormValidation.error("Please set a API key");
+
+      DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
+      PushingResultAction notifier = (PushingResultAction) publishers.get(this);
+      if (null != notifier && notifier.getConfiguration() != null) {
+        if (!ConfigService.validateApiKey(notifier.getConfiguration().getUrl(), value))
+          return FormValidation.error("Please set a valid API key");
+      }
       return FormValidation.ok();
     }
 

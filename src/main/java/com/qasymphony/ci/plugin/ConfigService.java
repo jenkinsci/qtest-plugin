@@ -68,6 +68,17 @@ public class ConfigService {
   }
 
   /**
+   * Validate apiKey is valid in qTest
+   *
+   * @param url
+   * @param apiKey
+   * @return
+   */
+  public static Boolean validateApiKey(String url, String apiKey) {
+    return true;
+  }
+
+  /**
    * @param qTestUrl
    * @param apiKey
    * @return
