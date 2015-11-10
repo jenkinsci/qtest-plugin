@@ -21,9 +21,8 @@ import java.util.List;
 public class JunitQtestExtension extends TransientProjectActionFactory {
   @Override
   public Collection<? extends Action> createFor(@SuppressWarnings("rawtypes") AbstractProject target) {
-    final List<StatisticsAction> projectActions = target
-      .getActions(StatisticsAction.class);
-    final ArrayList<Action> actions = new ArrayList<Action>();
+    final List<StatisticsAction> projectActions = target.getActions(StatisticsAction.class);
+    final ArrayList<Action> actions = new ArrayList<>();
     if (projectActions.isEmpty()) {
       final StatisticsAction newAction = new StatisticsAction(target);
       actions.add(newAction);

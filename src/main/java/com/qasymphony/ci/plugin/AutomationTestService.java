@@ -34,9 +34,10 @@ public class AutomationTestService {
     wrapper.setBuildPath(buildPath);
     wrapper.setTestResults(testResults);
 
-    ResponseEntity responseEntity = HttpClientUtils.post(configuration.getUrl().concat("/")
-      .concat(MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[] {configuration.getProjectId(), 0, configuration.getId()}))
-      , headers, JsonUtils.toJson(wrapper));
+    String url = String.format("%s/%s", configuration.getUrl(),
+      MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[] {configuration.getProjectId(), 0, configuration.getId()}));
+
+    ResponseEntity responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(wrapper));
 
     if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
       Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);

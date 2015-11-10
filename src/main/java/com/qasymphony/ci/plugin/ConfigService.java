@@ -23,10 +23,6 @@ import java.util.logging.Logger;
  */
 public class ConfigService {
   private static final Logger LOG = Logger.getLogger(ConfigService.class.getName());
-  /**
-   * Client secret key name, application name
-   */
-  public static final String CLIENT_SECRET_KEY = "qTestJenkins";
 
   /**
    * Field name in json when get field setting
@@ -36,12 +32,6 @@ public class ConfigService {
    * Origin value of environment field in field setting of testSuite in qTest
    */
   private static final String FIELD_ENVIRONMENT_ORIGIN_NAME = "EnvironmentTestSuite";
-
-  /**
-   * Allowed value for field environment
-   */
-  private static final String FIELD_ENVIRONMENT_ALLOWED_VALUE = "allowed_values";
-  private static final String FIELD_ENVIRONMENT_IS_ACTIVE = "is_active";
 
   private ConfigService() {
 
