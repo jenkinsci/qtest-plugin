@@ -4,7 +4,7 @@
   <style type="text/css">
     @import url(${resURL}/plugin/${pluginName}/css/selectize.default.css);
     .qtest-retrieve-data {
-      margin: 0px !important;
+    margin: 0px !important;
     }
   </style>
 
@@ -61,6 +61,9 @@
     <f:entry title="${%label.environment}" field="environmentName">
       <f:textbox name="config.environmentName"
                  value="${instance.configuration.environmentName}"/>
+      <span class="config.environmentName" style="display:none">
+        <i>${%env.inactive}</i>
+      </span>
     </f:entry>
   </form>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/qtest-service.js"></script>

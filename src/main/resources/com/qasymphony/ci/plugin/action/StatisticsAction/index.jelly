@@ -13,6 +13,17 @@
         var $j = jQuery.noConflict();
       </script>
       <div class="qTest_submittedResultWrapper">
+        <div>
+          <div class="submitted-result-title"><h4>${%result.title}</h4></div>
+          <div class="submitted-result-head">
+            <div>${%result.desc}</div>
+            <ul>
+              <li>${%status.canceled}</li>
+              <li>${%status.failed}</li>
+              <li>${%status.complete}</li>
+            </ul>
+          </div>
+        </div>
       <table id="submittedResult" class="display"  width="99%">
         <thead>
           <tr>

@@ -15,7 +15,7 @@ function bindSelectizeChange() {
   qtest.bindSelectizeValue("input[name='config.environmentName']", "input[name='config.environmentId']", "value");
 }
 
-function disableTestBox(disable){
+function disableTestBox(disable) {
   $j("input[name='config.projectName']").attr('disabled', disable);
   $j("input[name='config.releaseName']").attr('disabled', disable);
   $j("input[name='config.environmentName']").attr('disabled', disable);
@@ -88,9 +88,24 @@ function loadRelease(data) {
 function loadEnvironment(data) {
 //load environment
   var environments = [];
+  var fieldIsInActive = false;
+  var hasInActiveValue = false;
   if (data.environments && data.environments != "") {
-    environments = data.environments;
+    fieldIsInActive = data.environments.is_active ? false : true;
+    //get allowed_values
+    $j.each(data.environments.allowed_values, function (index) {
+      var item = data.environments.allowed_values[index];
+      if (item.is_active) {
+        environments.push(item);
+      } else {
+        hasInActiveValue = true;
+      }
+    });
+    if (environments.length > 0)
+      hasInActiveValue = false;
   }
+  var show = fieldIsInActive || hasInActiveValue;
+  $j("span[class='config.environmentName']").attr('style', 'display:' + (show ? '' : 'none'));
   qtest.initSelectize("input[name='config.environmentName']", 'selectizeEnvironment', environments,
     {
       create: true,
