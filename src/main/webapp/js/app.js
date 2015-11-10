@@ -1,6 +1,7 @@
 qtest.init();
 $j(document).ready(function () {
   setTimeout(function () {
+    disableTestBox(true);
     onLoadProject();
     bindSelectizeChange();
   }, 1000)
@@ -14,10 +15,17 @@ function bindSelectizeChange() {
   qtest.bindSelectizeValue("input[name='config.environmentName']", "input[name='config.environmentId']", "value");
 }
 
+function disableTestBox(disable){
+  $j("input[name='config.projectName']").attr('disabled', disable);
+  $j("input[name='config.releaseName']").attr('disabled', disable);
+  $j("input[name='config.environmentName']").attr('disabled', disable);
+}
+
 function onLoadProject() {
   $j("#fetchProjectData").on('click', function (e) {
     e.preventDefault();
     qtest.showLoading(this);
+    disableTestBox(false);
     loadProject();
   });
 }

@@ -1,0 +1,8 @@
+.qTest_submittedResultWrapper {
+  position: relative !important;
+}
+
+.dataTables_wrapper {
+  position: absolute !important;
+  width: 100% !important
+}

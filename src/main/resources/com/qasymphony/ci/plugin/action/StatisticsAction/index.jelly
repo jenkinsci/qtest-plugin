@@ -6,13 +6,13 @@
     <j:set var="resBase" value="${resURL}/plugin/${pluginName}"/>
     <l:main-panel>
       <link href="${resBase}/datatable/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
-
+      <link href="${resBase}/css/app.css" rel="stylesheet" type="text/css"/>
       <script type="text/javascript" src="${resBase}/jquery/js/jquery-1.11.1.min.js"></script>
       <script type="text/javascript" src="${resBase}/datatable/js/jquery.dataTables.min.js"></script>
       <script>
         var $j = jQuery.noConflict();
       </script>
-
+      <div class="qTest_submittedResultWrapper">
       <table id="submittedResult" class="display"  width="99%">
         <thead>
           <tr>
@@ -24,6 +24,7 @@
           </tr>
         </thead>
       </table>
+      </div>
       <script type="text/javascript" src="${resBase}/js/submit-result.js"></script>
     </l:main-panel>
   </l:layout>

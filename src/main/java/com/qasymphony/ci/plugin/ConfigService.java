@@ -41,6 +41,7 @@ public class ConfigService {
    * Allowed value for field environment
    */
   private static final String FIELD_ENVIRONMENT_ALLOWED_VALUE = "allowed_values";
+  private static final String FIELD_ENVIRONMENT_IS_ACTIVE = "is_active";
 
   private ConfigService() {
 
@@ -127,7 +128,7 @@ public class ConfigService {
    */
   public static Object getEnvironments(String qTestUrl, String apiKey, Long projectId) {
     //TODO: get environment from qtest by project
-    String url = String.format("%s/api/v3/projects/%s/settings/test-suites/fields", qTestUrl, projectId);
+    String url = String.format("%s/api/v3/projects/%s/settings/test-suites/fields?includeInactive=true", qTestUrl, projectId);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeader(apiKey, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
@@ -144,7 +145,13 @@ public class ConfigService {
           break;
         }
       }
-      return (null != envObject) ? envObject.getJSONArray(FIELD_ENVIRONMENT_ALLOWED_VALUE) : null;
+      if (null == envObject)
+        return null;
+      if (!envObject.getBoolean(FIELD_ENVIRONMENT_IS_ACTIVE)) {
+        LOG.log(Level.WARNING, "Field environment of testsuite is inactive.");
+        return null;
+      }
+      return envObject.getJSONArray(FIELD_ENVIRONMENT_ALLOWED_VALUE);
     } catch (ClientRequestException e) {
       LOG.log(Level.WARNING, "Cannot get environment values from: " + qTestUrl + "," + e.getMessage());
       return null;
