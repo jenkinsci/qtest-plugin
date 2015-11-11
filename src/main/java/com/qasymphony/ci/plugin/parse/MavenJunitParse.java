@@ -3,24 +3,25 @@
  */
 package com.qasymphony.ci.plugin.parse;
 
-import com.qasymphony.ci.plugin.model.AutomationAttachment;
-import com.qasymphony.ci.plugin.model.AutomationTestLog;
-import com.qasymphony.ci.plugin.model.AutomationTestResult;
-
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.tasks.junit.CaseResult;
-import hudson.tasks.junit.CaseResult.Status;
+import hudson.model.AbstractBuild;
 import hudson.tasks.junit.JUnitParser;
 import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
+import hudson.tasks.junit.CaseResult;
+import hudson.tasks.junit.CaseResult.Status;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+
+import com.qasymphony.ci.plugin.model.AutomationAttachment;
+import com.qasymphony.ci.plugin.model.AutomationTestLog;
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
 
 /**
  * @author anpham
@@ -41,10 +42,10 @@ public class MavenJunitParse implements TestResultParse {
 
   public List<AutomationTestResult> parse(String testResultLocation) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
-    List<AutomationTestResult> automationTestResults = new ArrayList<AutomationTestResult>();
+    HashMap<String, AutomationTestResult> automationTestResultMap = new HashMap<String, AutomationTestResult>();
+    
     AutomationTestResult automationTestResult = null;
     AutomationTestLog automationTestLog = null;
-    List<AutomationTestLog> automationTestLogs = null;
 
     int testlogOrder = 1;
     Date current = new Date();
@@ -53,27 +54,32 @@ public class MavenJunitParse implements TestResultParse {
     List<AutomationAttachment> attachments = new ArrayList<AutomationAttachment>();
     AutomationAttachment attachment = null;
     for (SuiteResult suite : testResult.getSuites()) {
-      automationTestLogs = new ArrayList<AutomationTestLog>();
-
-      automationTestResult = new AutomationTestResult();
-      automationTestResult.setName(suite.getName());
-      automationTestResult.setAutomationContent(suite.getName());
-      automationTestResult.setExecutedEndDate(current);
-      automationTestResult.setExecutedStartDate(current);
-      automationTestResult.setStatus(testResult.isPassed() ? Status.PASSED.toString() : Status.FAILED.toString());
-      automationTestResult.setTestLogs(automationTestLogs);
-
       if (suite.getCases() == null) {
         continue;
       } else {
         for (CaseResult caseResult : suite.getCases()) {
+          if(automationTestResultMap.containsKey(caseResult.getClassName())){
+            automationTestResult = automationTestResultMap.get(caseResult.getClassName());
+          }else {
+            automationTestResult = new AutomationTestResult();
+
+            automationTestResult = new AutomationTestResult();
+            automationTestResult.setName(caseResult.getClassName());
+            automationTestResult.setAutomationContent(caseResult.getClassName());
+            automationTestResult.setExecutedEndDate(current);
+            automationTestResult.setExecutedStartDate(current);
+            automationTestResult.setStatus(testResult.isPassed() ? Status.PASSED.toString() : Status.FAILED.toString());
+            automationTestResult.setTestLogs(new ArrayList<AutomationTestLog>());
+            
+            automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
+          }
           automationTestLog = new AutomationTestLog();
           automationTestLog.setDescription(caseResult.getName());
           automationTestLog.setExpectedResult(caseResult.getName());
           automationTestLog.setOrder(testlogOrder);
           automationTestLog.setStatus(caseResult.getStatus().toString());
 
-          automationTestLogs.add(automationTestLog);
+          automationTestResult.getTestLogs().add(automationTestLog);
           
           if(caseResult.isFailed()){
             attachment = new AutomationAttachment();
@@ -91,10 +97,9 @@ public class MavenJunitParse implements TestResultParse {
       if(attachments.size() > 0){
         automationTestResult.setAttachments(attachments);
       }
-      automationTestResults.add(automationTestResult);
     }
-
-    return automationTestResults;
+    
+    return new ArrayList<AutomationTestResult>(automationTestResultMap.values());
   }
 
   @Override
