@@ -95,7 +95,7 @@ public class ConfigService {
    * @return
    */
   public static Object getReleases(String qTestUrl, String apiKey, Long projectId) {
-    String url = String.format("%s/api/v3/projects/%s/releases", qTestUrl, projectId);
+    String url = String.format("%s/api/v3/projects/%s/releases?includeClosed=true", qTestUrl, projectId);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeader(apiKey, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {

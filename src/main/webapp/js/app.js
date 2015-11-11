@@ -16,9 +16,15 @@ function bindSelectizeChange() {
 }
 
 function disableTestBox(disable) {
-  $j("input[name='config.projectName']").attr('disabled', disable);
-  $j("input[name='config.releaseName']").attr('disabled', disable);
-  $j("input[name='config.environmentName']").attr('disabled', disable);
+  if (disable) {
+    $j("input[name='config.projectName']").attr('readonly', 'readonly');
+    $j("input[name='config.releaseName']").attr('readonly', 'readonly');
+    $j("input[name='config.environmentName']").attr('readonly', 'readonly');
+  } else {
+    $j("input[name='config.projectName']").removeAttr('readonly');
+    $j("input[name='config.releaseName']").removeAttr('readonly');
+    $j("input[name='config.environmentName']").removeAttr('readonly');
+  }
 }
 
 function onLoadProject() {
@@ -86,21 +92,23 @@ function loadRelease(data) {
 }
 
 function loadEnvironment(data) {
-//load environment
+  //load environment
   var environments = [];
   var fieldIsInActive = false;
   var hasInActiveValue = false;
   if (data.environments && data.environments != "") {
     fieldIsInActive = data.environments.is_active ? false : true;
-    //get allowed_values
-    $j.each(data.environments.allowed_values, function (index) {
-      var item = data.environments.allowed_values[index];
-      if (item.is_active) {
-        environments.push(item);
-      } else {
-        hasInActiveValue = true;
-      }
-    });
+    if (!fieldIsInActive) {
+      //get allowed_values
+      $j.each(data.environments.allowed_values, function (index) {
+        var item = data.environments.allowed_values[index];
+        if (item.is_active) {
+          environments.push(item);
+        } else {
+          hasInActiveValue = true;
+        }
+      });
+    }
     if (environments.length > 0)
       hasInActiveValue = false;
   }

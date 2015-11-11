@@ -82,23 +82,12 @@ public class PushingResultAction extends Notifier {
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     if (Result.ABORTED.equals(build.getResult())) {
       formatWarn(logger, "Abort build action.");
-      try {
-        junitSubmitter.storeSubmittedResult(build, new JunitSubmitterResult()
-          .setNumberOfTestRun(0)
-          .setTestSuiteName("")
-          .setNumberOfTestResult(0)
-          .setTestSuiteId(null)
-          .setSubmittedStatus(JunitSubmitterResult.STATUS_CANCELED));
-      } catch (StoreResultException e) {
-        formatError(logger, e.getMessage());
-        e.printStackTrace(logger);
-      }
-      return true;
+      return storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
     }
     showInfo(logger);
     if (!validateConfig(configuration)) {
       formatWarn(logger, "Invalid configuration to qTest, reject submit test result.");
-      return true;
+      return storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
     }
     checkProjectNameChanged(build, logger);
 
@@ -110,6 +99,22 @@ public class PushingResultAction extends Notifier {
     saveConfiguration(build, result, logger);
     storeResult(build, junitSubmitter, result, logger);
     return true;
+  }
+
+  private Boolean storeWhenNotSuccess(JunitSubmitter junitSubmitter, AbstractBuild build, PrintStream logger, String status) {
+    try {
+      junitSubmitter.storeSubmittedResult(build, new JunitSubmitterResult()
+        .setNumberOfTestRun(0)
+        .setTestSuiteName("")
+        .setNumberOfTestResult(0)
+        .setTestSuiteId(null)
+        .setSubmittedStatus(status));
+    } catch (StoreResultException e) {
+      formatError(logger, e.getMessage());
+      e.printStackTrace(logger);
+    } finally {
+      return true;
+    }
   }
 
   private void showInfo(PrintStream logger) {
@@ -217,7 +222,6 @@ public class PushingResultAction extends Notifier {
   }
 
   private void formatError(PrintStream logger, String msg, Object... args) {
-
     format(logger, "ERROR", msg, args);
   }
 
