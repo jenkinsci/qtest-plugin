@@ -75,7 +75,7 @@ public class ConfigService {
    * @return
    */
   public static Object getProjects(String qTestUrl, String apiKey) {
-    String url = String.format("%s/api/v3/projects", qTestUrl);
+    String url = String.format("%s/api/v3/projects?assigned=true", qTestUrl);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeader(apiKey, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
