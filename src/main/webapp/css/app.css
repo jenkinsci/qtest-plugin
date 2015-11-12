@@ -1,8 +1,13 @@
 .qTest_submittedResultWrapper {
   position: relative !important;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .dataTables_wrapper {
-  position: absolute !important;
-  width: 100% !important
+  display:inline-block;
+  width:100%;
+  white-space:normal;
+  vertical-align:top;
 }
