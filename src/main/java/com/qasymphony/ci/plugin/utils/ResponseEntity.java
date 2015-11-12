@@ -21,4 +21,11 @@ public class ResponseEntity {
   public Integer getStatusCode() {
     return statusCode;
   }
+
+  @Override public String toString() {
+    return "ResponseEntity{" +
+      "body='" + body + '\'' +
+      ", statusCode=" + statusCode +
+      '}';
+  }
 }

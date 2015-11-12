@@ -25,7 +25,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws SubmittedException {
     try {
       AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
-        OauthProvider.buildHeader(request.getConfiguration().getAppSecretKey(), null));
+        OauthProvider.buildHeaders(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey(), null));
       JunitSubmitterResult result = new JunitSubmitterResult()
         .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
         .setTestSuiteId(null)

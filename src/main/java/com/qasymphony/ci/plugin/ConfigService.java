@@ -66,7 +66,7 @@ public class ConfigService {
    * @return
    */
   public static Boolean validateApiKey(String url, String apiKey) {
-    return true;
+    return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey));
   }
 
   /**
@@ -77,7 +77,7 @@ public class ConfigService {
   public static Object getProjects(String qTestUrl, String apiKey) {
     String url = String.format("%s/api/v3/projects?assigned=true", qTestUrl);
     try {
-      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeader(apiKey, null));
+      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(qTestUrl, apiKey, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         return null;
       }
@@ -90,14 +90,14 @@ public class ConfigService {
 
   /**
    * @param qTestUrl
-   * @param apiKey
+   * @param accessToken
    * @param projectId
    * @return
    */
-  public static Object getReleases(String qTestUrl, String apiKey, Long projectId) {
+  public static Object getReleases(String qTestUrl, String accessToken, Long projectId) {
     String url = String.format("%s/api/v3/projects/%s/releases?includeClosed=true", qTestUrl, projectId);
     try {
-      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeader(apiKey, null));
+      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         return null;
       }
@@ -112,14 +112,14 @@ public class ConfigService {
    * Get environment values of testSuite
    *
    * @param qTestUrl
-   * @param apiKey
+   * @param accessToken
    * @param projectId
    * @return
    */
-  public static Object getEnvironments(String qTestUrl, String apiKey, Long projectId) {
+  public static Object getEnvironments(String qTestUrl, String accessToken, Long projectId) {
     String url = String.format("%s/api/v3/projects/%s/settings/test-suites/fields?includeInactive=true", qTestUrl, projectId);
     try {
-      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeader(apiKey, null));
+      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         return null;
       }
@@ -145,15 +145,15 @@ public class ConfigService {
    * Get saved configuration from qTest
    *
    * @param qTestUrl
-   * @param apiKey
+   * @param accessToken
    * @return
    */
-  public static Object getConfiguration(String qTestUrl, String apiKey, String serverName, String projectName, Long projectId) {
+  public static Object getConfiguration(String qTestUrl, String accessToken, String serverName, String projectName, Long projectId) {
     //TODO: get configuration from qTest API
     String url = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins",
       qTestUrl, projectId, serverName, projectName);
     try {
-      Map<String, String> headers = OauthProvider.buildHeader(apiKey, null);
+      Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
       ResponseEntity responseEntity = HttpClientUtils.get(url, headers);
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot get config from qTest:%s, server:%s, project:%s, error:%s",
@@ -175,7 +175,7 @@ public class ConfigService {
     LOG.info("Save configuration to qTest:" + configuration);
     String url = String.format("%s/api/v3/projects/%s/ci", configuration.getUrl(), configuration.getProjectId());
     try {
-      Map<String, String> headers = OauthProvider.buildHeader(configuration.getAppSecretKey(), null);
+      Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
       Setting setting = configuration.toSetting();
       ResponseEntity responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {

@@ -4,6 +4,7 @@
 package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ConfigService;
+import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
@@ -348,7 +349,7 @@ public class PushingResultAction extends Notifier {
       final JSONObject res = new JSONObject();
       StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = getServerUrl(request);
-
+      final String accessToken = OauthProvider.getAccessToken(qTestUrl, apiKey);
       final CountDownLatch countDownLatch = new CountDownLatch(3);
       ExecutorService fixedPool = Executors.newFixedThreadPool(3);
 
@@ -356,7 +357,7 @@ public class PushingResultAction extends Notifier {
         @Override public Object call() throws Exception {
           try {
             //get saved setting from qtest
-            Object setting = ConfigService.getConfiguration(qTestUrl, apiKey, jenkinsServerName,
+            Object setting = ConfigService.getConfiguration(qTestUrl, accessToken, jenkinsServerName,
               HttpClientUtils.encode(jenkinsProjectName), projectId);
             res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
             return setting;
@@ -368,7 +369,7 @@ public class PushingResultAction extends Notifier {
       Callable<Object> caGetReleases = new Callable<Object>() {
         @Override public Object call() throws Exception {
           try {
-            Object releases = ConfigService.getReleases(qTestUrl, apiKey, projectId);
+            Object releases = ConfigService.getReleases(qTestUrl, accessToken, projectId);
             res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
             return releases;
           } finally {
@@ -379,7 +380,7 @@ public class PushingResultAction extends Notifier {
       Callable<Object> caGetEnvs = new Callable<Object>() {
         @Override public Object call() throws Exception {
           try {
-            Object environments = ConfigService.getEnvironments(qTestUrl, apiKey, projectId);
+            Object environments = ConfigService.getEnvironments(qTestUrl, accessToken, projectId);
             res.put("environments", null == environments ? "" : environments);
             return environments;
           } finally {
