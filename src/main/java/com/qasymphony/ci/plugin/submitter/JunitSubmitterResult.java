@@ -12,7 +12,7 @@ public class JunitSubmitterResult {
   private Long testSuiteId;
   private String testSuiteName;
   private String submittedStatus;
-  private Integer numberOfTestRun;
+  private Integer numberOfTestLog;
   private Integer numberOfTestResult;
 
   public Long getTestSuiteId() {
@@ -42,12 +42,12 @@ public class JunitSubmitterResult {
     return this;
   }
 
-  public Integer getNumberOfTestRun() {
-    return numberOfTestRun;
+  public Integer getNumberOfTestLog() {
+    return numberOfTestLog;
   }
 
-  public JunitSubmitterResult setNumberOfTestRun(Integer numberOfTestRun) {
-    this.numberOfTestRun = numberOfTestRun;
+  public JunitSubmitterResult setNumberOfTestLog(Integer numberOfTestLog) {
+    this.numberOfTestLog = numberOfTestLog;
     return this;
   }
 

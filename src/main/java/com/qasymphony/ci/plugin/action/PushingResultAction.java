@@ -105,7 +105,7 @@ public class PushingResultAction extends Notifier {
   private Boolean storeWhenNotSuccess(JunitSubmitter junitSubmitter, AbstractBuild build, PrintStream logger, String status) {
     try {
       junitSubmitter.storeSubmittedResult(build, new JunitSubmitterResult()
-        .setNumberOfTestRun(0)
+        .setNumberOfTestLog(0)
         .setTestSuiteName("")
         .setNumberOfTestResult(0)
         .setTestSuiteId(null)
@@ -184,10 +184,10 @@ public class PushingResultAction extends Notifier {
           .setTestSuiteId(null)
           .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
           .setNumberOfTestResult(automationTestResults.size())
-          .setNumberOfTestRun(0);
+          .setNumberOfTestLog(0);
       }
-      formatInfo(logger, "Result after submit: testRuns=%s, testSuiteId:%s, testSuiteName:%s",
-        result.getNumberOfTestRun(), result.getTestSuiteId(), result.getTestSuiteName());
+      formatInfo(logger, "Result after submit: testLogs=%s, testSuiteId:%s, testSuiteName:%s",
+        result.getNumberOfTestLog(), result.getTestSuiteId(), result.getTestSuiteName());
       formatInfo(logger, "End submit test result to qTest at: %s", JsonUtils.getCurrentDateString());
     }
     return result;

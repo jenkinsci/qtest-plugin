@@ -1,17 +1,16 @@
 /**
- * 
+ *
  */
 package com.qasymphony.ci.plugin.model;
 
 /**
  * @author anpham
- *
  */
 public class AutomationTestResponse {
   private String testSuiteName;
   private long testSuiteId;
   private int totalTestCases;
-  private int totalTestRuns;
+  private int totalTestLogs;
 
   public String getTestSuiteName() {
     return testSuiteName;
@@ -37,12 +36,11 @@ public class AutomationTestResponse {
     this.totalTestCases = totalTestCases;
   }
 
-  public int getTotalTestRuns() {
-    return totalTestRuns;
+  public int getTotalTestLogs() {
+    return totalTestLogs;
   }
 
-  public void setTotalTestRuns(int totalTestRuns) {
-    this.totalTestRuns = totalTestRuns;
+  public void setTotalTestLogs(int totalTestLogs) {
+    this.totalTestLogs = totalTestLogs;
   }
-
 }

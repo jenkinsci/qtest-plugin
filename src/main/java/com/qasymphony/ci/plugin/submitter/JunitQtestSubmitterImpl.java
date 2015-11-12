@@ -29,14 +29,14 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       JunitSubmitterResult result = new JunitSubmitterResult()
         .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
         .setTestSuiteId(null)
-        .setNumberOfTestRun(request.getTestResults().size())
+        .setNumberOfTestLog(request.getTestResults().size())
         .setNumberOfTestResult(request.getTestResults().size())
         .setTestSuiteName("");
       if (response == null)
         return result;
 
       result.setTestSuiteId(response.getTestSuiteId())
-        .setNumberOfTestRun(response.getTotalTestRuns())
+        .setNumberOfTestLog(response.getTotalTestLogs())
         .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
         .setTestSuiteName(response.getTestSuiteName())
         .setNumberOfTestResult(response.getTotalTestCases());
@@ -52,9 +52,10 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     SubmittedResult submitResult = new SubmittedResult()
       .setBuildNumber(build.getNumber())
       .setStatusBuild(build.getResult().toString())
+      .setTestSuiteId(result.getTestSuiteId())
       .setTestSuiteName(result.getTestSuiteName())
       .setSubmitStatus(result.getSubmittedStatus())
-      .setNumberTestRun(result.getNumberOfTestRun())
+      .setNumberTestLog(result.getNumberOfTestLog())
       .setNumberTestResult(result.getNumberOfTestResult());
     try {
       storeResultService.store(build.getProject(), submitResult);

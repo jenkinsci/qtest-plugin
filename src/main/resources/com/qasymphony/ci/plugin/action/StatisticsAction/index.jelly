@@ -27,11 +27,11 @@
       <table id="submittedResult" class="display"  width="99%">
         <thead>
           <tr>
-            <th style="text-align: left;" class="pane-header">Build Number</th>
-            <th style="text-align: left;" class="pane-header">Status</th>
-            <th style="text-align: left;" class="pane-header">qTest Test Suite</th>
-            <th style="text-align: left;" class="pane-header"># of Tests</th>
-            <th style="text-align: left;" class="pane-header"># of qTest Test Runs</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.build.number}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.submit.status}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.qtest.status}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.tests}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.qtest.logs}</th>
           </tr>
         </thead>
       </table>

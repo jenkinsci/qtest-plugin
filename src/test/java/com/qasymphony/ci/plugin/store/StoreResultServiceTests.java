@@ -39,7 +39,7 @@ public class StoreResultServiceTests extends TestAbstracts {
       .setSubmitStatus(JunitSubmitterResult.STATUS_SUCCESS)
       .setTestSuiteName(project.getName())
       .setNumberTestResult(0)
-      .setNumberTestResult(0)
+      .setNumberTestLog(0)
       .setBuildNumber(currentBuild)
       .setStatusBuild("SUCCESS");
     storeResultService.store(project, result);
@@ -61,7 +61,7 @@ public class StoreResultServiceTests extends TestAbstracts {
       .setSubmitStatus(JunitSubmitterResult.STATUS_SUCCESS)
       .setTestSuiteName(project.getName())
       .setNumberTestResult(0)
-      .setNumberTestRun(0)
+      .setNumberTestLog(0)
       .setBuildNumber(currentBuild)
       .setStatusBuild("SUCCESS");
     storeResultService.store(project, result);
@@ -69,7 +69,7 @@ public class StoreResultServiceTests extends TestAbstracts {
       .setSubmitStatus(JunitSubmitterResult.STATUS_SUCCESS)
       .setTestSuiteName(project.getName())
       .setNumberTestResult(2)
-      .setNumberTestRun(2)
+      .setNumberTestLog(2)
       .setBuildNumber(++currentBuild)
       .setStatusBuild("FAILED");
     storeResultService.store(project, result2);

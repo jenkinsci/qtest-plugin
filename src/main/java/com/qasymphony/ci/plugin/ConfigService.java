@@ -1,12 +1,17 @@
 package com.qasymphony.ci.plugin;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.qasymphony.ci.plugin.action.PushingResultAction;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
+import hudson.model.AbstractProject;
+import hudson.model.Descriptor;
+import hudson.tasks.Publisher;
+import hudson.util.DescribableList;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
@@ -67,6 +72,30 @@ public class ConfigService {
    */
   public static Boolean validateApiKey(String url, String apiKey) {
     return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey));
+  }
+
+  /**
+   * Build testSuite link to qTest
+   *
+   * @param url
+   * @param projectId
+   * @param testSuiteId
+   * @return
+   */
+  public static String formatTestSuiteLink(String url, Long projectId, Long testSuiteId) {
+    return String.format("%s/p/%s/portal/project#tab=testexecution&object=2&id=%s",
+      url, projectId, testSuiteId);
+  }
+
+  public static Configuration getPluginConfiguration(AbstractProject project) {
+    DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
+
+    for (int i = 0; i < publishers.size(); i++) {
+      if (publishers.get(i) instanceof PushingResultAction) {
+        return ((PushingResultAction) publishers.get(i)).getConfiguration();
+      }
+    }
+    return null;
   }
 
   /**

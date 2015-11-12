@@ -1,6 +1,8 @@
 package com.qasymphony.ci.plugin.store;
 
+import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
+import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.file.FileReader;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
@@ -83,15 +85,19 @@ public class StoreResultServiceImpl implements StoreResultService {
     throws StoreResultException {
     FilePath resultPath = getResultFolder(project);
     Map<Integer, SubmittedResult> buildResults = new HashMap<>();
+    int numOrder = currentBuildNumber / BREAK_FILE_BY;
+    //get saved configuration
+    Configuration configuration = ConfigService.getPluginConfiguration(project);
+    String qTestUrl = configuration == null ? "" : configuration.getUrl();
+    Long projectId = configuration == null ? 0L : configuration.getProjectId();
     try {
-      int numOrder = currentBuildNumber / BREAK_FILE_BY;
       if (numOrder <= 0) {
         FilePath resultFile = getResultFile(resultPath, numOrder);
-        buildResults.putAll(readResult(resultFile));
+        buildResults.putAll(readResult(resultFile, qTestUrl, projectId));
       } else {
         for (int i = 0; i < numOrder; i++) {
           FilePath resultFile = getResultFile(resultPath, i);
-          buildResults.putAll(readResult(resultFile));
+          buildResults.putAll(readResult(resultFile, qTestUrl, projectId));
         }
       }
     } catch (Exception e) {
@@ -100,7 +106,8 @@ public class StoreResultServiceImpl implements StoreResultService {
     return buildResults;
   }
 
-  private Map<Integer, SubmittedResult> readResult(FilePath resultFile) throws StoreResultException {
+  private Map<Integer, SubmittedResult> readResult(FilePath resultFile, String url, Long projectId)
+    throws StoreResultException {
     Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     SortedMap<Integer, String> lines = null;
     try {
@@ -127,8 +134,10 @@ public class StoreResultServiceImpl implements StoreResultService {
     }
     for (Map.Entry<Integer, String> entry : lines.entrySet()) {
       SubmittedResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmittedResult.class);
-      if (null != submitResult)
+      if (null != submitResult) {
+        submitResult.setTestSuiteLink(ConfigService.formatTestSuiteLink(url, projectId, submitResult.getTestSuiteId()));
         buildResults.put(submitResult.getBuildNumber(), submitResult);
+      }
     }
     return buildResults;
   }

@@ -7,13 +7,19 @@ remoteAction.getTreeResult(10, $j.proxy(function (t) {
       {"mData": "submitStatus"},
       {"mData": "testSuiteName"},
       {"mData": "numberTestResult"},
-      {"mData": "numberTestRun"}
+      {"mData": "numberTestLog"}
     ],
     aoColumnDefs: [{
       "aTargets": [0],
       "mData": "buildNumber",
       "mRender": function (data, type, full) {
         return '<a target="_blank" href="../' + data + '">' + data + '</a>';
+      }
+    }, {
+      "aTargets": [2],
+      "mData": "testSuiteName",
+      "mRender": function (data, type, full) {
+        return '<a target="_blank" href="' + full.testSuiteLink + '">' + data + '</a>';
       }
     }]
   });

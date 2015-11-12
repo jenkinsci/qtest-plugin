@@ -11,10 +11,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class SubmittedResult {
   private int buildNumber;
   private String statusBuild;
+  private Long testSuiteId;
   private String testSuiteName;
   private String submitStatus;
   private int numberTestResult;
-  private int numberTestRun;
+  private int numberTestLog;
+  private String testSuiteLink;
 
   public int getBuildNumber() {
     return buildNumber;
@@ -61,12 +63,30 @@ public class SubmittedResult {
     return this;
   }
 
-  public int getNumberTestRun() {
-    return numberTestRun;
+  public int getNumberTestLog() {
+    return numberTestLog;
   }
 
-  public SubmittedResult setNumberTestRun(int numberTestRun) {
-    this.numberTestRun = numberTestRun;
+  public SubmittedResult setNumberTestLog(int numberTestLog) {
+    this.numberTestLog = numberTestLog;
+    return this;
+  }
+
+  public Long getTestSuiteId() {
+    return testSuiteId;
+  }
+
+  public SubmittedResult setTestSuiteId(Long testSuiteId) {
+    this.testSuiteId = testSuiteId;
+    return this;
+  }
+
+  public String getTestSuiteLink() {
+    return testSuiteLink;
+  }
+
+  public SubmittedResult setTestSuiteLink(String testSuiteLink) {
+    this.testSuiteLink = testSuiteLink;
     return this;
   }
 }

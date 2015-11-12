@@ -1,7 +1,6 @@
 var qtest = (function ($j) {
   var module = {};
   module.init = function () {
-    console.log("qTest module created.");
   }
   var getUrl = function () {
     return $j("input[name='config.url']").val();
