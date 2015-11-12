@@ -6,8 +6,13 @@
 }
 
 .dataTables_wrapper {
-  display:inline-block;
-  width:100%;
-  white-space:normal;
-  vertical-align:top;
+  display: inline-block;
+  width: 100%;
+  white-space: normal;
+  vertical-align: top;
+}
+
+table {
+  max-width: none !important;
+  min-height: 0% !important;
 }

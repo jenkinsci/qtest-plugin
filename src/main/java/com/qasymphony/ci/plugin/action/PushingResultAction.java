@@ -295,7 +295,6 @@ public class PushingResultAction extends Notifier {
       throws IOException, ServletException {
       if (StringUtils.isEmpty(value))
         return FormValidation.error("Please set a API key");
-
       DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
       PushingResultAction notifier = (PushingResultAction) publishers.get(this);
       if (null != notifier && notifier.getConfiguration() != null) {
