@@ -8,9 +8,9 @@
     <relativePath/>
   </parent>
 
-  <groupId>com.qasymphony.ci.plugin</groupId>
-  <artifactId>jqtest</artifactId>
-  <version>1.0</version>
+  <groupId>com.qasymphony.ci.jenkins</groupId>
+  <artifactId>qtest</artifactId>
+  <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
   <description>Submit JUnit Result to qTest</description>
@@ -37,13 +37,13 @@
   <developers>
     <developer>
       <id>gunivan</id>
-      <email>trongle@qasymphony</email>
+      <email>trongle@qasymphony.com</email>
       <name>Trong Le</name>
       <timezone>7</timezone>
     </developer>
     <developer>
       <id>anpham</id>
-      <email>anpham@qasymphony</email>
+      <email>anpham@qasymphony.com</email>
       <name>An Pham</name>
       <timezone>7</timezone>
     </developer>
