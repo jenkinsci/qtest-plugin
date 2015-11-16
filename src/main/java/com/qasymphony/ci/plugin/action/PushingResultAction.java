@@ -276,12 +276,18 @@ public class PushingResultAction extends Notifier {
         isDefaultPort ? "" : ":", request.getServerPort(), request.getContextPath());
     }
 
-    public FormValidation doCheckUrl(@QueryParameter String value)
+    public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
       throws IOException, ServletException {
       try {
         new URL(value);
         Boolean isQtestUrl = ConfigService.validateQtestUrl(value);
         if (isQtestUrl) {
+          DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
+          PushingResultAction notifier = (PushingResultAction) publishers.get(this);
+          if (null != notifier && notifier.getConfiguration() != null) {
+            //set url to can get url when validate apiKey
+            notifier.getConfiguration().setUrl(value);
+          }
           return FormValidation.ok();
         } else {
           return FormValidation.error("Please set a valid qTest URL");
@@ -294,7 +300,7 @@ public class PushingResultAction extends Notifier {
     public FormValidation doCheckAppSecretKey(@QueryParameter String value, @AncestorInPath AbstractProject project)
       throws IOException, ServletException {
       if (StringUtils.isEmpty(value))
-        return FormValidation.error("Please set a API key");
+        return FormValidation.error("Please set API key");
       DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
       PushingResultAction notifier = (PushingResultAction) publishers.get(this);
       if (null != notifier && notifier.getConfiguration() != null) {
