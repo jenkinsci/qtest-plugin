@@ -2,7 +2,7 @@
   <l:layout title="Test Result Graph">
     <st:include it="${it.project}" page="sidepanel.jelly" />
     <st:bind var="remoteAction" value="${it}"/>
-    <j:set var="pluginName" value="jqtest"/>
+    <j:set var="pluginName" value="qtest"/>
     <j:set var="resBase" value="${resURL}/plugin/${pluginName}"/>
     <l:main-panel>
       <link href="${resBase}/datatable/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>

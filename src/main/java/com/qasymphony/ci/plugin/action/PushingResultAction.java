@@ -254,7 +254,7 @@ public class PushingResultAction extends Notifier {
 
     @Override
     public String getHelpFile() {
-      return "/plugin/jqtest/help/main.html";
+      return "/plugin/qtest/help/main.html";
     }
 
     @Override

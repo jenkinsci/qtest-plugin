@@ -1,5 +1,5 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <j:set var="pluginName" value="jqtest"/>
+  <j:set var="pluginName" value="qtest"/>
 
   <style type="text/css">
     @import url(${resURL}/plugin/${pluginName}/css/selectize.default.css);
