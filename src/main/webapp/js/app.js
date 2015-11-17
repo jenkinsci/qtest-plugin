@@ -44,11 +44,13 @@ function loadProject() {
       projects = data.projects;
     }
     qtest.initSelectize("input[name='config.projectName']", 'selectizeProject', projects);
+    //clear release & environment
+    qtest.initSelectize("input[name='config.releaseName']", 'selectizeRelease', []);
+    qtest.initSelectize("input[name='config.environmentName']", 'selectizeEnvironment', []);
 
     var selectedProject = projects.length > 0 ? projects[0] : null;
     if (selectedProject)
       qtest.selectizeProject.setValue(selectedProject.name);
-    //loadProjectData();
     qtest.hideLoading(btn);
   }, function () {
     qtest.hideLoading(btn);
