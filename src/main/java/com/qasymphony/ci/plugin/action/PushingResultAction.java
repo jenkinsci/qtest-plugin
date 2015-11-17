@@ -262,9 +262,14 @@ public class PushingResultAction extends Notifier {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
       configuration.setJenkinsServerUrl(getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
-      //make environment id is 0 when name is empty
-      if (StringUtils.isEmpty(configuration.getEnvironmentName())) {
+      //make id is 0 when name is empty
+      if (StringUtils.isEmpty(configuration.getEnvironmentName()))
         configuration.setEnvironmentId(0);
+      if (StringUtils.isEmpty(configuration.getProjectName()))
+        configuration.setProjectId(0);
+      if (StringUtils.isEmpty(configuration.getReleaseName())) {
+        configuration.setReleaseId(0);
+        configuration.setModuleId(0);
       }
 
       Setting setting = ConfigService.saveConfiguration(configuration);
