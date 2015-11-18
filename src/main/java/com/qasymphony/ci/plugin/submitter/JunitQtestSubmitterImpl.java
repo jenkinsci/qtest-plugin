@@ -41,9 +41,9 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
         .setTestSuiteName(response.getTestSuiteName())
         .setNumberOfTestResult(response.getTotalTestCases());
       return result;
-    } catch (Exception e) {
-      LOG.log(Level.WARNING, e.getMessage(), e);
-      throw new SubmittedException("Error while submit result:" + e.getMessage(), e);
+    } catch (Exception se) {
+      LOG.log(Level.WARNING, se.getMessage(), se);
+      throw new SubmittedException(se);
     }
   }
 

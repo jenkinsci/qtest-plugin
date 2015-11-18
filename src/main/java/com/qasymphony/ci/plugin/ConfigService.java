@@ -196,17 +196,32 @@ public class ConfigService {
     }
   }
 
+  private static Setting getSavedConfiguration(Configuration configuration) {
+    String accessToken = OauthProvider.getAccessToken(configuration.getUrl(), configuration.getAppSecretKey());
+    Object savedObject = getConfiguration(configuration.getUrl(), accessToken, configuration.getJenkinsServerUrl(),
+      configuration.getJenkinsProjectName(), configuration.getProjectId());
+    return null == savedObject ? null : JsonUtils.fromJson(savedObject.toString(), Setting.class);
+  }
+
   /**
    * @param configuration
    * @return
    */
   public static Setting saveConfiguration(Configuration configuration) {
     LOG.info("Save configuration to qTest:" + configuration);
-    String url = String.format("%s/api/v3/projects/%s/ci", configuration.getUrl(), configuration.getProjectId());
     try {
+      Setting savedSetting = getSavedConfiguration(configuration);
       Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
       Setting setting = configuration.toSetting();
-      ResponseEntity responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(setting));
+      ResponseEntity responseEntity = null;
+      if (savedSetting != null && savedSetting.getId() > 0) {
+        String url = String.format("%s/api/v3/projects/%s/ci/%s", configuration.getUrl(), configuration.getProjectId(), savedSetting.getId());
+        responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
+      } else {
+        String url = String.format("%s/api/v3/projects/%s/ci", configuration.getUrl(), configuration.getProjectId());
+        responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(setting));
+      }
+
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
           responseEntity.getStatusCode(), responseEntity.getBody()));

@@ -176,8 +176,9 @@ public class PushingResultAction extends Notifier {
           .setBuildNumber(build.getNumber() + "")
           .setBuildPath(build.getUrl()));
     } catch (SubmittedException e) {
-      formatError(logger, "Cannot submit test result to qTest:" + e.getMessage());
-      e.printStackTrace(logger);
+      formatError(logger, "Cannot submit test result to qTest:");
+      formatError(logger, "   status code: " + e.getStatus());
+      formatError(logger, "   error: " + e.getMessage());
     } finally {
       if (null == result) {
         result = new JunitSubmitterResult()
@@ -189,6 +190,7 @@ public class PushingResultAction extends Notifier {
       formatInfo(logger, "Result after submit: testLogs=%s, testSuiteId:%s, testSuiteName:%s",
         result.getNumberOfTestLog(), result.getTestSuiteId(), result.getTestSuiteName());
       formatInfo(logger, "End submit test result to qTest at: %s", JsonUtils.getCurrentDateString());
+      formatInfo(logger, "");
     }
     return result;
   }
@@ -269,6 +271,9 @@ public class PushingResultAction extends Notifier {
         configuration.setProjectId(0);
       if (StringUtils.isEmpty(configuration.getReleaseName())) {
         configuration.setReleaseId(0);
+      }
+      if (configuration.getProjectId() <= 0 || configuration.getReleaseId() <= 0) {
+        configuration.setId(0L);
         configuration.setModuleId(0);
       }
 

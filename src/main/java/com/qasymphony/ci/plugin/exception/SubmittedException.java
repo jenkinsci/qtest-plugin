@@ -6,6 +6,7 @@ package com.qasymphony.ci.plugin.exception;
  * @since 1.0
  */
 public class SubmittedException extends Exception {
+  private int status;
   public SubmittedException() {
     super();
   }
@@ -24,5 +25,14 @@ public class SubmittedException extends Exception {
 
   protected SubmittedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
+  }
+
+  public int getStatus() {
+    return status;
+  }
+
+  public SubmittedException setStatus(int status) {
+    this.status = status;
+    return this;
   }
 }

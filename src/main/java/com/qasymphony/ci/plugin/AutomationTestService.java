@@ -41,7 +41,8 @@ public class AutomationTestService {
 
     if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
       Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
-      throw new SubmittedException(StringUtils.isEmpty(error.getMessage()) ? responseEntity.getBody() : error.getMessage());
+      throw new SubmittedException(StringUtils.isEmpty(error.getMessage()) ? responseEntity.getBody() : error.getMessage())
+        .setStatus(responseEntity.getStatusCode());
     } else {
       return JsonUtils.fromJson(responseEntity.getBody(), AutomationTestResponse.class);
     }
