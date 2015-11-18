@@ -51,8 +51,8 @@ public class MavenJunitParse implements TestResultParse {
     Date current = new Date();
 
     TestResult testResult = jUnitParser.parseResult(testResultLocation, build, build.getWorkspace(), launcher, listener);
-    List<AutomationAttachment> attachments = new ArrayList<AutomationAttachment>();
     AutomationAttachment attachment = null;
+
     for (SuiteResult suite : testResult.getSuites()) {
       if (suite.getCases() == null) {
         continue;
@@ -60,14 +60,18 @@ public class MavenJunitParse implements TestResultParse {
         for (CaseResult caseResult : suite.getCases()) {
           if(automationTestResultMap.containsKey(caseResult.getClassName())){
             automationTestResult = automationTestResultMap.get(caseResult.getClassName());
+            if(caseResult.isFailed()){
+              automationTestResult.setStatus(Status.FAILED.toString());
+            }
           }else {
             automationTestResult = new AutomationTestResult();
             automationTestResult.setName(caseResult.getClassName());
             automationTestResult.setAutomationContent(caseResult.getClassName());
             automationTestResult.setExecutedEndDate(current);
             automationTestResult.setExecutedStartDate(current);
-            automationTestResult.setStatus(testResult.isPassed() ? Status.PASSED.toString() : Status.FAILED.toString());
+            automationTestResult.setStatus(caseResult.isPassed() ? Status.PASSED.toString() : Status.FAILED.toString());
             automationTestResult.setTestLogs(new ArrayList<AutomationTestLog>());
+            automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
             
             automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
           }
@@ -84,16 +88,11 @@ public class MavenJunitParse implements TestResultParse {
             attachment.setName(caseResult.getName().concat(".txt"));
             attachment.setContentType("text/plain");
             attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
-            
-            attachments.add(attachment);
+            automationTestResult.getAttachments().add(attachment);
           }
 
           testlogOrder++;
         }
-      }
-
-      if(attachments.size() > 0){
-        automationTestResult.setAttachments(attachments);
       }
     }
     
