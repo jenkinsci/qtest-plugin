@@ -62,8 +62,6 @@ public class MavenJunitParse implements TestResultParse {
             automationTestResult = automationTestResultMap.get(caseResult.getClassName());
           }else {
             automationTestResult = new AutomationTestResult();
-
-            automationTestResult = new AutomationTestResult();
             automationTestResult.setName(caseResult.getClassName());
             automationTestResult.setAutomationContent(caseResult.getClassName());
             automationTestResult.setExecutedEndDate(current);
@@ -99,7 +97,7 @@ public class MavenJunitParse implements TestResultParse {
       }
     }
     
-    return new ArrayList<AutomationTestResult>(automationTestResultMap.values());
+    return new ArrayList<>(automationTestResultMap.values());
   }
 
   @Override

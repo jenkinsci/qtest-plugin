@@ -180,7 +180,7 @@ public class ConfigService {
   public static Object getConfiguration(String qTestUrl, String accessToken, String serverName, String projectName, Long projectId) {
     //TODO: get configuration from qTest API
     String url = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins",
-      qTestUrl, projectId, serverName, projectName);
+      qTestUrl, projectId, serverName, HttpClientUtils.encode(projectName));
     try {
       Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
       ResponseEntity responseEntity = HttpClientUtils.get(url, headers);

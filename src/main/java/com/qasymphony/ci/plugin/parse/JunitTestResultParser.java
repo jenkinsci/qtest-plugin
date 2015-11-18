@@ -39,12 +39,13 @@ public class JunitTestResultParser {
   public static List<AutomationTestResult> parse(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws Exception {
     AbstractProject project = build.getProject();
+    String basedDir = build.getWorkspace().toURI().getPath();
+    LOG.info("Based dir is:" + basedDir);
     if (project.getClass().getName().toLowerCase().contains("maven")) {
       return new MavenJunitParse(build, launcher, listener).parse();
     } else {
       //we'll auto detect test result folder,when project is not maven style
       MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
-      String basedDir = build.getWorkspace().toURI().getPath();
       List<String> resultFolders = scanJunitTestResultFolder(basedDir);
       LOG.info("Scanning junit test result in dir:" + basedDir);
       LOG.info(String.format("Found: %s dirs, %s", resultFolders.size(), resultFolders));

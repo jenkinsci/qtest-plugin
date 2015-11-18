@@ -16,7 +16,6 @@ import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
-import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.Extension;
 import hudson.Launcher;
@@ -378,7 +377,7 @@ public class PushingResultAction extends Notifier {
           try {
             //get saved setting from qtest
             Object setting = ConfigService.getConfiguration(qTestUrl, accessToken, jenkinsServerName,
-              HttpClientUtils.encode(jenkinsProjectName), projectId);
+              jenkinsProjectName, projectId);
             res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
             return setting;
           } finally {
