@@ -119,19 +119,19 @@ public class PushingResultAction extends Notifier {
   }
 
   private void showInfo(PrintStream logger) {
-    logger.println("");
+    formatInfo(logger, "");
     formatInfo(logger, "------------------------------------------------------------------------");
     formatInfo(logger, ResourceBundle.DISPLAY_NAME);
     formatInfo(logger, "------------------------------------------------------------------------");
-    formatInfo(logger, "Submit Junit to qTest at:%s", configuration.getUrl());
-    formatInfo(logger, "With project: %s, %s.", configuration.getProjectId(), configuration.getProjectName());
-    formatInfo(logger, "With release: %s, %s.", configuration.getReleaseId(), configuration.getReleaseName());
+    formatInfo(logger, "Submit Junit test result to qTest at:%s", configuration.getUrl());
+    formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
+    formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
     if (configuration.getEnvironmentId() > 0) {
-      formatInfo(logger, "With environment: %s, %s.", configuration.getEnvironmentId(), configuration.getEnvironmentName());
+      formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
     } else {
       formatInfo(logger, "With no environment.");
     }
-    logger.println("");
+    formatInfo(logger, "");
   }
 
   private Boolean validateConfig(Configuration configuration) {
@@ -145,7 +145,7 @@ public class PushingResultAction extends Notifier {
   private void checkProjectNameChanged(AbstractBuild build, PrintStream logger) {
     String currentJenkinProjectName = build.getProject().getName();
     if (!configuration.getJenkinsProjectName().equals(currentJenkinProjectName)) {
-      formatInfo(logger, "Current job name [%s] is changed with previous configuration.", currentJenkinProjectName);
+      formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinProjectName);
       configuration.setJenkinsProjectName(currentJenkinProjectName);
       ConfigService.saveConfiguration(configuration);
     }
@@ -161,10 +161,10 @@ public class PushingResultAction extends Notifier {
     }
 
     if (automationTestResults.isEmpty()) {
-      formatWarn(logger, "No junit test result found.");
+      formatWarn(logger, "No JUnit test result found.");
       return null;
     }
-    formatInfo(logger, "Junit test result found: %s", automationTestResults.size());
+    formatInfo(logger, "JUnit test result found: %s", automationTestResults.size());
 
     JunitSubmitterResult result = null;
     formatInfo(logger, "Begin submit test result to qTest,at: " + JsonUtils.getCurrentDateString());
@@ -198,7 +198,7 @@ public class PushingResultAction extends Notifier {
     configuration.setTestSuiteId(null == result.getTestSuiteId() ? configuration.getTestSuiteId() : result.getTestSuiteId());
     try {
       build.getProject().save();
-      formatInfo(logger, "Save test suite to configuration, testSuiteId=%s", configuration.getTestSuiteId());
+      formatInfo(logger, "Save test suite to configuration success.");
     } catch (IOException e) {
       formatError(logger, "Cannot save test suite to configuration of project:%s", e.getMessage());
       e.printStackTrace(logger);
@@ -206,7 +206,7 @@ public class PushingResultAction extends Notifier {
   }
 
   private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
-    logger.println("");
+    formatInfo(logger, "");
     formatInfo(logger, "Begin store submitted result to workspace.");
     try {
       junitSubmitter.storeSubmittedResult(build, result);
@@ -215,7 +215,7 @@ public class PushingResultAction extends Notifier {
       e.printStackTrace(logger);
     }
     formatInfo(logger, "End store submitted result.");
-    logger.println("");
+    formatInfo(logger, "");
   }
 
   private void formatInfo(PrintStream logger, String msg, Object... args) {
@@ -231,7 +231,7 @@ public class PushingResultAction extends Notifier {
   }
 
   private void format(PrintStream logger, String level, String msg, Object... args) {
-    logger.println(String.format("[%s] %s", level, String.format(msg, args)));
+    logger.println(String.format("[qTest] [%s] %s", level, String.format(msg, args)));
   }
 
   @Extension

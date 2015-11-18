@@ -206,7 +206,7 @@ public class ConfigService {
     try {
       Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
       Setting setting = configuration.toSetting();
-      ResponseEntity responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
+      ResponseEntity responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(setting));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
           responseEntity.getStatusCode(), responseEntity.getBody()));

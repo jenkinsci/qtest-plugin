@@ -57,7 +57,12 @@ function loadProject() {
 
     qtest.initSelectize("input[name='config.projectName']", 'selectizeProject', projects);
 
-    var selectedProject = projects.length > 0 ? projects[0] : null;
+    //get current saved project:
+    var configuredProjectId = $j("input[name='config.projectId']").val();
+    var selectedProject = null;
+    if (projects.length > 0) {
+      selectedProject = configuredProjectId ? qtest.find(projects, 'id', configuredProjectId) : projects[0];
+    }
     if (selectedProject)
       qtest.selectizeProject.setValue(selectedProject.name);
     qtest.hideLoading(btn);

@@ -40,6 +40,10 @@ var qtest = (function ($j) {
       }, options);
       var control = selectizeNode.selectize(opts);
       qtest[selectizeId] = control[0].selectize;
+      if (!data || data.length <= 0) {
+        qtest[selectizeId].clear();
+        qtest[selectizeId].clearOptions();
+      }
     }
     return qtest[selectizeId];
   };
