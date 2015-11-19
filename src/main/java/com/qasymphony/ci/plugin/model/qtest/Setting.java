@@ -21,10 +21,10 @@ public class Setting {
   private Long id;
 
   @JsonProperty("ci_server")
-  private String jenkinServer;
+  private String jenkinsServer;
 
   @JsonProperty("ci_project")
-  private String jenkinProjectName;
+  private String jenkinsProjectName;
 
   @JsonProperty("project_id")
   private Long projectId;
@@ -53,21 +53,21 @@ public class Setting {
     return this;
   }
 
-  public String getJenkinServer() {
-    return jenkinServer;
+  public String getJenkinsServer() {
+    return jenkinsServer;
   }
 
-  public Setting setJenkinServer(String jenkinServer) {
-    this.jenkinServer = jenkinServer;
+  public Setting setJenkinsServer(String jenkinsServer) {
+    this.jenkinsServer = jenkinsServer;
     return this;
   }
 
-  public String getJenkinProjectName() {
-    return jenkinProjectName;
+  public String getJenkinsProjectName() {
+    return jenkinsProjectName;
   }
 
-  public Setting setJenkinProjectName(String jenkinProjectName) {
-    this.jenkinProjectName = jenkinProjectName;
+  public Setting setJenkinsProjectName(String jenkinsProjectName) {
+    this.jenkinsProjectName = jenkinsProjectName;
     return this;
   }
 
@@ -113,15 +113,6 @@ public class Setting {
 
   public Setting setEnvironmentId(Long environmentId) {
     this.environmentId = environmentId;
-    return this;
-  }
-
-  public Boolean getConsolidateTestRun() {
-    return consolidateTestRun;
-  }
-
-  public Setting setConsolidateTestRun(Boolean consolidateTestRun) {
-    this.consolidateTestRun = consolidateTestRun;
     return this;
   }
 }

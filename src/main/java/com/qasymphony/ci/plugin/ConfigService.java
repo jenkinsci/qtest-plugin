@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.action.PushingResultAction;
+import com.qasymphony.ci.plugin.exception.SaveSettingException;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
@@ -207,7 +208,7 @@ public class ConfigService {
    * @param configuration
    * @return
    */
-  public static Setting saveConfiguration(Configuration configuration) {
+  public static Setting saveConfiguration(Configuration configuration) throws SaveSettingException {
     LOG.info("Save configuration to qTest:" + configuration);
     try {
       Setting savedSetting = getSavedConfiguration(configuration);
@@ -225,14 +226,13 @@ public class ConfigService {
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
           responseEntity.getStatusCode(), responseEntity.getBody()));
-        return null;
+        throw new SaveSettingException("Cannot save setting: " + responseEntity.getBody(), responseEntity.getStatusCode());
       }
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
       LOG.info("Saved from qTest:" + responseEntity.getBody());
       return res;
     } catch (ClientRequestException e) {
-      LOG.log(Level.WARNING, "Cannot save configuration to qTest: " + configuration.getUrl() + "," + e.getMessage());
-      return null;
+      throw new SaveSettingException("Cannot save setting:" + e.getMessage(), -1);
     }
   }
 }

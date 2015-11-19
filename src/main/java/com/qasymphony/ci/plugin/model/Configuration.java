@@ -179,8 +179,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   public Setting toSetting() {
     Setting setting = new Setting()
       .setId(this.id)
-      .setJenkinServer(this.jenkinsServerUrl)
-      .setJenkinProjectName(this.jenkinsProjectName)
+      .setJenkinsServer(this.jenkinsServerUrl)
+      .setJenkinsProjectName(this.jenkinsProjectName)
       .setProjectId(this.projectId)
       .setReleaseId(this.releaseId)
       .setModuleId(this.moduleId)

@@ -6,6 +6,7 @@ package com.qasymphony.ci.plugin.action;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.exception.SaveSettingException;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
@@ -141,13 +142,23 @@ public class PushingResultAction extends Notifier {
       configuration.getReleaseId() > 0;
   }
 
-  private void checkProjectNameChanged(AbstractBuild build, PrintStream logger) {
+  private Setting checkProjectNameChanged(AbstractBuild build, PrintStream logger) {
     String currentJenkinProjectName = build.getProject().getName();
     if (!configuration.getJenkinsProjectName().equals(currentJenkinProjectName)) {
       formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinProjectName);
       configuration.setJenkinsProjectName(currentJenkinProjectName);
-      ConfigService.saveConfiguration(configuration);
     }
+    Setting setting = null;
+    try {
+      setting = ConfigService.saveConfiguration(configuration);
+    } catch (SaveSettingException e) {
+      formatWarn(logger, "Cannot update ci setting to qTest");
+    }
+    if (null != setting) {
+      configuration.setId(setting.getId());
+      configuration.setModuleId(setting.getModuleId());
+    }
+    return setting;
   }
 
   private JunitSubmitterResult submitTestResult(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
@@ -276,7 +287,12 @@ public class PushingResultAction extends Notifier {
         configuration.setModuleId(0);
       }
 
-      Setting setting = ConfigService.saveConfiguration(configuration);
+      Setting setting = null;
+      try {
+        setting = ConfigService.saveConfiguration(configuration);
+      } catch (SaveSettingException e) {
+        LOG.log(Level.WARNING, e.getMessage());
+      }
       if (null != setting) {
         configuration.setModuleId(setting.getModuleId());
         configuration.setId(setting.getId());
