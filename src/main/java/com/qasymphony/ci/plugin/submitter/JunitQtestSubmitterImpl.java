@@ -23,28 +23,23 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws SubmittedException {
-    try {
-      AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
-        OauthProvider.buildHeaders(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey(), null));
-      JunitSubmitterResult result = new JunitSubmitterResult()
-        .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
-        .setTestSuiteId(null)
-        .setNumberOfTestLog(request.getTestResults().size())
-        .setNumberOfTestResult(request.getTestResults().size())
-        .setTestSuiteName("");
-      if (response == null)
-        return result;
-
-      result.setTestSuiteId(response.getTestSuiteId())
-        .setNumberOfTestLog(response.getTotalTestLogs())
-        .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
-        .setTestSuiteName(response.getTestSuiteName())
-        .setNumberOfTestResult(response.getTotalTestCases());
+    AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
+      OauthProvider.buildHeaders(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey(), null));
+    JunitSubmitterResult result = new JunitSubmitterResult()
+      .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
+      .setTestSuiteId(null)
+      .setNumberOfTestLog(request.getTestResults().size())
+      .setNumberOfTestResult(request.getTestResults().size())
+      .setTestSuiteName("");
+    if (response == null)
       return result;
-    } catch (Exception se) {
-      LOG.log(Level.WARNING, se.getMessage(), se);
-      throw new SubmittedException(se);
-    }
+
+    result.setTestSuiteId(response.getTestSuiteId())
+      .setNumberOfTestLog(response.getTotalTestLogs())
+      .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
+      .setTestSuiteName(response.getTestSuiteName())
+      .setNumberOfTestResult(response.getTotalTestCases());
+    return result;
   }
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)

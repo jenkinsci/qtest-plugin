@@ -7,12 +7,18 @@ package com.qasymphony.ci.plugin.exception;
  */
 public class SubmittedException extends Exception {
   private int status;
+
   public SubmittedException() {
     super();
   }
 
   public SubmittedException(String message) {
     super(message);
+  }
+
+  public SubmittedException(String message, int status) {
+    super(message);
+    this.status = status;
   }
 
   public SubmittedException(String message, Throwable cause) {

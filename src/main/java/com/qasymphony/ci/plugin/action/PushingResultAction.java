@@ -189,6 +189,9 @@ public class PushingResultAction extends Notifier {
       formatError(logger, "Cannot submit test result to qTest:");
       formatError(logger, "   status code: " + e.getStatus());
       formatError(logger, "   error: " + e.getMessage());
+    } catch (Exception e) {
+      formatError(logger, "Cannot submit test result to qTest:");
+      formatError(logger, "   error: " + e.getMessage());
     } finally {
       if (null == result) {
         result = new JunitSubmitterResult()
