@@ -392,8 +392,9 @@ public class PushingResultAction extends Notifier {
         @Override public Object call() throws Exception {
           try {
             //get saved setting from qtest
-            Object setting = ConfigService.getConfiguration(qTestUrl, accessToken, jenkinsServerName,
-              jenkinsProjectName, projectId);
+            Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
+              .setJenkinsProjectName(jenkinsProjectName)
+              .setProjectId(projectId), qTestUrl, accessToken);
             res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
             return setting;
           } finally {
