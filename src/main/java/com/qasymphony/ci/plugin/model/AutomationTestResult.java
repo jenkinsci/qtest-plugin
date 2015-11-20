@@ -82,8 +82,6 @@ public class AutomationTestResult {
   }
 
   public AutomationTestLog addTestLog(AutomationTestLog automationTestLog){
-    if (this.testLogs.contains(automationTestLog))
-      return null;
     testLogs.add(automationTestLog);
     return automationTestLog;
   }

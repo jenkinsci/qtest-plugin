@@ -79,16 +79,15 @@ public class MavenJunitParse implements TestResultParse {
           automationTestLog.setOrder(testlogOrder);
           automationTestLog.setStatus(caseResult.getStatus().toString());
 
-          if (null != automationTestResult.addTestLog(automationTestLog)) {
-            if (caseResult.isFailed()) {
-              attachment = new AutomationAttachment();
-              attachment.setName(caseResult.getName().concat(".txt"));
-              attachment.setContentType("text/plain");
-              attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
-              automationTestResult.getAttachments().add(attachment);
-            }
-            testlogOrder++;
+          automationTestResult.addTestLog(automationTestLog);
+          if (caseResult.isFailed()) {
+            attachment = new AutomationAttachment();
+            attachment.setName(caseResult.getName().concat(".txt"));
+            attachment.setContentType("text/plain");
+            attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
+            automationTestResult.getAttachments().add(attachment);
           }
+          testlogOrder++;
         }
       }
     }
