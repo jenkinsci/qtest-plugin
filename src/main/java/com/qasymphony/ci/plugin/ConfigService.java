@@ -208,6 +208,34 @@ public class ConfigService {
   }
 
   /**
+   * Validate configuration from save or apply setting
+   *
+   * @param configuration
+   * @param formData
+   * @return
+   */
+  public static Configuration validateConfiguration(Configuration configuration, JSONObject formData) {
+    //make id is 0 when name is empty, we get name from selectize field.
+    if (StringUtils.isEmpty(formData.getString("environmentName1"))) {
+      configuration.setEnvironmentId(0);
+      configuration.setEnvironmentName("");
+    }
+    if (StringUtils.isEmpty(formData.getString("projectName1"))) {
+      configuration.setProjectId(0);
+      configuration.setProjectName("");
+    }
+    if (StringUtils.isEmpty(formData.getString("releaseName1"))) {
+      configuration.setReleaseId(0);
+      configuration.setReleaseName("");
+    }
+    if (configuration.getProjectId() <= 0 || configuration.getReleaseId() <= 0) {
+      configuration.setId(0L);
+      configuration.setModuleId(0);
+    }
+    return configuration;
+  }
+
+  /**
    * @param configuration
    * @return
    */

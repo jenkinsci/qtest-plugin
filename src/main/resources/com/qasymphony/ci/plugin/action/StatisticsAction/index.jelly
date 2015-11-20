@@ -36,7 +36,7 @@
         </thead>
       </table>
       </div>
-      <script type="text/javascript" src="${resBase}/js/submit-result.js"></script>
+      <script type="text/javascript" src="${resBase}/js/result.js"></script>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -51,6 +51,13 @@
       <f:textbox name="config.environmentName" field="environmentName"
                  value="${instance.configuration.environmentName}"/>
     </f:invisibleEntry>
+    <!--**
+      Reason why projectName1, releaseName1, environmentName1 use to bind for selectize
+      instead projectName, releaseName or environmentName**
+       1.jelly binding name from saved configuration to textBox when loaded
+       2.selectize not support duplicate value (project or release maybe have the same name),
+        so valueField of selectize must be id (for project, release) or value (for environment)
+     -->
     <f:entry title="${%label.selectedProject}" field="projectName">
       <f:textbox name="config.projectName1" value="${instance.configuration.projectName}"/>
     </f:entry>
@@ -71,6 +78,6 @@
       </span>
     </f:entry>
   </form>
-  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/qtest-service.js"></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/service.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js"></script>
 </j:jelly>

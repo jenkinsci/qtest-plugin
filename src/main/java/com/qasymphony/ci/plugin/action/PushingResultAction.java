@@ -152,7 +152,7 @@ public class PushingResultAction extends Notifier {
     try {
       setting = ConfigService.saveConfiguration(configuration);
     } catch (SaveSettingException e) {
-      formatWarn(logger, "Cannot update ci setting to qTest");
+      formatWarn(logger, "Cannot update ci setting to qTest:" + e.getMessage());
     }
     if (null != setting) {
       configuration.setId(setting.getId());
@@ -277,18 +277,8 @@ public class PushingResultAction extends Notifier {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
       configuration.setJenkinsServerUrl(getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
-      //make id is 0 when name is empty
-      if (StringUtils.isEmpty(configuration.getEnvironmentName()))
-        configuration.setEnvironmentId(0);
-      if (StringUtils.isEmpty(configuration.getProjectName()))
-        configuration.setProjectId(0);
-      if (StringUtils.isEmpty(configuration.getReleaseName())) {
-        configuration.setReleaseId(0);
-      }
-      if (configuration.getProjectId() <= 0 || configuration.getReleaseId() <= 0) {
-        configuration.setId(0L);
-        configuration.setModuleId(0);
-      }
+
+      configuration = ConfigService.validateConfiguration(configuration, formData);
 
       Setting setting = null;
       try {
