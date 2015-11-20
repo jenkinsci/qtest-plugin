@@ -43,15 +43,20 @@
                  value="${instance.configuration.releaseId}"/>
       <f:textbox name="config.environmentId" field="environmentId"
                  value="${instance.configuration.environmentId}"/>
-      <f:textbox name="config.moduleId" field="moduleId"
-                 value="${instance.configuration.moduleId}"/>
+
+      <f:textbox name="config.projectName" field="projectName"
+                 value="${instance.configuration.projectName}"/>
+      <f:textbox name="config.releaseName" field="releaseName"
+                 value="${instance.configuration.releaseName}"/>
+      <f:textbox name="config.environmentName" field="environmentName"
+                 value="${instance.configuration.environmentName}"/>
     </f:invisibleEntry>
     <f:entry title="${%label.selectedProject}" field="projectName">
-      <f:textbox name="config.projectName" value="${instance.configuration.projectName}"/>
+      <f:textbox name="config.projectName1" value="${instance.configuration.projectName}"/>
     </f:entry>
 
     <f:entry title="${%label.release}" field="releaseName">
-      <f:textbox name="config.releaseName"
+      <f:textbox name="config.releaseName1"
                  value="${instance.configuration.releaseName}"/>
       <span>
         <i>${%instruction.testLog}</i>
@@ -59,7 +64,7 @@
     </f:entry>
 
     <f:entry title="${%label.environment}" field="environmentName">
-      <f:textbox name="config.environmentName"
+      <f:textbox name="config.environmentName1"
                  value="${instance.configuration.environmentName}" clazz="qtest-readonly"/>
       <span class="config.environmentName" style="display:none">
         <i>${%env.inactive}</i>

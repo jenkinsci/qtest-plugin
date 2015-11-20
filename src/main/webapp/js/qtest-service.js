@@ -11,13 +11,15 @@ var qtest = (function ($j) {
   module.getProjectId = function () {
     return $j("input[name='config.projectId']").val();
   };
-  module.bindSelectizeValue = function (src, dest, field, onChange) {
+  module.bindSelectizeValue = function (src, dest, dest2, field, field2, onChange) {
     var srcNode = $j(src);
     srcNode.on('change', function () {
       var item = this.selectize.options[this.value];
       if (!item) return;
       var destNode = $j(dest);
       destNode.val(destNode ? item[field] : null);
+      var destNode2 = $j(dest2);
+      destNode2.val(destNode2 ? item[field2] : null);
       if (onChange)
         onChange(item);
     });
@@ -32,11 +34,12 @@ var qtest = (function ($j) {
     } else {
       var opts = $j.extend({
         maxItems: 1,
-        valueField: 'name',
+        valueField: 'id',
         labelField: 'name',
         searchField: 'name',
         options: data,
-        create: false
+        create: false,
+        enableCreateDuplicate: true
       }, options);
       var control = selectizeNode.selectize(opts);
       qtest[selectizeId] = control[0].selectize;

@@ -8,22 +8,25 @@ $j(document).ready(function () {
 });
 
 function bindSelectizeChange() {
-  qtest.bindSelectizeValue("input[name='config.projectName']", "input[name='config.projectId']", "id", function (item) {
-    loadProjectData();
-  });
-  qtest.bindSelectizeValue("input[name='config.releaseName']", "input[name='config.releaseId']", "id");
-  qtest.bindSelectizeValue("input[name='config.environmentName']", "input[name='config.environmentId']", "value");
+  qtest.bindSelectizeValue("input[name='config.projectName1']", "input[name='config.projectId']",
+    "input[name='config.projectName']", "id", "name", function (item) {
+      loadProjectData();
+    });
+  qtest.bindSelectizeValue("input[name='config.releaseName1']", "input[name='config.releaseId']",
+    "input[name='config.releaseName']", "id", "name");
+  qtest.bindSelectizeValue("input[name='config.environmentName1']", "input[name='config.environmentId']",
+    "input[name='config.environmentName']", "value", "label");
 }
 
 function disableTestBox(disable) {
   if (disable) {
-    $j("input[name='config.projectName']").attr('readonly', 'readonly');
-    $j("input[name='config.releaseName']").attr('readonly', 'readonly');
-    $j("input[name='config.environmentName']").attr('readonly', 'readonly');
+    $j("input[name='config.projectName1']").attr('readonly', 'readonly');
+    $j("input[name='config.releaseName1']").attr('readonly', 'readonly');
+    $j("input[name='config.environmentName11']").attr('readonly', 'readonly');
   } else {
-    $j("input[name='config.projectName']").removeAttr('readonly');
-    $j("input[name='config.releaseName']").removeAttr('readonly');
-    $j("input[name='config.environmentName']").removeAttr('readonly');
+    $j("input[name='config.projectName1']").removeAttr('readonly');
+    $j("input[name='config.releaseName1']").removeAttr('readonly');
+    $j("input[name='config.environmentName1']").removeAttr('readonly');
   }
 }
 
@@ -45,17 +48,17 @@ function loadProject() {
     }
     if (projects.length <= 0) {
       //clear release & environment
-      qtest.initSelectize("input[name='config.releaseName']", 'selectizeRelease', []);
-      qtest.initSelectize("input[name='config.environmentName']", 'selectizeEnvironment', [],
+      qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', []);
+      qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', [],
         {
           create: true,
-          valueField: 'label',
+          valueField: 'value',
           labelField: 'label',
           searchField: 'label'
         });
     }
 
-    qtest.initSelectize("input[name='config.projectName']", 'selectizeProject', projects);
+    qtest.initSelectize("input[name='config.projectName1']", 'selectizeProject', projects);
 
     //get current saved project:
     var configuredProjectId = $j("input[name='config.projectId']").val();
@@ -64,7 +67,7 @@ function loadProject() {
       selectedProject = configuredProjectId ? qtest.find(projects, 'id', configuredProjectId) : projects[0];
     }
     if (selectedProject)
-      qtest.selectizeProject.setValue(selectedProject.name);
+      qtest.selectizeProject.setValue(selectedProject.id);
     qtest.hideLoading(btn);
   }, function () {
     qtest.hideLoading(btn);
@@ -97,14 +100,22 @@ function loadRelease(data) {
   if (data.releases && data.releases != "") {
     releases = data.releases;
   }
-  qtest.initSelectize("input[name='config.releaseName']", 'selectizeRelease', releases);
+  $j.each(releases, function (index) {
+    var item = releases[index];
+    item.pidName = item.pid + " " + item.name;
+  });
+  qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', releases,
+    {
+      labelField: 'pidName',
+      searchField: 'pidName'
+    });
 
   var selectedRelease = qtest.find(releases, "id", qtest.setting.release_id);
   if (!selectedRelease) {
     selectedRelease = releases.length > 0 ? releases[0] : null;
   }
   if (selectedRelease)
-    qtest.selectizeRelease.setValue(selectedRelease.name);
+    qtest.selectizeRelease.setValue(selectedRelease.id);
 }
 
 function loadEnvironment(data) {
@@ -129,16 +140,16 @@ function loadEnvironment(data) {
       hasInActiveValue = false;
   }
   var show = fieldIsInActive || hasInActiveValue;
-  $j("span[class='config.environmentName']").attr('style', 'display:' + (show ? '' : 'none'));
-  qtest.initSelectize("input[name='config.environmentName']", 'selectizeEnvironment', environments,
+  $j("span[class='config.environmentName1']").attr('style', 'display:' + (show ? '' : 'none'));
+  qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', environments,
     {
       create: true,
-      valueField: 'label',
+      valueField: 'value',
       labelField: 'label',
       searchField: 'label'
     });
 
   var selectedEnvironment = qtest.find(environments, "value", qtest.setting.environment_id);
   if (selectedEnvironment)
-    qtest.selectizeEnvironment.setValue(selectedEnvironment.label);
+    qtest.selectizeEnvironment.setValue(selectedEnvironment.value);
 }
