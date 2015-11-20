@@ -49,4 +49,26 @@ public class AutomationTestLog {
     this.status = status;
   }
 
+  @Override public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+
+    AutomationTestLog that = (AutomationTestLog) o;
+
+    if (description != null ? !description.equals(that.description) : that.description != null)
+      return false;
+    if (expectedResult != null ? !expectedResult.equals(that.expectedResult) : that.expectedResult != null)
+      return false;
+    return !(status != null ? !status.equals(that.status) : that.status != null);
+
+  }
+
+  @Override public int hashCode() {
+    int result = description != null ? description.hashCode() : 0;
+    result = 31 * result + (expectedResult != null ? expectedResult.hashCode() : 0);
+    result = 31 * result + (status != null ? status.hashCode() : 0);
+    return result;
+  }
 }

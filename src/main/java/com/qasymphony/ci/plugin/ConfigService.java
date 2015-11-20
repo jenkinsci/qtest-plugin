@@ -180,16 +180,21 @@ public class ConfigService {
    * @return
    */
   public static Object getConfiguration(Setting setting, String qTestUrl, String accessToken) {
-    String url;
-    if (setting.getId() != null && setting.getId() > 0) {
-      url = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
-    } else {
-      url = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins", qTestUrl, setting.getProjectId(),
-        setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()));
-    }
+    Boolean getById = setting.getId() != null && setting.getId() > 0;
+
+    String urlById = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
+    String urlByProject = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins", qTestUrl, setting.getProjectId(),
+      setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()));
+
     try {
       Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
-      ResponseEntity responseEntity = HttpClientUtils.get(url, headers);
+      ResponseEntity responseEntity = HttpClientUtils.get(getById ? urlById : urlByProject, headers);
+
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode() && getById) {
+        //in case not found by id, we try to get by project
+        responseEntity = HttpClientUtils.get(urlByProject, headers);
+      }
+
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot get config from qTest:%s, server:%s, project:%s, error:%s",
           qTestUrl, setting.getJenkinsServer(), setting.getJenkinsProjectName(), responseEntity.getBody()));
