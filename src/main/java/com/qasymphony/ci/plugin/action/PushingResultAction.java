@@ -378,6 +378,16 @@ public class PushingResultAction extends Notifier {
       StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = getServerUrl(request);
       final String accessToken = OauthProvider.getAccessToken(qTestUrl, apiKey);
+
+      Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
+      if (null == project) {
+        //if project not found, we return empty data
+        res.put("setting", "");
+        res.put("releases", "");
+        res.put("environments", "");
+        return res;
+      }
+
       final CountDownLatch countDownLatch = new CountDownLatch(3);
       ExecutorService fixedPool = Executors.newFixedThreadPool(3);
 

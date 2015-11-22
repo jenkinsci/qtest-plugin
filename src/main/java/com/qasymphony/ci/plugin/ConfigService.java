@@ -113,6 +113,20 @@ public class ConfigService {
       }
       return responseEntity.getBody();
     } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Cannot get projects from: " + qTestUrl + "," + e.getMessage());
+      return null;
+    }
+  }
+
+  public static Object getProject(String qTestUrl, String accessToken, Long projectId) {
+    String url = String.format("%s/api/v3/projects/%s", qTestUrl, projectId);
+    try {
+      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+        return null;
+      }
+      return responseEntity.getBody();
+    } catch (ClientRequestException e) {
       LOG.log(Level.WARNING, "Cannot get project from: " + qTestUrl + "," + e.getMessage());
       return null;
     }
