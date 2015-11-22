@@ -1,7 +1,7 @@
 qtest.init();
 $j(document).ready(function () {
   setTimeout(function () {
-    disableTestBox(true);
+    disableTextBox(true);
     onLoadProject();
     bindSelectizeChange();
   }, 1000)
@@ -18,11 +18,11 @@ function bindSelectizeChange() {
     "input[name='config.environmentName']", "value", "label");
 }
 
-function disableTestBox(disable) {
+function disableTextBox(disable) {
   if (disable) {
     $j("input[name='config.projectName1']").attr('readonly', 'readonly');
     $j("input[name='config.releaseName1']").attr('readonly', 'readonly');
-    $j("input[name='config.environmentName11']").attr('readonly', 'readonly');
+    $j("input[name='config.environmentName1']").attr('readonly', 'readonly');
   } else {
     $j("input[name='config.projectName1']").removeAttr('readonly');
     $j("input[name='config.releaseName1']").removeAttr('readonly');
@@ -34,7 +34,7 @@ function onLoadProject() {
   $j("#fetchProjectData").on('click', function (e) {
     e.preventDefault();
     qtest.showLoading(this);
-    disableTestBox(false);
+    disableTextBox(false);
     loadProject();
   });
 }
