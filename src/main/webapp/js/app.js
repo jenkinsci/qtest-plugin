@@ -47,7 +47,11 @@ function loadProject() {
       projects = data.projects;
     }
     //clear release & environment
-    qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', []);
+    qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', [],
+      {
+        labelField: 'pidName',
+        searchField: 'pidName'
+      });
     qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', [],
       {
         create: true,
