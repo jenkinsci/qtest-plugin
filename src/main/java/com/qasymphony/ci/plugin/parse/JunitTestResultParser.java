@@ -41,20 +41,30 @@ public class JunitTestResultParser {
     throws Exception {
     AbstractProject project = build.getProject();
     String basedDir = build.getWorkspace().toURI().getPath();
-    LOG.info("Based dir is:" + basedDir);
-    if (project.getClass().getName().toLowerCase().contains("maven")) {
-      //if pom file is located at workspace, we do not scan
+    Boolean isMavenProject = project.getClass().getName().toLowerCase().contains("maven");
+    MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
+    if (isMavenProject) {
+      //if pom file is located at workspace, we do not scan to detect junit result
       FileSet fs = Util.createFileSet(new File(basedDir), MavenJunitParse.TEST_RESULT_LOCATIONS);
       DirectoryScanner ds = fs.getDirectoryScanner();
       if (ds.getIncludedFiles().length > 0)
-        return new MavenJunitParse(build, launcher, listener).parse();
+        return mavenJunitParse.parse();
     }
 
-    //we'll auto detect test result folder,when project is not maven style
-    MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
+    //we'll auto detect test result folder
     List<String> resultFolders = scanJunitTestResultFolder(basedDir);
     LOG.info("Scanning junit test result in dir:" + basedDir);
     LOG.info(String.format("Found: %s dirs, %s", resultFolders.size(), resultFolders));
+
+    //if is maven project, we only scan surefire report folder
+    if (isMavenProject && resultFolders.size() > 1) {
+      for (String res : resultFolders) {
+        if (res.endsWith("surefire-reports")) {
+          return mavenJunitParse.parse(res + JUNIT_SUFIX);
+        }
+      }
+    }
+
     List<AutomationTestResult> result = new LinkedList<>();
     for (String res : resultFolders) {
       try {
