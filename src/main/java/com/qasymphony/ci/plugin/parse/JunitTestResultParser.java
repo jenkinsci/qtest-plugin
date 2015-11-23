@@ -1,6 +1,7 @@
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
@@ -42,19 +43,27 @@ public class JunitTestResultParser {
     String basedDir = build.getWorkspace().toURI().getPath();
     LOG.info("Based dir is:" + basedDir);
     if (project.getClass().getName().toLowerCase().contains("maven")) {
-      return new MavenJunitParse(build, launcher, listener).parse();
-    } else {
-      //we'll auto detect test result folder,when project is not maven style
-      MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
-      List<String> resultFolders = scanJunitTestResultFolder(basedDir);
-      LOG.info("Scanning junit test result in dir:" + basedDir);
-      LOG.info(String.format("Found: %s dirs, %s", resultFolders.size(), resultFolders));
-      List<AutomationTestResult> result = new LinkedList<>();
-      for (String res : resultFolders) {
-        result.addAll(mavenJunitParse.parse(res + JUNIT_SUFIX));
-      }
-      return result;
+      //if pom file is located at workspace, we do not scan
+      FileSet fs = Util.createFileSet(new File(basedDir), MavenJunitParse.TEST_RESULT_LOCATIONS);
+      DirectoryScanner ds = fs.getDirectoryScanner();
+      if (ds.getIncludedFiles().length > 0)
+        return new MavenJunitParse(build, launcher, listener).parse();
     }
+
+    //we'll auto detect test result folder,when project is not maven style
+    MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
+    List<String> resultFolders = scanJunitTestResultFolder(basedDir);
+    LOG.info("Scanning junit test result in dir:" + basedDir);
+    LOG.info(String.format("Found: %s dirs, %s", resultFolders.size(), resultFolders));
+    List<AutomationTestResult> result = new LinkedList<>();
+    for (String res : resultFolders) {
+      try {
+        result.addAll(mavenJunitParse.parse(res + JUNIT_SUFIX));
+      } catch (Exception e) {
+        LoggerUtils.formatWarn(listener.getLogger(), "Try to scan test result in: %s, error: %s", res, e.getMessage());
+      }
+    }
+    return result;
   }
 
   /**

@@ -73,7 +73,7 @@
     <f:entry title="${%label.environment}" field="environmentName">
       <f:textbox name="config.environmentName1"
                  value="${instance.configuration.environmentName}" clazz="qtest-readonly"/>
-      <span class="config.environmentName" style="display:none">
+      <span class="config.environmentName1" style="display:none">
         <i>${%env.inactive}</i>
       </span>
     </f:entry>

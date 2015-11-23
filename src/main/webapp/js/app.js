@@ -46,17 +46,15 @@ function loadProject() {
     if (data.projects && data.projects != "") {
       projects = data.projects;
     }
-    if (projects.length <= 0) {
-      //clear release & environment
-      qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', []);
-      qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', [],
-        {
-          create: true,
-          valueField: 'value',
-          labelField: 'label',
-          searchField: 'label'
-        });
-    }
+    //clear release & environment
+    qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', []);
+    qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', [],
+      {
+        create: true,
+        valueField: 'value',
+        labelField: 'label',
+        searchField: 'label'
+      });
 
     qtest.initSelectize("input[name='config.projectName1']", 'selectizeProject', projects);
 

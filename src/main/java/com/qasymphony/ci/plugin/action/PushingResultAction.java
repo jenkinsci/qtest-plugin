@@ -18,6 +18,7 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
+import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
@@ -234,19 +235,15 @@ public class PushingResultAction extends Notifier {
   }
 
   private void formatInfo(PrintStream logger, String msg, Object... args) {
-    format(logger, "INFO", msg, args);
+    LoggerUtils.formatInfo(logger, msg, args);
   }
 
   private void formatError(PrintStream logger, String msg, Object... args) {
-    format(logger, "ERROR", msg, args);
+    LoggerUtils.formatError(logger, msg, args);
   }
 
   private void formatWarn(PrintStream logger, String msg, Object... args) {
-    format(logger, "WARN", msg, args);
-  }
-
-  private void format(PrintStream logger, String level, String msg, Object... args) {
-    logger.println(String.format("[qTest] [%s] %s", level, String.format(msg, args)));
+    LoggerUtils.formatWarn(logger, msg, args);
   }
 
   @Extension
