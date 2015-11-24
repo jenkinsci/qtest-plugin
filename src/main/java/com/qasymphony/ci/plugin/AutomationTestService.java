@@ -13,15 +13,15 @@ import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
-import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * @author anpham
  */
 public class AutomationTestService {
-  private static String AUTO_TEST_LOG_ENDPOINT = "api/v3/projects/{0}/test-runs/{1}/auto-test-logs/ci/{2}";
+  public static String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
 
   public static AutomationTestResponse push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
     throws SubmittedException {
@@ -35,8 +35,11 @@ public class AutomationTestService {
     wrapper.setBuildPath(buildPath);
     wrapper.setTestResults(testResults);
 
-    String url = String.format("%s/%s", configuration.getUrl(),
-      MessageFormat.format(AUTO_TEST_LOG_ENDPOINT, new Object[] {configuration.getProjectId(), 0, configuration.getId()}));
+    /**
+     * using {@link String#format(Locale, String, Object...)}  instead {@link java.text.MessageFormat#format(String, Object...)}
+     * to avoid unexpected formatted link. see: QTE-2798 for more details.
+     */
+    String url = String.format(AUTO_TEST_LOG_ENDPOINT, configuration.getUrl(), configuration.getProjectId(), 0, configuration.getId());
 
     ResponseEntity responseEntity = null;
     try {
