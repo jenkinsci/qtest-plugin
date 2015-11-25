@@ -47,7 +47,7 @@ public class OauthProvider {
       }
       JsonNode node = JsonUtils.readTree(entity.getBody());
       if (null == node) {
-        LOG.log(Level.WARNING, "Cannor extract access token from:" + entity.getBody());
+        LOG.log(Level.WARNING, "Cannot extract access token from:" + entity.getBody());
         return null;
       }
       return JsonUtils.getText(node, "access_token");
