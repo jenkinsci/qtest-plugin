@@ -74,20 +74,12 @@ public class StatisticsAction extends Actionable implements Action {
   }
 
   /**
-   * Checks if the user has READ permission, and added qTest plugin.
+   * Checks if the user has READ permission
    *
    * @return true - user has permission, false - no permission.
    */
   private boolean hasPermission() {
-    DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
-    Boolean hasQtestPlugin = false;
-    for (int i = 0; i < publishers.size(); i++) {
-      if (publishers.get(i) instanceof PushingResultAction) {
-        hasQtestPlugin = true;
-        break;
-      }
-    }
-    return hasQtestPlugin && project.hasPermission(Item.READ);
+    return project.hasPermission(Item.READ);
   }
 
   @SuppressWarnings("rawtypes")
