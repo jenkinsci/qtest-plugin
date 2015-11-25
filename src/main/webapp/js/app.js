@@ -38,27 +38,44 @@ function onLoadProject() {
     loadProject();
   });
 }
+function clearProjectData() {
+  //clear release & environment
+  bindRelease([]);
+  bindEnvironment([]);
+}
+function bindRelease(releases) {
+  qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', releases,
+    {
+      labelField: 'name',
+      searchField: ['pid', 'name'],
+      render: {
+        item: function (item, escape) {
+          return '<div>' + escape(item.pid) + ' ' + escape(item.name) + '</div>';
+        },
+        option: function (item, escape) {
+          return '<div>' + escape(item.pid) + ' ' + escape(item.name) + '</div>';
+        }
+      }
+    });
+}
+function bindEnvironment(envs) {
+  qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', envs,
+    {
+      create: true,
+      valueField: 'value',
+      labelField: 'label',
+      searchField: 'label'
+    });
+}
 
 function loadProject() {
+  clearProjectData();
   var btn = $j("#fetchProjectData")[0];
   qtest.fetchProjects(function (data) {
     var projects = [];
     if (data.projects && data.projects != "") {
       projects = data.projects;
     }
-    //clear release & environment
-    qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', [],
-      {
-        labelField: 'pidName',
-        searchField: 'pidName'
-      });
-    qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', [],
-      {
-        create: true,
-        valueField: 'value',
-        labelField: 'label',
-        searchField: 'label'
-      });
 
     qtest.initSelectize("input[name='config.projectName1']", 'selectizeProject', projects);
 
@@ -77,11 +94,13 @@ function loadProject() {
 }
 
 function loadProjectData() {
+  clearProjectData();
   if (qtest.getProjectId() <= 0) {
     console.log("No project selected.")
     return;
   }
   var btn = $j("#fetchProjectData")[0];
+  qtest.showLoading(btn);
   qtest.fetchProjectData(function (data) {
     //Saved configuration from qTest for this project of jenkins instance
     qtest.setting = {};
@@ -102,15 +121,7 @@ function loadRelease(data) {
   if (data.releases && data.releases != "") {
     releases = data.releases;
   }
-  $j.each(releases, function (index) {
-    var item = releases[index];
-    item.pidName = item.pid + " " + item.name;
-  });
-  qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', releases,
-    {
-      labelField: 'pidName',
-      searchField: 'pidName'
-    });
+  bindRelease(releases);
 
   var selectedRelease = qtest.find(releases, "id", qtest.setting.release_id);
   if (!selectedRelease) {
@@ -143,13 +154,7 @@ function loadEnvironment(data) {
   }
   var show = fieldIsInActive || hasInActiveValue;
   $j("span[class='config.environmentName1']").attr('style', 'display:' + (show ? '' : 'none'));
-  qtest.initSelectize("input[name='config.environmentName1']", 'selectizeEnvironment', environments,
-    {
-      create: true,
-      valueField: 'value',
-      labelField: 'label',
-      searchField: 'label'
-    });
+  bindEnvironment(environments)
 
   var selectedEnvironment = qtest.find(environments, "value", qtest.setting.environment_id);
   if (selectedEnvironment)
