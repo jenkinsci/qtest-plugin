@@ -12,5 +12,5 @@ import com.qasymphony.ci.plugin.model.AutomationTestResult;
  *
  */
 public interface TestResultParse {
-  public  List<AutomationTestResult> parse() throws Exception;
+  List<AutomationTestResult> parse() throws Exception;
 }

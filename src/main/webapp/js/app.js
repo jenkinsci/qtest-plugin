@@ -96,7 +96,6 @@ function loadProject() {
 function loadProjectData() {
   clearProjectData();
   if (qtest.getProjectId() <= 0) {
-    console.log("No project selected.")
     return;
   }
   var btn = $j("#fetchProjectData")[0];
@@ -154,7 +153,7 @@ function loadEnvironment(data) {
   }
   var show = fieldIsInActive || hasInActiveValue;
   $j("span[class='config.environmentName1']").attr('style', 'display:' + (show ? '' : 'none'));
-  bindEnvironment(environments)
+  bindEnvironment(environments);
 
   var selectedEnvironment = qtest.find(environments, "value", qtest.setting.environment_id);
   if (selectedEnvironment)

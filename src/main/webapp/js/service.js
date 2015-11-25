@@ -1,7 +1,7 @@
 var qtest = (function ($j) {
   var module = {};
   module.init = function () {
-  }
+  };
   var getUrl = function () {
     return $j("input[name='config.url']").val();
   };
@@ -57,7 +57,7 @@ var qtest = (function ($j) {
         res = src[index];
         return res;
       }
-    })
+    });
     return res;
   };
   module.showLoading = function (node) {
