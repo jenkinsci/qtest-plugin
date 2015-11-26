@@ -9,6 +9,7 @@ public class JunitSubmitterResult {
   public static final String STATUS_SUCCESS = "Complete";
   public static final String STATUS_CANCELED = "Canceled";
   public static final String STATUS_FAILED = "Failed";
+  public static final String STATUS_SKIPPED = "Skipped";
   private Long testSuiteId;
   private String testSuiteName;
   private String submittedStatus;

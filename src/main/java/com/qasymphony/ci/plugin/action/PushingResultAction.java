@@ -175,6 +175,7 @@ public class PushingResultAction extends Notifier {
 
     if (automationTestResults.isEmpty()) {
       formatWarn(logger, "No JUnit test result found.");
+      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
       return null;
     }
     formatInfo(logger, "JUnit test result found: %s", automationTestResults.size());

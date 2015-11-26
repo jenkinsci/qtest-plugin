@@ -26,7 +26,7 @@ public class JunitTestResultParser {
   private static final Logger LOG = Logger.getLogger(JunitTestResultParser.class.getName());
 
   private static final String JUNIT_PREFIX = "TEST-*";
-  private static final String JUNIT_SUFIX = "/*.xml";
+  private static final String JUNIT_SUFFIX = "/*.xml";
 
   /**
    * Parse junit result
@@ -60,7 +60,7 @@ public class JunitTestResultParser {
     if (isMavenProject && resultFolders.size() > 1) {
       for (String res : resultFolders) {
         if (res.endsWith("surefire-reports")) {
-          return mavenJunitParse.parse(res + JUNIT_SUFIX);
+          return mavenJunitParse.parse(res + JUNIT_SUFFIX);
         }
       }
     }
@@ -68,7 +68,7 @@ public class JunitTestResultParser {
     List<AutomationTestResult> result = new LinkedList<>();
     for (String res : resultFolders) {
       try {
-        result.addAll(mavenJunitParse.parse(res + JUNIT_SUFIX));
+        result.addAll(mavenJunitParse.parse(res + JUNIT_SUFFIX));
       } catch (Exception e) {
         LoggerUtils.formatWarn(listener.getLogger(), "Try to scan test result in: %s, error: %s", res, e.getMessage());
       }
