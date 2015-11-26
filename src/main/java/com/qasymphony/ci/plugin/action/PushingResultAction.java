@@ -168,6 +168,7 @@ public class PushingResultAction extends Notifier {
       automationTestResults = JunitTestResultParser.parse(build, launcher, listener);
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
+      formatError(logger, e.getMessage());
       automationTestResults = Collections.emptyList();
     }
 
