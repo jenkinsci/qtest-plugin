@@ -87,17 +87,17 @@ public class JunitTestResultParser {
     FileSet fs = Util.createFileSet(new File(basedDir), JUNIT_PREFIX);
     DirectoryScanner ds = fs.getDirectoryScanner();
     List<String> resultFolders = new ArrayList<>();
-    if (ds.getIncludedFiles().length > 0) {
+    //if based dir match junit file, we add based dir
+    if (ds.getIncludedFiles().length > 0)
       resultFolders.add("");
-    } else {
-      for (String notIncludedDirName : ds.getNotIncludedDirectories()) {
-        if (!StringUtils.isEmpty(notIncludedDirName)) {
-          File dirToScan = new File(currentBasedDir.getPath(), notIncludedDirName);
-          FileSet subFileSet = Util.createFileSet(dirToScan, JUNIT_PREFIX);
-          DirectoryScanner subDirScanner = subFileSet.getDirectoryScanner();
-          if (subDirScanner.getIncludedFiles().length > 0) {
-            resultFolders.add(notIncludedDirName);
-          }
+
+    for (String notIncludedDirName : ds.getNotIncludedDirectories()) {
+      if (!StringUtils.isEmpty(notIncludedDirName)) {
+        File dirToScan = new File(currentBasedDir.getPath(), notIncludedDirName);
+        FileSet subFileSet = Util.createFileSet(dirToScan, JUNIT_PREFIX);
+        DirectoryScanner subDirScanner = subFileSet.getDirectoryScanner();
+        if (subDirScanner.getIncludedFiles().length > 0) {
+          resultFolders.add(notIncludedDirName);
         }
       }
     }
