@@ -82,13 +82,13 @@ public class MavenJunitParseTests extends TestAbstracts {
       }
     }
     assertNotNull("Calculate test is:", calculateTest);
-    assertEquals("Test log size is ", 2, calculateTest.getTestLogs().size());
+    assertEquals("Test log size is ", 4, calculateTest.getTestLogs().size());
     AutomationTestLog first = calculateTest.getTestLogs().get(0);
-    assertEquals("Description 1 is ", "testSum_one", first.getDescription());
+    assertEquals("Description 1 is ", "testSum_second", first.getDescription());
     assertEquals("Status 1 is ", "FAILED", first.getStatus());
 
     AutomationTestLog second = calculateTest.getTestLogs().get(1);
-    assertEquals("Description 2 is ", "testSum_second", second.getDescription());
+    assertEquals("Description 2 is ", "testSum_one", second.getDescription());
     assertEquals("Status 2 is ", "PASSED", second.getStatus());
   }
 }

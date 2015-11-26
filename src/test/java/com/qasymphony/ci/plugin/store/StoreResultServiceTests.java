@@ -2,18 +2,11 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
-import com.qasymphony.ci.plugin.utils.JsonUtils;
-import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.io.File;
-import java.net.URLConnection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -46,9 +39,14 @@ public class StoreResultServiceTests extends TestAbstracts {
     Map<Integer, SubmittedResult> resMap = storeResultService.fetchAll(project, currentBuild);
 
     assertEquals("Result size is: ", 1, resMap.size());
-    SubmittedResult submittedResult = resMap.get(0);
+    SubmittedResult submittedResult = resMap.get(1);
     assertNotNull("submittedResult is ", submittedResult);
-    assertEquals("Result is: ", JsonUtils.toJson(result), JsonUtils.toJson(submittedResult));
+    assertEquals("Build number is: ", result.getBuildNumber(), submittedResult.getBuildNumber());
+    assertEquals("Status build is: ", result.getStatusBuild(), submittedResult.getStatusBuild());
+    assertEquals("TestSuite name is: ", result.getTestSuiteName(), submittedResult.getTestSuiteName());
+    assertEquals("Submit status is: ", result.getSubmitStatus(), submittedResult.getSubmitStatus());
+    assertEquals("Number of testCase is: ", result.getNumberTestResult(), submittedResult.getNumberTestResult());
+    assertEquals("Number of testLog is: ", result.getNumberTestLog(), submittedResult.getNumberTestLog());
   }
 
   @LocalData
@@ -76,7 +74,7 @@ public class StoreResultServiceTests extends TestAbstracts {
     Map<Integer, SubmittedResult> resMap = storeResultService.fetchAll(project, currentBuild);
 
     assertEquals("Result size is: ", 2, resMap.size());
-    assertEquals("Result 0 is: ", JsonUtils.toJson(result), JsonUtils.toJson(resMap.get(result.getBuildNumber())));
-    assertEquals("Result 1 is: ", JsonUtils.toJson(result2), JsonUtils.toJson(resMap.get(result2.getBuildNumber())));
+    assertNotNull("Result 0 is: ", resMap.get(1));
+    assertNotNull("Result 1 is: ", resMap.get(2));
   }
 }

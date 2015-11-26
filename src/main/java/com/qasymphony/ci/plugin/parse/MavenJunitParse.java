@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationAttachment;
@@ -30,12 +27,13 @@ import java.util.zip.ZipOutputStream;
 public class MavenJunitParse implements TestResultParse {
   public static final String TEST_RESULT_LOCATIONS = "target/surefire-reports/*.xml";
   private static final Integer LIMIT_TXT_FILES = 5;
-  @SuppressWarnings("rawtypes")
+  private static final String EXT_TEXT_FILE = ".txt";
+  private static final String EXT_ZIP_FILE = ".zip";
+
   private AbstractBuild build;
   private Launcher launcher;
   private BuildListener listener;
 
-  @SuppressWarnings("rawtypes")
   public MavenJunitParse(AbstractBuild build, Launcher launcher, BuildListener listener) {
     this.build = build;
     this.launcher = launcher;
@@ -53,7 +51,6 @@ public class MavenJunitParse implements TestResultParse {
     Date current = new Date();
 
     TestResult testResult = jUnitParser.parseResult(testResultLocation, build, build.getWorkspace(), launcher, listener);
-    AutomationAttachment attachment = null;
 
     for (SuiteResult suite : testResult.getSuites()) {
       if (suite.getCases() == null) {
@@ -85,10 +82,8 @@ public class MavenJunitParse implements TestResultParse {
 
           automationTestResult.addTestLog(automationTestLog);
           if (caseResult.isFailed()) {
-            attachment = new AutomationAttachment();
-            attachment.setName(caseResult.getName().concat(".txt"));
-            //attachment.setContentType("text/plain");
-            //attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
+            AutomationAttachment attachment = new AutomationAttachment();
+            attachment.setName(caseResult.getName().concat(EXT_TEXT_FILE));
             attachment.setData(caseResult.getErrorStackTrace());
             automationTestResult.getAttachments().add(attachment);
           }
@@ -97,6 +92,13 @@ public class MavenJunitParse implements TestResultParse {
         }
       }
     }
+    addAttachmentData(automationTestResultMap, automationTestResult);
+
+    return new ArrayList<>(automationTestResultMap.values());
+  }
+
+  private AutomationTestResult addAttachmentData(Map<String, AutomationTestResult> automationTestResultMap, AutomationTestResult automationTestResult)
+    throws Exception {
 
     Iterator<String> keys = automationTestResultMap.keySet().iterator();
     String key = null;
@@ -110,15 +112,22 @@ public class MavenJunitParse implements TestResultParse {
       key = keys.next();
       automationTestResult = automationTestResultMap.get(key);
       totalAttachments = automationTestResult.getAttachments().size();
-
       if (totalAttachments > LIMIT_TXT_FILES) {
-        zipFile = File.createTempFile(automationTestResult.getName(), ".zip");
+        zipFile = File.createTempFile(automationTestResult.getName(), EXT_ZIP_FILE);
         zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
 
+        Map<String, Integer> attachmentNames = new HashMap<>();
         for (int i = 0; i < totalAttachments; i++) {
-          attachment = automationTestResult.getAttachments().get(i);
-
-          zipOutputStream.putNextEntry(new ZipEntry(attachment.getName()));
+          AutomationAttachment attachment = automationTestResult.getAttachments().get(i);
+          String attachmentName = attachment.getName();
+          if (attachmentNames.containsKey(attachment.getName())) {
+            Integer count = attachmentNames.get(attachment.getName());
+            attachmentName = attachmentName.replace(EXT_TEXT_FILE, "_" + count + EXT_TEXT_FILE);
+            attachmentNames.put(attachment.getName(), ++count);
+          } else {
+            attachmentNames.put(attachment.getName(), 1);
+          }
+          zipOutputStream.putNextEntry(new ZipEntry(attachmentName));
           zipOutputStream.write(attachment.getData().getBytes());
 
           zipOutputStream.closeEntry();
@@ -131,26 +140,21 @@ public class MavenJunitParse implements TestResultParse {
         zipFileBytes = new byte[zipFileLength];
         bufferedInputStream.read(zipFileBytes, 0, zipFileLength);
         bufferedInputStream.close();
-
-        automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
-
-        attachment = new AutomationAttachment();
+        AutomationAttachment attachment = new AutomationAttachment();
         attachment.setData(Base64.encodeBase64String(zipFileBytes));
         attachment.setContentType("application/zip");
-        attachment.setName(zipFile.getName());
+        attachment.setName(automationTestResult.getName() + EXT_ZIP_FILE);
         // add zip file
-        automationTestResult.getAttachments().add(attachment);
-
+        automationTestResult.setAttachments(Arrays.asList(attachment));
       } else {
         for (int i = 0; i < totalAttachments; i++) {
-          attachment = automationTestResult.getAttachments().get(i);
+          AutomationAttachment attachment = automationTestResult.getAttachments().get(i);
           attachment.setContentType("text/plain");
           attachment.setData(Base64.encodeBase64String(attachment.getData().getBytes()));
         }
       }
     }
-
-    return new ArrayList<>(automationTestResultMap.values());
+    return automationTestResult;
   }
 
   @Override
