@@ -21,7 +21,7 @@ import java.util.Map;
  * @author anpham
  */
 public class AutomationTestService {
-  public static String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
+  private static String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
 
   public static AutomationTestResponse push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
     throws SubmittedException {
@@ -45,13 +45,14 @@ public class AutomationTestService {
     try {
       responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(wrapper));
     } catch (ClientRequestException e) {
-      throw new SubmittedException(e.getMessage(), responseEntity.getStatusCode());
+      throw new SubmittedException(e.getMessage(), null == responseEntity ? 0 : responseEntity.getStatusCode());
     }
 
     if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
       Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
+      String message = null == error ? "" : error.getMessage();
       throw new SubmittedException(
-        StringUtils.isEmpty(error.getMessage()) ? responseEntity.getBody() : error.getMessage(), responseEntity.getStatusCode());
+        StringUtils.isEmpty(message) ? responseEntity.getBody() : message, responseEntity.getStatusCode());
     } else {
       return JsonUtils.fromJson(responseEntity.getBody(), AutomationTestResponse.class);
     }

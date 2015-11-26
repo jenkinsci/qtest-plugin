@@ -79,8 +79,8 @@ public class FileReader implements Closeable, AutoCloseable {
       throw new IllegalArgumentException("'to' must be greater than or equal to 'from'");
     }
 
-    SortedMap<Integer, String> lines = new TreeMap<Integer, String>();
-    List<Long> positions = new ArrayList<Long>(index);
+    SortedMap<Integer, String> lines = new TreeMap<>();
+    List<Long> positions = new ArrayList<>(index);
 
     try {
       lock.lock();
@@ -222,7 +222,7 @@ public class FileReader implements Closeable, AutoCloseable {
 
     @Override
     protected SortedSet<Long> compute() {
-      SortedSet<Long> index = new TreeSet<Long>();
+      SortedSet<Long> index = new TreeSet<>();
       try {
         if (length < threshold) {
           BufferedAccessFile raf = null;
@@ -232,11 +232,11 @@ public class FileReader implements Closeable, AutoCloseable {
 
             // Add the position for 1st line
             if (raf.getFilePointer() == 0L) {
-              index.add(Long.valueOf(raf.getFilePointer()));
+              index.add(raf.getFilePointer());
             }
             while (raf.getFilePointer() < end) {
               raf.getNextLine();
-              index.add(Long.valueOf(raf.getFilePointer()));
+              index.add(raf.getFilePointer());
             }
           } finally {
             if (raf != null) {
@@ -247,13 +247,12 @@ public class FileReader implements Closeable, AutoCloseable {
           long start1 = start;
           long end1 = start + (length / 2);
 
-          long start2 = end1;
           long end2 = end;
 
           IndexingTask task1 = new IndexingTask(file, start1, end1,
             threshold);
           task1.fork();
-          IndexingTask task2 = new IndexingTask(file, start2, end2,
+          IndexingTask task2 = new IndexingTask(file, end1, end2,
             threshold);
 
           index.addAll(task2.compute());

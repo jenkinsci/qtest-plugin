@@ -20,21 +20,21 @@ import java.util.logging.Logger;
  * @since 1.0
  */
 public class JsonUtils {
-  private static final Logger LOG = Logger.getLogger(JsonUtils.class.getName());
   public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+  private static final Logger LOG = Logger.getLogger(JsonUtils.class.getName());
   /**
    * Use for JSON
    */
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  private JsonUtils() {
-
-  }
-
   static {
     // mapper
     mapper.setDateFormat(new SimpleDateFormat(UTC_DATE_FORMAT));
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  }
+
+  private JsonUtils() {
+
   }
 
   /**

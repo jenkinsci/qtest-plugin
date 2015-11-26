@@ -35,10 +35,10 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
  * @since 1.0
  */
 public class HttpClientUtils {
+  private static HttpClient CLIENT;
+
   private HttpClientUtils() {
   }
-
-  private static HttpClient CLIENT;
 
   private static HttpClient getClient() throws ClientRequestException {
     initClient();
@@ -235,9 +235,7 @@ public class HttpClientUtils {
   private static SSLConnectionSocketFactory getSslSocketFactory()
     throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
     SSLContext sslContext = getSslContext();
-    SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
-      ALLOW_ALL_HOSTNAME_VERIFIER);
-    return sslSocketFactory;
+    return new SSLConnectionSocketFactory(sslContext, ALLOW_ALL_HOSTNAME_VERIFIER);
   }
 
   private static SSLContext getSslContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
@@ -245,8 +243,7 @@ public class HttpClientUtils {
     KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
     TrustStrategy trustStrategy = new TrustAllStrategy();
     sslContextBuilder.loadTrustMaterial(keyStore, trustStrategy);
-    SSLContext sslContext = sslContextBuilder.build();
-    return sslContext;
+    return sslContextBuilder.build();
   }
 
   /**

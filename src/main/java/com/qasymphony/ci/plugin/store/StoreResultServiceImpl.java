@@ -27,6 +27,10 @@ import java.util.SortedMap;
  */
 public class StoreResultServiceImpl implements StoreResultService {
   /**
+   * Separate file by build number for each 20000 build
+   */
+  public static final Integer BREAK_FILE_BY = 20000;
+  /**
    * <p>
    * Folder store data for plugin, we make folder located in jobs/projectName
    * </p>
@@ -36,16 +40,10 @@ public class StoreResultServiceImpl implements StoreResultService {
    * Result file
    */
   private static final String RESULT_FILE = "submitted";
-
   /**
    * Extension
    */
   private static final String RESULT_FILE_EXT = ".result";
-
-  /**
-   * Separate file by build number for each 20000 build
-   */
-  public static final Integer BREAK_FILE_BY = 20000;
 
   @Override public Boolean store(AbstractProject project, final SubmittedResult result)
     throws StoreResultException {

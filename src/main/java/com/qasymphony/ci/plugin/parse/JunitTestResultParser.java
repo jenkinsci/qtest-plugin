@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * @since 1.0
  */
 public class JunitTestResultParser {
-  private static Logger LOG = Logger.getLogger(JunitTestResultParser.class.getName());
+  private static final Logger LOG = Logger.getLogger(JunitTestResultParser.class.getName());
 
   private static final String JUNIT_PREFIX = "TEST-*";
   private static final String JUNIT_SUFIX = "/*.xml";

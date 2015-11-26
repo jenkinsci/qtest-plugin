@@ -6,8 +6,8 @@ package com.qasymphony.ci.plugin.utils;
  * @since 1.0
  */
 public class ResponseEntity {
-  private String body;
-  private Integer statusCode;
+  private final String body;
+  private final Integer statusCode;
 
   public ResponseEntity(String body, Integer statusCode) {
     this.body = body;

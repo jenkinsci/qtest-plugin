@@ -177,7 +177,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    * @return
    */
   public Setting toSetting() {
-    Setting setting = new Setting()
+    return new Setting()
       .setId(this.id)
       .setJenkinsServer(this.jenkinsServerUrl)
       .setJenkinsProjectName(this.jenkinsProjectName)
@@ -186,7 +186,6 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       .setModuleId(this.moduleId)
       .setEnvironmentId(this.environmentId)
       .setTestSuiteId(this.testSuiteId);
-    return setting;
   }
 
   @Extension

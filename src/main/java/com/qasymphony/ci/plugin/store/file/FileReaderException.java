@@ -5,7 +5,7 @@ package com.qasymphony.ci.plugin.store.file;
  * @version 10/23/2015 1:35 AM trongle $
  * @since 1.0
  */
-public class FileReaderException extends  RuntimeException {
+public class FileReaderException extends RuntimeException {
   public FileReaderException() {
     super();
   }

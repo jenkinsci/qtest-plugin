@@ -72,8 +72,7 @@ public class PushingResultAction extends Notifier {
 
   @Override
   public DescriptorImpl getDescriptor() {
-    DescriptorImpl descriptor = (DescriptorImpl) super.getDescriptor();
-    return descriptor;
+    return (DescriptorImpl) super.getDescriptor();
   }
 
   @SuppressWarnings("rawtypes")
@@ -84,12 +83,14 @@ public class PushingResultAction extends Notifier {
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     if (Result.ABORTED.equals(build.getResult())) {
       formatWarn(logger, "Abort build action.");
-      return storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      return true;
     }
     showInfo(logger);
     if (!validateConfig(configuration)) {
       formatWarn(logger, "Invalid configuration to qTest, reject submit test result.");
-      return storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+      return true;
     }
     checkProjectNameChanged(build, logger);
 
