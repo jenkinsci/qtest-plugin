@@ -9,6 +9,7 @@ import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.BufferedWriter;
@@ -135,7 +136,11 @@ public class StoreResultServiceImpl implements StoreResultService {
     for (Map.Entry<Integer, String> entry : lines.entrySet()) {
       SubmittedResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmittedResult.class);
       if (null != submitResult) {
-        submitResult.setTestSuiteLink(ConfigService.formatTestSuiteLink(url, projectId, submitResult.getTestSuiteId()));
+        if (StringUtils.isEmpty(submitResult.getUrl())) {
+          submitResult.setTestSuiteLink(ConfigService.formatTestSuiteLink(url, projectId, submitResult.getTestSuiteId()));
+        } else {
+          submitResult.setTestSuiteLink(ConfigService.formatTestSuiteLink(submitResult.getUrl(), submitResult.getProjectId(), submitResult.getTestSuiteId()));
+        }
         buildResults.put(submitResult.getBuildNumber(), submitResult);
       }
     }

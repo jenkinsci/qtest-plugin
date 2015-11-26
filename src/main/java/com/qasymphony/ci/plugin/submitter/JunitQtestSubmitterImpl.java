@@ -1,10 +1,12 @@
 package com.qasymphony.ci.plugin.submitter;
 
 import com.qasymphony.ci.plugin.AutomationTestService;
+import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResponse;
+import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
@@ -44,7 +46,14 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
     throws StoreResultException {
+    //get saved configuration
+    Configuration configuration = ConfigService.getPluginConfiguration(build.getProject());
+    String qTestUrl = configuration == null ? "" : configuration.getUrl();
+    Long projectId = configuration == null ? 0L : configuration.getProjectId();
+
     SubmittedResult submitResult = new SubmittedResult()
+      .setUrl(qTestUrl)
+      .setProjectId(projectId)
       .setBuildNumber(build.getNumber())
       .setStatusBuild(build.getResult().toString())
       .setTestSuiteId(result.getTestSuiteId())

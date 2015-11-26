@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmittedResult {
+  private String url;
+  private long projectId;
   private int buildNumber;
   private String statusBuild;
   private Long testSuiteId;
@@ -17,6 +19,24 @@ public class SubmittedResult {
   private int numberTestResult;
   private int numberTestLog;
   private String testSuiteLink;
+
+  public String getUrl() {
+    return url;
+  }
+
+  public SubmittedResult setUrl(String url) {
+    this.url = url;
+    return this;
+  }
+
+  public long getProjectId() {
+    return projectId;
+  }
+
+  public SubmittedResult setProjectId(long projectId) {
+    this.projectId = projectId;
+    return this;
+  }
 
   public int getBuildNumber() {
     return buildNumber;
