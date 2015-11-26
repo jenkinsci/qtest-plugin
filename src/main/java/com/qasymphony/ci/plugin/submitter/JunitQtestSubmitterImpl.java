@@ -11,6 +11,7 @@ import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.model.AbstractBuild;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,8 +26,14 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws SubmittedException {
-    AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(), request.getTestResults(), request.getConfiguration(),
-      OauthProvider.buildHeaders(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey(), null));
+    String accessToken = OauthProvider.getAccessToken(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey());
+    if (StringUtils.isEmpty(accessToken))
+      throw new SubmittedException(String.format("Cannot get access token from: %s, access token is: %s",
+        request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey()));
+
+    AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
+      request.getTestResults(), request.getConfiguration(), OauthProvider.buildHeaders(accessToken, null));
+
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
       .setTestSuiteId(null)
