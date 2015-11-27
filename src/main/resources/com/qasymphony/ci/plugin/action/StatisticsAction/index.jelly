@@ -21,6 +21,7 @@
               <li>${%status.canceled}</li>
               <li>${%status.failed}</li>
               <li>${%status.complete}</li>
+              <li>${%status.skipped}</li>
             </ul>
           </div>
         </div>

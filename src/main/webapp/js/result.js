@@ -9,6 +9,7 @@ remoteAction.getTreeResult(10, $j.proxy(function (t) {
       {"mData": "numberTestResult"},
       {"mData": "numberTestLog"}
     ],
+    order: [[0, "desc"]],
     aoColumnDefs: [{
       "aTargets": [0],
       "mData": "buildNumber",
