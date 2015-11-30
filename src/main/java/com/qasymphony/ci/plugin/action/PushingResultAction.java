@@ -52,6 +52,7 @@ import java.util.logging.Logger;
  */
 public class PushingResultAction extends Notifier {
   private static final Logger LOG = Logger.getLogger(PushingResultAction.class.getName());
+  private static final String HR_TEXT = "------------------------------------------------------------------------";
   private Configuration configuration;
 
   public PushingResultAction(Configuration configuration) {
@@ -119,9 +120,9 @@ public class PushingResultAction extends Notifier {
 
   private void showInfo(PrintStream logger) {
     formatInfo(logger, "");
-    formatInfo(logger, "------------------------------------------------------------------------");
+    formatInfo(logger, HR_TEXT);
     formatInfo(logger, ResourceBundle.DISPLAY_NAME);
-    formatInfo(logger, "------------------------------------------------------------------------");
+    formatInfo(logger, HR_TEXT);
     formatInfo(logger, "Submit Junit test result to qTest at:%s", configuration.getUrl());
     formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
     formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
@@ -175,8 +176,12 @@ public class PushingResultAction extends Notifier {
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
       return null;
     }
-    formatInfo(logger, "JUnit test result found: %s", automationTestResults.size());
 
+    formatInfo(logger, HR_TEXT);
+    formatInfo(logger, "JUnit test result found: %s", automationTestResults.size());
+    formatInfo(logger, HR_TEXT);
+
+    formatInfo(logger, "");
     JunitSubmitterResult result = null;
     formatInfo(logger, "Begin submit test result to qTest,at: " + JsonUtils.getCurrentDateString());
     try {
@@ -201,8 +206,19 @@ public class PushingResultAction extends Notifier {
           .setNumberOfTestResult(automationTestResults.size())
           .setNumberOfTestLog(0);
       }
-      formatInfo(logger, "Result after submit: testLogs=%s, testSuiteId:%s, testSuiteName:%s",
-        result.getNumberOfTestLog(), result.getTestSuiteId(), result.getTestSuiteName());
+
+      formatInfo(logger, "Result after submit:");
+      formatInfo(logger, HR_TEXT);
+      if (null == result.getTestSuiteId() || result.getTestSuiteId() <= 0) {
+        formatInfo(logger, "SUBMIT FAILED");
+        formatInfo(logger, HR_TEXT);
+      } else {
+        formatInfo(logger, "SUBMIT SUCCESS");
+        formatInfo(logger, HR_TEXT);
+        formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
+        formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
+        formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
+      }
       formatInfo(logger, "End submit test result to qTest at: %s", JsonUtils.getCurrentDateString());
       formatInfo(logger, "");
     }
