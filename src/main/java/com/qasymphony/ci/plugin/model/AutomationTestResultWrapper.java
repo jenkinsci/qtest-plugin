@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.qasymphony.ci.plugin.model;
 
 import java.util.List;

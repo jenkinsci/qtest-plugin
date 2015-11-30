@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.qasymphony.ci.plugin.parse;
 
 import java.util.List;

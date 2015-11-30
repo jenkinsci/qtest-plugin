@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.qasymphony.ci.plugin.model;
 
 import com.qasymphony.ci.plugin.model.qtest.Setting;

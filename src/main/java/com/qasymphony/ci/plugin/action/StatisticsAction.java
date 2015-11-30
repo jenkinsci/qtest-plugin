@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ResourceBundle;

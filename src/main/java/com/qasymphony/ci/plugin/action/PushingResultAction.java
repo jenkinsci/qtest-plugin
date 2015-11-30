@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ConfigService;
@@ -269,7 +266,7 @@ public class PushingResultAction extends Notifier {
 
     @Override
     public String getHelpFile() {
-      return "/plugin/qtest/help/main.html";
+      return ResourceBundle.CONFIG_HELP_FILE;
     }
 
     @Override
@@ -313,22 +310,22 @@ public class PushingResultAction extends Notifier {
           }
           return FormValidation.ok();
         } else {
-          return FormValidation.error("Please set a valid qTest URL");
+          return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
         }
       } catch (Exception e) {
-        return FormValidation.error("Please set a valid qTest URL");
+        return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
       }
     }
 
     public FormValidation doCheckAppSecretKey(@QueryParameter String value, @AncestorInPath AbstractProject project)
       throws IOException, ServletException {
       if (StringUtils.isEmpty(value))
-        return FormValidation.error("Please set API key");
+        return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
       DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
       PushingResultAction notifier = (PushingResultAction) publishers.get(this);
       if (null != notifier && notifier.getConfiguration() != null) {
         if (!ConfigService.validateApiKey(notifier.getConfiguration().getUrl(), value))
-          return FormValidation.error("Please set a valid API key");
+          return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
       }
       return FormValidation.ok();
     }
@@ -336,14 +333,14 @@ public class PushingResultAction extends Notifier {
     public FormValidation doCheckProjectName(@QueryParameter String value)
       throws IOException, ServletException {
       if (value.length() <= 0)
-        return FormValidation.error("Please select a project.");
+        return FormValidation.error(ResourceBundle.MSG_INVALID_PROJECT);
       return FormValidation.ok();
     }
 
     public FormValidation doCheckReleaseName(@QueryParameter String value)
       throws IOException, ServletException {
       if (value.length() <= 0)
-        return FormValidation.error("Please select a release.");
+        return FormValidation.error(ResourceBundle.MSG_INVALID_RELEASE);
       return FormValidation.ok();
     }
 
