@@ -163,6 +163,7 @@ public class PushingResultAction extends Notifier {
 
   private JunitSubmitterResult submitTestResult(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     List<AutomationTestResult> automationTestResults;
+    long start = System.currentTimeMillis();
     try {
       automationTestResults = JunitTestResultParser.parse(build, launcher, listener);
     } catch (Exception e) {
@@ -170,20 +171,20 @@ public class PushingResultAction extends Notifier {
       formatError(logger, e.getMessage());
       automationTestResults = Collections.emptyList();
     }
-
     if (automationTestResults.isEmpty()) {
       formatWarn(logger, "No JUnit test result found.");
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
       return null;
     }
-
     formatInfo(logger, HR_TEXT);
     formatInfo(logger, "JUnit test result found: %s", automationTestResults.size());
+    formatInfo(logger, "Time to parse in: " + LoggerUtils.eslapedTime(start));
     formatInfo(logger, HR_TEXT);
 
     formatInfo(logger, "");
     JunitSubmitterResult result = null;
-    formatInfo(logger, "Begin submit test result to qTest,at: " + JsonUtils.getCurrentDateString());
+    formatInfo(logger, "Begin submit test result to qTest at: " + JsonUtils.getCurrentDateString());
+    start = System.currentTimeMillis();
     try {
       result = junitSubmitter.submit(
         new JunitSubmitterRequest()
@@ -219,6 +220,7 @@ public class PushingResultAction extends Notifier {
         formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
         formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
       }
+      formatInfo(logger, "   time to submit in: " + LoggerUtils.eslapedTime(start));
       formatInfo(logger, "End submit test result to qTest at: %s", JsonUtils.getCurrentDateString());
       formatInfo(logger, "");
     }

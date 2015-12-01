@@ -5,6 +5,7 @@ import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.*;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
+import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -178,11 +179,6 @@ public class JunitTestResultParserTests extends TestAbstracts {
     AutomationTestResponse response = AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
     assertNotNull("Result is: ", response);
     assertNotNull("Test suite id is: ", response.getTestSuiteId());
-    Long end = System.currentTimeMillis();
-    Long duration = end - start;
-    String totalDuration = String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(duration),
-      TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-    );
-    System.out.println("End submit in: " + totalDuration);
+    System.out.println("End submit in: " + LoggerUtils.eslapedTime(start));
   }
 }
