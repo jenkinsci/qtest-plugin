@@ -43,29 +43,31 @@ public class JunitTestResultParser {
     String basedDir = build.getWorkspace().toURI().getPath();
     Boolean isMavenProject = project.getClass().getName().toLowerCase().contains("maven");
     MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
-    if (isMavenProject) {
-      //if pom file is located at workspace, we do not scan to detect junit result
-      FileSet fs = Util.createFileSet(new File(basedDir), MavenJunitParse.TEST_RESULT_LOCATIONS);
-      DirectoryScanner ds = fs.getDirectoryScanner();
-      if (ds.getIncludedFiles().length > 0)
-        return mavenJunitParse.parse();
-    }
-
     //we'll auto detect test result folder
     List<String> resultFolders = scanJunitTestResultFolder(basedDir);
     LOG.info("Scanning junit test result in dir:" + basedDir);
     LOG.info(String.format("Found: %s dirs, %s", resultFolders.size(), resultFolders));
 
-    //if is maven project, we only scan surefire report folder
-    if (isMavenProject && resultFolders.size() > 1) {
+    List<AutomationTestResult> result = new LinkedList<>();
+    if (isMavenProject && resultFolders.size() <= 1) {
+      //if pom file is located at workspace, we do not scan to detect junit result
+      FileSet fs = Util.createFileSet(new File(basedDir), MavenJunitParse.TEST_RESULT_LOCATIONS);
+      DirectoryScanner ds = fs.getDirectoryScanner();
+      if (ds.getIncludedFiles().length > 0)
+        return mavenJunitParse.parse();
+    } else if (isMavenProject) {
+      //if is maven project, we only scan surefire report folder
       for (String res : resultFolders) {
         if (res.endsWith("surefire-reports")) {
-          return mavenJunitParse.parse(res + JUNIT_SUFFIX);
+          try {
+            result.addAll(mavenJunitParse.parse(res + JUNIT_SUFFIX));
+          } catch (Exception e) {
+            LoggerUtils.formatWarn(listener.getLogger(), "Try to scan test result in: %s, error: %s", res, e.getMessage());
+          }
         }
       }
     }
 
-    List<AutomationTestResult> result = new LinkedList<>();
     for (String res : resultFolders) {
       try {
         result.addAll(mavenJunitParse.parse(res + JUNIT_SUFFIX));
