@@ -66,6 +66,7 @@ public class JunitTestResultParser {
           }
         }
       }
+      return result;
     }
 
     for (String res : resultFolders) {
