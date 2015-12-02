@@ -36,7 +36,7 @@ public class OauthProvider {
     StringBuilder sb = new StringBuilder()
       .append(url)
       .append("/oauth/token?grant_type=refresh_token")
-      .append("&refresh_token=").append(apiKey);
+      .append("&refresh_token=").append(HttpClientUtils.encode(apiKey));
     Map<String, String> headers = new HashMap<>();
     headers.put(HEADER_AUTH, "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==");
     try {

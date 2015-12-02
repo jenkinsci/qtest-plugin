@@ -93,6 +93,30 @@ public class JunitTestResultParserTests extends TestAbstracts {
     assertEquals("", 20, automationTestResultList.size());
   }
 
+  @LocalData
+  @Test public void testSubmitWithAutomationXMLContent()
+    throws InterruptedException, ExecutionException, TimeoutException, IOException, SubmittedException {
+    project = j.createFreeStyleProject("ant-project");
+    automationTestResultList = null;
+    project.getBuildersList().add(new JUnitParserTestAntProject());
+    FreeStyleBuild build = project.scheduleBuild2(0).get(100, TimeUnit.MINUTES);
+    assertNotNull("Build is: ", build);
+
+    String buildNumber = "1";
+    String buildPath = "/jobs/AntProjectWithXMLContent/" + buildNumber;
+    String projectName = "AntProjectWithXMLContent";
+    String apiKey = "9d3971a6-f6d7-4e0b-996c-e2ade023b4e8";
+    Long releaseId = 1L;
+    Long ciId = 1L;
+    Long qTestProjectId = 3L;
+    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
+      releaseId, "releaseName", 0L, "environment", 0L, 0L);
+    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
+    AutomationTestResponse response = AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, headers);
+    assertNotNull("Result is: ", response);
+    assertNotNull("Test suite id is: ", response.getTestSuiteId());
+  }
+
   @Test public void testSubmitLog()
     throws InterruptedException, ExecutionException, TimeoutException, IOException, SubmittedException {
     String buildNumber = "1";

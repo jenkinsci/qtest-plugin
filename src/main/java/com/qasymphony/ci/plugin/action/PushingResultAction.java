@@ -18,12 +18,14 @@ import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
-import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -319,45 +321,31 @@ public class PushingResultAction extends Notifier {
       try {
         new URL(value);
         Boolean isQtestUrl = ConfigService.validateQtestUrl(value);
-        if (isQtestUrl) {
-          DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
-          PushingResultAction notifier = (PushingResultAction) publishers.get(this);
-          if (null != notifier && notifier.getConfiguration() != null) {
-            //set url to can get url when validate apiKey
-            notifier.getConfiguration().setUrl(value);
-          }
-          return FormValidation.ok();
-        } else {
-          return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-        }
+        return isQtestUrl ? FormValidation.ok() : FormValidation.error(ResourceBundle.MSG_INVALID_URL);
       } catch (Exception e) {
         return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
       }
     }
 
-    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @AncestorInPath AbstractProject project)
+    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @AncestorInPath AbstractProject project)
       throws IOException, ServletException {
-      if (StringUtils.isEmpty(value))
+      if (StringUtils.isEmpty(value) || StringUtils.isEmpty(url))
         return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-      DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
-      PushingResultAction notifier = (PushingResultAction) publishers.get(this);
-      if (null != notifier && notifier.getConfiguration() != null) {
-        if (!ConfigService.validateApiKey(notifier.getConfiguration().getUrl(), value))
-          return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-      }
+      if (!ConfigService.validateApiKey(url, value))
+        return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
       return FormValidation.ok();
     }
 
     public FormValidation doCheckProjectName(@QueryParameter String value)
       throws IOException, ServletException {
-      if (value.length() <= 0)
+      if (StringUtils.isBlank(value))
         return FormValidation.error(ResourceBundle.MSG_INVALID_PROJECT);
       return FormValidation.ok();
     }
 
     public FormValidation doCheckReleaseName(@QueryParameter String value)
       throws IOException, ServletException {
-      if (value.length() <= 0)
+      if (StringUtils.isBlank(value))
         return FormValidation.error(ResourceBundle.MSG_INVALID_RELEASE);
       return FormValidation.ok();
     }
