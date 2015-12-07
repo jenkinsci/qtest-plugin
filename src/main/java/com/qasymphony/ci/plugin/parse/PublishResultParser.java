@@ -37,14 +37,16 @@ public class PublishResultParser implements TestResultParse {
       testResults.add(resultAction.getResult());
     }else {
       AggregatedTestResultAction aggregatedTestResultAction = build.getAction(AggregatedTestResultAction.class);
-       List<ChildReport> childReports = aggregatedTestResultAction.getResult();
-       if(childReports != null){
-         for(ChildReport childReport: childReports){
-           if(childReport.result instanceof TestResult){
-             testResults.add((TestResult) childReport.result);
-           }
-         }
-       }
+      if(aggregatedTestResultAction != null){
+        List<ChildReport> childReports = aggregatedTestResultAction.getResult();
+        if(childReports != null){
+          for(ChildReport childReport: childReports){
+            if(childReport.result instanceof TestResult){
+              testResults.add((TestResult) childReport.result);
+            }
+          }
+        }
+      }
     }
     
     GregorianCalendar gregorianCalendar = new GregorianCalendar();
