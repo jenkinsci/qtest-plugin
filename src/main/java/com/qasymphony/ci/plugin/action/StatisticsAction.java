@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
+import com.qasymphony.ci.plugin.store.ReadSubmitLogRequest;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.model.AbstractProject;
@@ -10,12 +11,8 @@ import hudson.model.Actionable;
 import hudson.model.Item;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
-import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,9 +24,9 @@ import java.util.logging.Logger;
 public class StatisticsAction extends Actionable implements Action {
   private static final Logger LOG = Logger.getLogger(StatisticsAction.class.getName());
 
-  @SuppressWarnings("rawtypes") AbstractProject project;
-  private StoreResultService storeResultService = new StoreResultServiceImpl();
-  private Map<Integer, SubmittedResult> results = new HashMap<>();
+  @SuppressWarnings("rawtypes")
+  private AbstractProject project;
+  private final StoreResultService storeResultService = new StoreResultServiceImpl();
 
   public StatisticsAction(@SuppressWarnings("rawtypes") AbstractProject project) {
     this.project = project;
@@ -85,21 +82,27 @@ public class StatisticsAction extends Actionable implements Action {
     return this.project;
   }
 
-  @Exported(name = "results", inline = true)
-  public List<SubmittedResult> getResult() {
-    return new ArrayList<>(getTreeResult(20).values());
-  }
-
+  /**
+   * use to get result in qTest Plugin page
+   *
+   * @param page
+   * @return
+   */
   @JavaScriptMethod
   public JSONObject getTreeResult(int page) {
+    Map<Integer, SubmittedResult> results = null;
     try {
       AbstractProject project = this.getProject();
-      results = storeResultService.fetchAll(project, Math.max(project.getNextBuildNumber() - 1, 0));
+      results = storeResultService.fetchAll(new ReadSubmitLogRequest()
+        .setProject(project)
+        .setStart(0)
+        .setSize(-1))
+        .getResults();
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
     }
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put("data", results.values());
+    jsonObject.put("data", null == results ? "" : results.values());
     return jsonObject;
   }
 }
