@@ -36,7 +36,8 @@ public class StoreResultServiceTests extends TestAbstracts {
       .setBuildNumber(currentBuild)
       .setStatusBuild("SUCCESS");
     storeResultService.store(project, result);
-    Map<Integer, SubmittedResult> resMap = storeResultService.fetchAll(project, currentBuild);
+    Map<Integer, SubmittedResult> resMap = storeResultService.fetchAll(new ReadSubmitLogRequest()
+      .setProject(project)).getResults();
 
     assertEquals("Result size is: ", 1, resMap.size());
     SubmittedResult submittedResult = resMap.get(1);
@@ -71,7 +72,8 @@ public class StoreResultServiceTests extends TestAbstracts {
       .setBuildNumber(++currentBuild)
       .setStatusBuild("FAILED");
     storeResultService.store(project, result2);
-    Map<Integer, SubmittedResult> resMap = storeResultService.fetchAll(project, currentBuild);
+    Map<Integer, SubmittedResult> resMap = storeResultService.fetchAll(new ReadSubmitLogRequest()
+      .setProject(project)).getResults();
 
     assertEquals("Result size is: ", 2, resMap.size());
     assertNotNull("Result 0 is: ", resMap.get(1));
