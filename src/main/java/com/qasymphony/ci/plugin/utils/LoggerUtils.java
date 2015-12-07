@@ -1,6 +1,7 @@
 package com.qasymphony.ci.plugin.utils;
 
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author trongle
@@ -26,5 +27,19 @@ public class LoggerUtils {
 
   public static void format(PrintStream logger, String level, String msg, Object... args) {
     logger.println(String.format("[qTest] [%s] %s", level, String.format(msg, args)));
+  }
+
+  /**
+   * Format duration
+   *
+   * @param start
+   * @return
+   */
+  public static String eslapedTime(long start) {
+    Long end = System.currentTimeMillis();
+    Long duration = end - start;
+    return String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(duration),
+      TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
+    );
   }
 }
