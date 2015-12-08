@@ -3,5 +3,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin allow you to push Junit test results to qTest after project(s) are built
+  This plugin collects and reports unit test results to qTest. It supports any testing frameworks which are capable of generating JUnit XML format test reports.
 </div>

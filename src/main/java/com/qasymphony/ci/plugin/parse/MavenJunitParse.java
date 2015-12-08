@@ -59,21 +59,18 @@ public class MavenJunitParse implements TestResultParse {
         for (CaseResult caseResult : suite.getCases()) {
           if (automationTestResultMap.containsKey(caseResult.getClassName())) {
             automationTestResult = automationTestResultMap.get(caseResult.getClassName());
-            if (caseResult.isFailed()) {
-              automationTestResult.setStatus(Status.FAILED.toString());
-            }
           } else {
             automationTestResult = new AutomationTestResult();
             automationTestResult.setName(caseResult.getClassName());
             automationTestResult.setAutomationContent(caseResult.getClassName());
+            
             automationTestResult.setExecutedEndDate(current);
             automationTestResult.setExecutedStartDate(current);
-            automationTestResult.setStatus(caseResult.isPassed() ? Status.PASSED.toString() : Status.FAILED.toString());
-            automationTestResult.setTestLogs(new ArrayList<AutomationTestLog>());
             automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
 
             automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
           }
+
           automationTestLog = new AutomationTestLog();
           automationTestLog.setDescription(caseResult.getName());
           automationTestLog.setExpectedResult(caseResult.getName());

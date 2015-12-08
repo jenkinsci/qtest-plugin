@@ -12,7 +12,8 @@
   <version>1.1.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
-  <description>Submit JUnit Result to qTest</description>
+  <description>This plugin collects and reports unit test results to qTest.
+    It supports any testing frameworks which are capable of generating JUnit XML format test reports.</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/QTest+Plugin</url>
 
   <licenses>

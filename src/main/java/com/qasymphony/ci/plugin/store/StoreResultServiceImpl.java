@@ -16,9 +16,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * @author trongle
@@ -29,7 +27,7 @@ public class StoreResultServiceImpl implements StoreResultService {
   /**
    * Separate file by build number for each 20000 build
    */
-  public static final Integer BREAK_FILE_BY = 20000;
+  private static final Integer BREAK_FILE_BY = 20000;
   /**
    * <p>
    * Folder store data for plugin, we make folder located in jobs/projectName
@@ -80,13 +78,67 @@ public class StoreResultServiceImpl implements StoreResultService {
     return true;
   }
 
-  @Override public Map<Integer, SubmittedResult> fetchAll(AbstractProject project, int currentBuildNumber)
-    throws StoreResultException {
-    FilePath resultPath = getResultFolder(project);
-    Map<Integer, SubmittedResult> buildResults = new HashMap<>();
-    int numOrder = currentBuildNumber / BREAK_FILE_BY;
+  @Override public ReadSubmitLogResult fetch(ReadSubmitLogRequest request) throws StoreResultException {
+    FilePath resultPath = getResultFolder(request.getProject());
+    int numOrder = request.getCurrentBuildNumber() / BREAK_FILE_BY;
+    List<FileReader> readerList = getReaderList(resultPath, numOrder);
+
     //get saved configuration
-    Configuration configuration = ConfigService.getPluginConfiguration(project);
+    Configuration configuration = ConfigService.getPluginConfiguration(request.getProject());
+    String qTestUrl = configuration == null ? "" : configuration.getUrl();
+    Long projectId = configuration == null ? 0L : configuration.getProjectId();
+    int total = 0;
+    Map<Integer, SubmittedResult> resultMap = new HashMap<>();
+
+    for (FileReader reader : readerList) {
+      total += reader.size();
+      try {
+        resultMap.putAll(buildSubmittedResult(reader.readAll(), qTestUrl, projectId));
+      } catch (IOException e) {
+        throw new StoreResultException(e.getMessage(), e);
+      } finally {
+        try {
+          reader.close();
+        } catch (IOException e) {
+          throw new StoreResultException(e.getMessage(), e);
+        }
+      }
+    }
+
+    return new ReadSubmitLogResult()
+      .setTotal(total)
+      .setResults(resultMap);
+  }
+
+  private static List<FileReader> getReaderList(FilePath resultPath, int numOrder) {
+    List<FileReader> readerList = new ArrayList<>();
+    if (numOrder <= 0) {
+      FilePath resultFile = getResultFile(resultPath, numOrder);
+      try {
+        readerList.add(new FileReader(new File(resultFile.getName())));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    } else {
+      for (int i = 0; i < numOrder; i++) {
+        FilePath resultFile = getResultFile(resultPath, numOrder);
+        try {
+          readerList.add(new FileReader(new File(resultFile.getName())));
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return readerList;
+  }
+
+  @Override public ReadSubmitLogResult fetchAll(ReadSubmitLogRequest request)
+    throws StoreResultException {
+    FilePath resultPath = getResultFolder(request.getProject());
+    Map<Integer, SubmittedResult> buildResults = new HashMap<>();
+    int numOrder = request.getCurrentBuildNumber() / BREAK_FILE_BY;
+    //get saved configuration
+    Configuration configuration = ConfigService.getPluginConfiguration(request.getProject());
     String qTestUrl = configuration == null ? "" : configuration.getUrl();
     Long projectId = configuration == null ? 0L : configuration.getProjectId();
     try {
@@ -102,12 +154,13 @@ public class StoreResultServiceImpl implements StoreResultService {
     } catch (Exception e) {
       throw new StoreResultException(e);
     }
-    return buildResults;
+    return new ReadSubmitLogResult()
+      .setResults(buildResults)
+      .setTotal(buildResults.size());
   }
 
-  private Map<Integer, SubmittedResult> readResult(FilePath resultFile, String url, Long projectId)
+  private static Map<Integer, SubmittedResult> readResult(FilePath resultFile, String url, Long projectId)
     throws StoreResultException {
-    Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     SortedMap<Integer, String> lines = null;
     try {
       lines = resultFile.act(new FilePath.FileCallable<SortedMap<Integer, String>>() {
@@ -131,6 +184,12 @@ public class StoreResultServiceImpl implements StoreResultService {
     } catch (Exception e) {
       throw new StoreResultException(String.format("Cannot read from result file:%s, %s", resultFile.getName(), e.getMessage()));
     }
+
+    return buildSubmittedResult(lines, url, projectId);
+  }
+
+  private static Map<Integer, SubmittedResult> buildSubmittedResult(Map<Integer, String> lines, String url, Long projectId) {
+    Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     for (Map.Entry<Integer, String> entry : lines.entrySet()) {
       SubmittedResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmittedResult.class);
       if (null != submitResult) {
@@ -145,12 +204,12 @@ public class StoreResultServiceImpl implements StoreResultService {
     return buildResults;
   }
 
-  private FilePath getResultFolder(AbstractProject project) {
+  private static FilePath getResultFolder(AbstractProject project) {
     FilePath projectFolder = new FilePath(project.getConfigFile().getFile()).getParent();
     return new FilePath(projectFolder, RESULT_FOLDER);
   }
 
-  private FilePath getResultFile(FilePath resultFolder, int fileOrder) {
+  private static FilePath getResultFile(FilePath resultFolder, int fileOrder) {
     return new FilePath(resultFolder, String.format("%s_%s%s", RESULT_FILE, fileOrder, RESULT_FILE_EXT));
   }
 }
