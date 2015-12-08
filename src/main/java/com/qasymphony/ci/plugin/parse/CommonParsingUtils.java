@@ -53,8 +53,6 @@ public class CommonParsingUtils {
         if (suite.getCases() == null) {
           continue;
         } else {
-          boolean foundFailedCase = false;
-          int cases = (suite.getCases() != null ? suite.getCases().size() : 0);
           for (CaseResult caseResult : suite.getCases()) {
             if (automationTestResultMap.containsKey(caseResult.getClassName())) {
               automationTestResult = automationTestResultMap.get(caseResult.getClassName());
@@ -64,21 +62,9 @@ public class CommonParsingUtils {
               automationTestResult.setAutomationContent(caseResult.getClassName());
               automationTestResult.setExecutedEndDate(completedTime);
               automationTestResult.setExecutedStartDate(startTime);
-              automationTestResult.setTestLogs(new ArrayList<AutomationTestLog>());
               automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
 
               automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
-            }
-            
-            if(cases == 1){
-              automationTestResult.setStatus(caseResult.getStatus().toString());
-            }else {
-              if(!foundFailedCase && caseResult.getStatus().equals(Status.PASSED)){
-                automationTestResult.setStatus(Status.PASSED.toString());
-              }else if(caseResult.getStatus().equals(Status.FAILED)) {
-                foundFailedCase = true;
-                automationTestResult.setStatus(Status.FAILED.toString());
-              }
             }
             
             automationTestLog = new AutomationTestLog();
