@@ -82,6 +82,8 @@ public class MavenJunitParse implements TestResultParse {
             }else if(caseResult.getStatus().equals(Status.FAILED)) {
               foundFailedCase = true;
               automationTestResult.setStatus(Status.FAILED.toString());
+            } else {
+              automationTestResult.setStatus(caseResult.getStatus().toString());
             }
           }
           
