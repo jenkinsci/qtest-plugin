@@ -36,6 +36,7 @@ public class MavenJunitParse implements TestResultParse {
     
     testResults.add(jUnitParser.parseResult(testResultLocation, build, build.getWorkspace(), launcher, listener));
 
+
     GregorianCalendar gregorianCalendar = new GregorianCalendar();
     gregorianCalendar.setTimeInMillis(build.getStartTimeInMillis());
     

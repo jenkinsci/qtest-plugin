@@ -1,13 +1,14 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import hudson.tasks.junit.CaseResult;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * @author anpham
- * 
  */
 public class AutomationTestResult {
   @JsonProperty("exe_start_date")
@@ -21,6 +22,22 @@ public class AutomationTestResult {
   @JsonProperty("test_step_logs")
   private List<AutomationTestLog> testLogs;
   private List<AutomationAttachment> attachments;
+  /**
+   * total failed testStep
+   */
+  private int totalFailedTestSteps = 0;
+  /**
+   * total skipped testStep
+   */
+  private int totalSkippedTestSteps = 0;
+  /**
+   * total success testStep
+   */
+  private int totalSuccessTestSteps = 0;
+
+  public AutomationTestResult() {
+    testLogs = new ArrayList<>();
+  }
 
   public Date getExecutedStartDate() {
     return executedStartDate;
@@ -78,8 +95,35 @@ public class AutomationTestResult {
     this.attachments = attachments;
   }
 
-  public AutomationTestLog addTestLog(AutomationTestLog automationTestLog){
+  /**
+   * Add testLog and resolve status of testResult
+   * @param automationTestLog
+   * @return
+   */
+  public AutomationTestLog addTestLog(AutomationTestLog automationTestLog) {
     testLogs.add(automationTestLog);
+    if (CaseResult.Status.FAILED.toString().equalsIgnoreCase(automationTestLog.getStatus())) {
+      totalFailedTestSteps += 1;
+    }
+    if (CaseResult.Status.SKIPPED.toString().equalsIgnoreCase(automationTestLog.getStatus())) {
+      totalSkippedTestSteps += 1;
+    }
+    if (CaseResult.Status.PASSED.toString().equalsIgnoreCase(automationTestLog.getStatus())) {
+      totalSuccessTestSteps += 1;
+    }
+    this.setStatus(automationTestLog.getStatus());
+    if (totalFailedTestSteps >= 1) {
+      //if there is one failed testStep, we mark testLog as failed
+      this.setStatus(CaseResult.Status.FAILED.toString());
+    } else {
+      if (totalSuccessTestSteps >= 1) {
+        //if there is one success testStep, we mark testLog as success
+        this.setStatus(CaseResult.Status.PASSED.toString());
+      } else if (totalSkippedTestSteps >= 1) {
+        //if all of test is skipped, we mark testLog as skipped
+        this.setStatus(CaseResult.Status.SKIPPED.toString());
+      }
+    }
     return automationTestLog;
   }
 }

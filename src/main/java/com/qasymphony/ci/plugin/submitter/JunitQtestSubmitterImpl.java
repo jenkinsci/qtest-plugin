@@ -37,7 +37,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
       .setTestSuiteId(null)
-      .setNumberOfTestLog(request.getTestResults().size())
+      .setNumberOfTestLog(0)
       .setNumberOfTestResult(request.getTestResults().size())
       .setTestSuiteName("");
     if (response == null)
