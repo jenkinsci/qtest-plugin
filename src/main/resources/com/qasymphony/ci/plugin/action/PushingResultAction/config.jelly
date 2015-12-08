@@ -77,8 +77,8 @@
         <i>${%env.inactive}</i>
       </span>
     </f:entry>
-    <f:entry title="${%label.readByPlugin}" field="readByPlugin">
-      <f:checkbox name="config.readByPlugin" value="${instance.configuration.readByPlugin}"></f:checkbox>
+    <f:entry title="${%label.readByJenkins}" field="readByJenkins">
+      <f:checkbox name="config.readByJenkins" value="${instance.configuration.readByJenkins}"></f:checkbox>
     </f:entry>
     <f:entry title="${%label.resultPattern}" field="resultPattern">
       <f:textbox name="config.resultPattern"

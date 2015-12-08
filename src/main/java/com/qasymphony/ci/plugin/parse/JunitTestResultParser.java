@@ -1,11 +1,11 @@
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
@@ -37,18 +37,25 @@ public class JunitTestResultParser {
    * @return
    * @throws Exception
    */
-  public static List<AutomationTestResult> parse(AbstractBuild build, Launcher launcher, BuildListener listener)
+  public static List<AutomationTestResult> parse(AbstractBuild build, Launcher launcher, BuildListener listener, Configuration configuration)
     throws Exception {
-    AbstractProject project = build.getProject();
-    String basedDir = build.getWorkspace().toURI().getPath();
-    Boolean isMavenProject = project.getClass().getName().toLowerCase().contains("maven");
     MavenJunitParse mavenJunitParse = new MavenJunitParse(build, launcher, listener);
-    //we'll auto detect test result folder
+    if (!StringUtils.isBlank(configuration.getResultPattern())) {
+      LoggerUtils.formatInfo(listener.getLogger(), "Scan with test result location: %s", configuration.getResultPattern());
+      //if configured with result location pattern
+      return mavenJunitParse.parse(configuration.getResultPattern());
+    }
+    LoggerUtils.formatInfo(listener.getLogger(), "Auto scan JUnit test results files.");
+
+    //otherwise auto scan test result
+    String basedDir = build.getWorkspace().toURI().getPath();
     List<String> resultFolders = scanJunitTestResultFolder(basedDir);
     LOG.info("Scanning junit test result in dir:" + basedDir);
     LOG.info(String.format("Found: %s dirs, %s", resultFolders.size(), resultFolders));
 
+    Boolean isMavenProject = build.getProject().getClass().getName().toLowerCase().contains("maven");
     List<AutomationTestResult> result = new LinkedList<>();
+
     if (isMavenProject && resultFolders.size() <= 1) {
       //if pom file is located at workspace, we do not scan to detect junit result
       FileSet fs = Util.createFileSet(new File(basedDir), MavenJunitParse.TEST_RESULT_LOCATIONS);

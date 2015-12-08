@@ -26,6 +26,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private long moduleId;
   private String jenkinsServerUrl;
   private String jenkinsProjectName;
+  private Boolean readByJenkinsTestResult = true;
+  private String resultPattern;
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
@@ -152,6 +154,24 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
+  public Boolean getReadByJenkinsTestResult() {
+    return readByJenkinsTestResult;
+  }
+
+  public Configuration setReadByJenkinsTestResult(Boolean readByJenkinsTestResult) {
+    this.readByJenkinsTestResult = readByJenkinsTestResult;
+    return this;
+  }
+
+  public String getResultPattern() {
+    return resultPattern;
+  }
+
+  public Configuration setResultPattern(String resultPattern) {
+    this.resultPattern = resultPattern;
+    return this;
+  }
+
   @Override public String toString() {
     return "Configuration{" +
       "id=" + id +
@@ -167,6 +187,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ", moduleId=" + moduleId +
       ", jenkinsServerUrl='" + jenkinsServerUrl + '\'' +
       ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
+      ", readByJenkinsTestResult=" + readByJenkinsTestResult +
+      ", resultPattern='" + resultPattern + '\'' +
       '}';
   }
 
