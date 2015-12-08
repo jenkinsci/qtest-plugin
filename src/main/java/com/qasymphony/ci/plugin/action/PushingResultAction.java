@@ -1,42 +1,17 @@
 package com.qasymphony.ci.plugin.action;
 
-import com.qasymphony.ci.plugin.ConfigService;
-import com.qasymphony.ci.plugin.OauthProvider;
-import com.qasymphony.ci.plugin.ResourceBundle;
-import com.qasymphony.ci.plugin.exception.SaveSettingException;
-import com.qasymphony.ci.plugin.exception.StoreResultException;
-import com.qasymphony.ci.plugin.exception.SubmittedException;
-import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.model.qtest.Setting;
-import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
-import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
-import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
-import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
-import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
-import com.qasymphony.ci.plugin.utils.JsonUtils;
-import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -48,6 +23,36 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+
+import com.qasymphony.ci.plugin.ConfigService;
+import com.qasymphony.ci.plugin.OauthProvider;
+import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.exception.SaveSettingException;
+import com.qasymphony.ci.plugin.exception.StoreResultException;
+import com.qasymphony.ci.plugin.exception.SubmittedException;
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.parse.PublishResultParser;
+import com.qasymphony.ci.plugin.parse.TestResultParse;
+import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
+import com.qasymphony.ci.plugin.utils.LoggerUtils;
 
 /**
  * @author anpham
@@ -77,8 +82,7 @@ public class PushingResultAction extends Notifier {
 
   @SuppressWarnings("rawtypes")
   @Override
-  public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
-    throws InterruptedException, IOException {
+  public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     if (Result.ABORTED.equals(build.getResult())) {
@@ -165,9 +169,13 @@ public class PushingResultAction extends Notifier {
 
   private JunitSubmitterResult submitTestResult(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     List<AutomationTestResult> automationTestResults;
+    TestResultParse testResultParse = null;
     long start = System.currentTimeMillis();
     try {
-      automationTestResults = JunitTestResultParser.parse(build, launcher, listener);
+      //TODO check if the plugin configuration allow to use publish result from another plugin OR manually parsing itself
+      testResultParse = new PublishResultParser(build);
+      automationTestResults = testResultParse.parse();
+      //automationTestResults = JunitTestResultParser.parse(build, launcher, listener);
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
       formatError(logger, e.getMessage());
