@@ -25,6 +25,7 @@ import java.util.zip.ZipOutputStream;
  * @author anpham
  */
 public class MavenJunitParse implements TestResultParse {
+  public static final String SUREFIRE_REPORT = "surefire-reports";
   public static final String TEST_RESULT_LOCATIONS = "target/surefire-reports/*.xml";
   private static final Integer LIMIT_TXT_FILES = 5;
   private static final String EXT_TEXT_FILE = ".txt";
