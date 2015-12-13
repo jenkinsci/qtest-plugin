@@ -152,7 +152,7 @@ function loadEnvironment(data) {
     if (environments.length > 0)
       hasInActiveValue = false;
   }
-  var show = fieldIsInActive || hasInActiveValue;
+  var show = fieldIsInActive || hasInActiveValue || environments.length <= 0;
   $j("span[class='config.environmentName1']").attr('style', 'display:' + (show ? '' : 'none'));
   bindEnvironment(environments);
 
