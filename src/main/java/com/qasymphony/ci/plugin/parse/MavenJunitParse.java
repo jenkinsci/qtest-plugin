@@ -16,6 +16,7 @@ import com.qasymphony.ci.plugin.model.AutomationTestResult;
  * @author anpham
  */
 public class MavenJunitParse implements TestResultParse {
+  public static final String SUREFIRE_REPORT = "surefire-reports";
   public static final String TEST_RESULT_LOCATIONS = "target/surefire-reports/*.xml";
   
   @SuppressWarnings("rawtypes")

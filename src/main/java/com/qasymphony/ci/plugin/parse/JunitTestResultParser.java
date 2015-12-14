@@ -65,7 +65,7 @@ public class JunitTestResultParser {
     } else if (isMavenProject) {
       //if is maven project, we only scan surefire report folder
       for (String res : resultFolders) {
-        if (res.endsWith("surefire-reports")) {
+        if (res.contains(MavenJunitParse.SUREFIRE_REPORT)) {
           try {
             result.addAll(mavenJunitParse.parse(res + JUNIT_SUFFIX));
           } catch (Exception e) {

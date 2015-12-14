@@ -85,9 +85,9 @@ function loadProject() {
     if (projects.length > 0) {
       selectedProject = configuredProjectId ? qtest.find(projects, 'id', configuredProjectId) : projects[0];
     }
+    qtest.hideLoading(btn);
     if (selectedProject)
       qtest.selectizeProject.setValue(selectedProject.id);
-    qtest.hideLoading(btn);
   }, function () {
     qtest.hideLoading(btn);
   })
@@ -95,10 +95,11 @@ function loadProject() {
 
 function loadProjectData() {
   clearProjectData();
+  var btn = $j("#fetchProjectData")[0];
   if (qtest.getProjectId() <= 0) {
+    qtest.hideLoading(btn);
     return;
   }
-  var btn = $j("#fetchProjectData")[0];
   qtest.showLoading(btn);
   qtest.fetchProjectData(function (data) {
     //Saved configuration from qTest for this project of jenkins instance
@@ -151,7 +152,7 @@ function loadEnvironment(data) {
     if (environments.length > 0)
       hasInActiveValue = false;
   }
-  var show = fieldIsInActive || hasInActiveValue;
+  var show = fieldIsInActive || hasInActiveValue || environments.length <= 0;
   $j("span[class='config.environmentName1']").attr('style', 'display:' + (show ? '' : 'none'));
   bindEnvironment(environments);
 
