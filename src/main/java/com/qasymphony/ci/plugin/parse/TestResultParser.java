@@ -8,6 +8,6 @@ import com.qasymphony.ci.plugin.model.AutomationTestResult;
  * @author anpham
  *
  */
-public interface TestResultParse {
-  List<AutomationTestResult> parse() throws Exception;
+public interface TestResultParser {
+  List<AutomationTestResult> parse(ParseRequest request) throws Exception;
 }

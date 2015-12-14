@@ -2,8 +2,11 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
-import com.qasymphony.ci.plugin.parse.MavenJunitParse;
+import com.qasymphony.ci.plugin.parse.MavenJunitParser;
+import com.qasymphony.ci.plugin.parse.ParseRequest;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -41,7 +44,7 @@ public class MavenJunitParseTests extends TestAbstracts {
       throws InterruptedException, IOException {
       try {
         File currentBasedDir = new File(build.getWorkspace().toURI());
-        List<String> matchDirs = JunitTestResultParser.scanJunitTestResultFolder(currentBasedDir.getPath());
+        List<String> matchDirs = CommonParsingUtils.scanJunitTestResultFolder(currentBasedDir.getPath());
         long current = System.currentTimeMillis();
         for (String dir : matchDirs) {
           File testFolder = new File(currentBasedDir.getPath(), dir);
@@ -50,7 +53,11 @@ public class MavenJunitParseTests extends TestAbstracts {
             file.setLastModified(current);
           }
         }
-        automationTestResultList = new MavenJunitParse(build, launcher, listener).parse(MavenJunitParse.TEST_RESULT_LOCATIONS);
+        automationTestResultList = new MavenJunitParser().parse(new ParseRequest()
+        .setLauncher(launcher)
+        .setListener(listener)
+        .setBuild(build)
+        .setConfiguration(Configuration.newInstance()));
       } catch (Exception e) {
         e.printStackTrace();
       }

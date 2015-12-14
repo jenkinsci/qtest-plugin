@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.qasymphony.ci.plugin.parse;
 
 import hudson.model.AbstractBuild;
@@ -19,19 +16,12 @@ import com.qasymphony.ci.plugin.model.AutomationTestResult;
  * @author anpham
  *
  */
-public class PublishResultParser implements TestResultParse { 
-  @SuppressWarnings("rawtypes")
-  private AbstractBuild build;
-  
-  @SuppressWarnings("rawtypes")
-  public PublishResultParser(AbstractBuild build) {
-    this.build = build;
-  }
+public class PublishResultParser implements TestResultParser {
 
   @Override
-  public List<AutomationTestResult> parse() throws Exception {
-    List<TestResult> testResults = new ArrayList<TestResult>();
-    
+  public List<AutomationTestResult> parse(ParseRequest request) throws Exception {
+    List<TestResult> testResults = new ArrayList<>();
+    AbstractBuild build = request.getBuild();
     TestResultAction resultAction = build.getAction(TestResultAction.class);
     if(resultAction != null){
       testResults.add(resultAction.getResult());
@@ -54,5 +44,4 @@ public class PublishResultParser implements TestResultParse {
     
     return CommonParsingUtils.toAutomationTestResults(testResults, gregorianCalendar.getTime(), build.getTime());
   }
-
 }

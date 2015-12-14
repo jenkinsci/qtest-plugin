@@ -29,6 +29,10 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private Boolean readByJenkinsTestResult = true;
   private String resultPattern;
 
+  public static Configuration newInstance(){
+    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "", 0, 0);
+  }
+
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
     String projectName, long releaseId, String releaseName, long environmentId,

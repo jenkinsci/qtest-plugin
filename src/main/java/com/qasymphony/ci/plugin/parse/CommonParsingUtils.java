@@ -3,6 +3,7 @@
  */
 package com.qasymphony.ci.plugin.parse;
 
+import hudson.Util;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
@@ -27,6 +28,9 @@ import org.apache.commons.codec.binary.Base64;
 import com.qasymphony.ci.plugin.model.AutomationAttachment;
 import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.FileSet;
 
 /**
  * @author anpham
@@ -36,6 +40,9 @@ public class CommonParsingUtils {
   public static final Integer LIMIT_TXT_FILES = 5;
   public static final String EXT_TEXT_FILE = ".txt";
   public static final String EXT_ZIP_FILE = ".zip";
+  public static final String JUNIT_PREFIX = "TEST-*";
+  public static final String JUNIT_SUFFIX = "/*.xml";
+
   /**
    * 
    * @param testResults
@@ -141,5 +148,34 @@ public class CommonParsingUtils {
       }
     }
     return new ArrayList<>(automationTestResultMap.values());
+  }
+
+
+  /**
+   * Scan junit test result folder
+   *
+   * @param basedDir
+   * @return
+   */
+  public static List<String> scanJunitTestResultFolder(String basedDir) {
+    File currentBasedDir = new File(basedDir);
+    FileSet fs = Util.createFileSet(new File(basedDir), JUNIT_PREFIX);
+    DirectoryScanner ds = fs.getDirectoryScanner();
+    List<String> resultFolders = new ArrayList<>();
+    //if based dir match junit file, we add based dir
+    if (ds.getIncludedFiles().length > 0)
+      resultFolders.add("");
+
+    for (String notIncludedDirName : ds.getNotIncludedDirectories()) {
+      if (!StringUtils.isEmpty(notIncludedDirName)) {
+        File dirToScan = new File(currentBasedDir.getPath(), notIncludedDirName);
+        FileSet subFileSet = Util.createFileSet(dirToScan, JUNIT_PREFIX);
+        DirectoryScanner subDirScanner = subFileSet.getDirectoryScanner();
+        if (subDirScanner.getIncludedFiles().length > 0) {
+          resultFolders.add(notIncludedDirName);
+        }
+      }
+    }
+    return resultFolders;
   }
 }

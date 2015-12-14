@@ -10,7 +10,7 @@ import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
-import com.qasymphony.ci.plugin.parse.PublishResultParser;
+import com.qasymphony.ci.plugin.parse.ParseRequest;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
@@ -168,14 +168,11 @@ public class PushingResultAction extends Notifier {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
     try {
-      if (configuration.getReadByJenkinsTestResult()) {
-        formatInfo(logger, "Read test results from jenkins.");
-        //read from testResult report of jenkins
-        automationTestResults = new PublishResultParser(build).parse();
-      } else {
-        //scan with configured pattern or scan all
-        automationTestResults = JunitTestResultParser.parse(build, launcher, listener, configuration);
-      }
+      automationTestResults = JunitTestResultParser.parse(new ParseRequest()
+        .setBuild(build)
+        .setConfiguration(configuration)
+        .setLauncher(launcher)
+        .setListener(listener));
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
       formatError(logger, e.getMessage());
