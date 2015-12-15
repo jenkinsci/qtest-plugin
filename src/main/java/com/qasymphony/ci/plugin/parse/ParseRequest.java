@@ -15,6 +15,7 @@ public class ParseRequest {
   private Configuration configuration;
   private Launcher launcher;
   private BuildListener listener;
+  private Boolean isMavenProject;
 
   public AbstractBuild getBuild() {
     return build;
@@ -22,6 +23,7 @@ public class ParseRequest {
 
   public ParseRequest setBuild(AbstractBuild build) {
     this.build = build;
+    isMavenProject = null == build ? false : build.getProject().getClass().getName().toLowerCase().contains("maven");
     return this;
   }
 
@@ -50,5 +52,9 @@ public class ParseRequest {
   public ParseRequest setListener(BuildListener listener) {
     this.listener = listener;
     return this;
+  }
+
+  public Boolean isMavenProject() {
+    return isMavenProject;
   }
 }

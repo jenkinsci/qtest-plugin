@@ -94,8 +94,10 @@ public class PushingResultAction extends Notifier {
       return true;
     }
     checkProjectNameChanged(build, logger);
-
-    JunitSubmitterResult result = submitTestResult(build, launcher, listener, logger, junitSubmitter);
+    List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
+    if (automationTestResults.isEmpty())
+      return true;
+    JunitSubmitterResult result = submitTestResult(build, logger, junitSubmitter, automationTestResults);
     if (null == result) {
       //if have no test result, we do not break build flow
       return true;
@@ -164,9 +166,10 @@ public class PushingResultAction extends Notifier {
     return setting;
   }
 
-  private JunitSubmitterResult submitTestResult(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
+  private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
+    formatInfo(logger, HR_TEXT);
     try {
       automationTestResults = JunitTestResultParser.parse(new ParseRequest()
         .setBuild(build)
@@ -181,17 +184,21 @@ public class PushingResultAction extends Notifier {
     if (automationTestResults.isEmpty()) {
       formatWarn(logger, "No JUnit test result found.");
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
-      return null;
+      formatInfo(logger, HR_TEXT);
+      return Collections.emptyList();
     }
+    formatInfo(logger, "JUnit test result found: %s, Time elapsed: %s", automationTestResults.size(), LoggerUtils.eslapedTime(start));
     formatInfo(logger, HR_TEXT);
-    formatInfo(logger, "JUnit test result found: %s", automationTestResults.size());
-    formatInfo(logger, "Time to parse in: " + LoggerUtils.eslapedTime(start));
-    formatInfo(logger, HR_TEXT);
-
     formatInfo(logger, "");
+    return automationTestResults;
+  }
+
+  private JunitSubmitterResult submitTestResult(AbstractBuild build, PrintStream logger,
+    JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
+
     JunitSubmitterResult result = null;
     formatInfo(logger, "Begin submit test result to qTest at: " + JsonUtils.getCurrentDateString());
-    start = System.currentTimeMillis();
+    long start = System.currentTimeMillis();
     try {
       result = junitSubmitter.submit(
         new JunitSubmitterRequest()

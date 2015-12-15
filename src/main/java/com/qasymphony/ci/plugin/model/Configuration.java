@@ -26,17 +26,20 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private long moduleId;
   private String jenkinsServerUrl;
   private String jenkinsProjectName;
-  private Boolean readByJenkinsTestResult = true;
+  /**
+   * Read from testResult action from jenkins
+   */
+  private Boolean readByJenkins;
   private String resultPattern;
 
-  public static Configuration newInstance(){
-    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "", 0, 0);
+  public static Configuration newInstance() {
+    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "", 0, 0, false, "");
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
     String projectName, long releaseId, String releaseName, long environmentId,
-    String environmentName, long testSuiteId, long moduleId) {
+    String environmentName, long testSuiteId, long moduleId, Boolean readByJenkins, String resultPattern) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -48,6 +51,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.testSuiteId = testSuiteId;
     this.moduleId = moduleId;
     this.id = id;
+    this.readByJenkins = readByJenkins;
+    this.resultPattern = resultPattern;
   }
 
   public Long getId() {
@@ -158,12 +163,13 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public Boolean getReadByJenkinsTestResult() {
-    return readByJenkinsTestResult;
+  public Boolean getReadByJenkins() {
+    //new version: make default read from testResult action
+    return readByJenkins == null ? true : readByJenkins;
   }
 
-  public Configuration setReadByJenkinsTestResult(Boolean readByJenkinsTestResult) {
-    this.readByJenkinsTestResult = readByJenkinsTestResult;
+  public Configuration setReadByJenkins(Boolean readByJenkins) {
+    this.readByJenkins = readByJenkins;
     return this;
   }
 
@@ -191,7 +197,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ", moduleId=" + moduleId +
       ", jenkinsServerUrl='" + jenkinsServerUrl + '\'' +
       ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
-      ", readByJenkinsTestResult=" + readByJenkinsTestResult +
+      ", readByJenkins=" + readByJenkins +
       ", resultPattern='" + resultPattern + '\'' +
       '}';
   }

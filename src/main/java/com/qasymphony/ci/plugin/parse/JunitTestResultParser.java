@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -13,13 +14,18 @@ import java.util.List;
 public class JunitTestResultParser {
   public static List<AutomationTestResult> parse(ParseRequest request) throws Exception {
     TestResultParser parser;
-    if (request.getConfiguration().getReadByJenkinsTestResult()) {
+    Boolean readFromTestResult = request.getConfiguration().getReadByJenkins();
+    if (Boolean.TRUE.equals(readFromTestResult)) {
       LoggerUtils.formatInfo(request.getListener().getLogger(), "Read test results from jenkins.");
       //read result from testResult action from Jenkins
       parser = new PublishResultParser();
     } else {
       //scan with configured pattern or scan all
-      parser = new MavenJunitParser();
+      if (!StringUtils.isBlank(request.getConfiguration().getResultPattern())) {
+        parser = new PatternScanParser();
+      } else {
+        parser = new AutoScanParser();
+      }
     }
     return parser.parse(request);
   }

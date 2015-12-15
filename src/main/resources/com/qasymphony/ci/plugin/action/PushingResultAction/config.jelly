@@ -78,7 +78,7 @@
       </span>
     </f:entry>
     <f:entry title="${%label.readByJenkins}" field="readByJenkins">
-      <f:checkbox name="config.readByJenkins" value="${instance.configuration.readByJenkins}"></f:checkbox>
+      <f:checkbox name="config.readByJenkins" checked="${instance.configuration.readByJenkins}"></f:checkbox>
     </f:entry>
     <f:entry title="${%label.resultPattern}" field="resultPattern">
       <f:textbox name="config.resultPattern"

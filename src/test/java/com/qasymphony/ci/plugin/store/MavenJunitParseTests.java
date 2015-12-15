@@ -4,8 +4,7 @@ import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
-import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
-import com.qasymphony.ci.plugin.parse.MavenJunitParser;
+import com.qasymphony.ci.plugin.parse.PatternScanParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -53,7 +52,7 @@ public class MavenJunitParseTests extends TestAbstracts {
             file.setLastModified(current);
           }
         }
-        automationTestResultList = new MavenJunitParser().parse(new ParseRequest()
+        automationTestResultList = new PatternScanParser().parse(new ParseRequest()
         .setLauncher(launcher)
         .setListener(listener)
         .setBuild(build)
