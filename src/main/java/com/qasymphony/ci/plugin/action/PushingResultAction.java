@@ -127,6 +127,7 @@ public class PushingResultAction extends Notifier {
     formatInfo(logger, "");
     formatInfo(logger, HR_TEXT);
     formatInfo(logger, ResourceBundle.DISPLAY_NAME);
+    formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
     formatInfo(logger, HR_TEXT);
     formatInfo(logger, "Submit Junit test result to qTest at:%s", configuration.getUrl());
     formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
@@ -306,7 +307,7 @@ public class PushingResultAction extends Notifier {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
       configuration.setJenkinsServerUrl(getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
-
+      configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
       Setting setting = null;
@@ -363,6 +364,11 @@ public class PushingResultAction extends Notifier {
     }
 
     public FormValidation doCheckEnvironment(@QueryParameter String value)
+      throws IOException, ServletException {
+      return FormValidation.ok();
+    }
+
+    public FormValidation doCheckResultPattern(@QueryParameter String value)
       throws IOException, ServletException {
       return FormValidation.ok();
     }

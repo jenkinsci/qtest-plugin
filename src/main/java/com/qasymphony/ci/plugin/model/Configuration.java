@@ -29,7 +29,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   /**
    * Read from testResult action from jenkins
    */
-  private Boolean readByJenkins;
+  private Boolean readFromJenkins;
   private String resultPattern;
 
   public static Configuration newInstance() {
@@ -39,7 +39,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
     String projectName, long releaseId, String releaseName, long environmentId,
-    String environmentName, long testSuiteId, long moduleId, Boolean readByJenkins, String resultPattern) {
+    String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -51,7 +51,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.testSuiteId = testSuiteId;
     this.moduleId = moduleId;
     this.id = id;
-    this.readByJenkins = readByJenkins;
+    this.readFromJenkins = readFromJenkins;
     this.resultPattern = resultPattern;
   }
 
@@ -163,13 +163,13 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public Boolean getReadByJenkins() {
-    //new version: make default read from testResult action
-    return readByJenkins == null ? true : readByJenkins;
+  public Boolean getReadFromJenkins() {
+    //new version: make default read by parse file
+    return readFromJenkins == null ? true : readFromJenkins;
   }
 
-  public Configuration setReadByJenkins(Boolean readByJenkins) {
-    this.readByJenkins = readByJenkins;
+  public Configuration setReadFromJenkins(Boolean readFromJenkins) {
+    this.readFromJenkins = readFromJenkins;
     return this;
   }
 
@@ -197,7 +197,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ", moduleId=" + moduleId +
       ", jenkinsServerUrl='" + jenkinsServerUrl + '\'' +
       ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
-      ", readByJenkins=" + readByJenkins +
+      ", readFromJenkins=" + readFromJenkins +
       ", resultPattern='" + resultPattern + '\'' +
       '}';
   }

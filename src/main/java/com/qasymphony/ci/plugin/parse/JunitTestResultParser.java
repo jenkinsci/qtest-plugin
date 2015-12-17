@@ -14,8 +14,8 @@ import java.util.List;
 public class JunitTestResultParser {
   public static List<AutomationTestResult> parse(ParseRequest request) throws Exception {
     TestResultParser parser;
-    Boolean readFromTestResult = request.getConfiguration().getReadByJenkins();
-    if (Boolean.TRUE.equals(readFromTestResult)) {
+    Boolean readFromJenkins = request.getConfiguration().getReadFromJenkins();
+    if (Boolean.FALSE.equals(readFromJenkins)) {
       LoggerUtils.formatInfo(request.getListener().getLogger(), "Read test results from jenkins.");
       //read result from testResult action from Jenkins
       parser = new PublishResultParser();

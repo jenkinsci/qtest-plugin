@@ -116,7 +116,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Long ciId = 1L;
     Long qTestProjectId = 3L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L);
+      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "");
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
     AutomationTestResponse response = AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, headers);
     assertNotNull("Result is: ", response);
@@ -133,7 +133,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Long ciId = 3L;
     Long qTestProjectId = 1L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L);
+      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "");
     List<AutomationTestResult> results = new ArrayList<>();
     int total = 1000;
     for (int i = 0; i < total; i++) {
@@ -171,7 +171,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Long ciId = 3L;
     Long qTestProjectId = 1L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L);
+      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "");
     List<AutomationTestResult> results = new ArrayList<>();
     long start = System.currentTimeMillis();
     int total = 1000;
