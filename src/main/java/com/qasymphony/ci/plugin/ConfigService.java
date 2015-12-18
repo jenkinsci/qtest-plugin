@@ -18,11 +18,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -294,15 +290,8 @@ public class ConfigService {
   }
 
   public static String getBuildVersion() {
-    InputStream inputStream = ConfigService.class.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
-    Manifest manifest;
-    try {
-      manifest = new Manifest(inputStream);
-    } catch (IOException e) {
-      LOG.log(Level.WARNING, e.getMessage(), e);
-      manifest = new Manifest();
-    }
-    Attributes attributes = manifest.getMainAttributes();
-    return attributes.getValue("Plugin-Version");
+    Package pkg = ConfigService.class.getPackage();
+    return StringUtils.isEmpty(pkg.getImplementationVersion()) ?
+      pkg.getSpecificationVersion() : pkg.getImplementationVersion();
   }
 }

@@ -4,6 +4,7 @@ $j(document).ready(function () {
     disableTextBox(true);
     onLoadProject();
     bindSelectizeChange();
+    hideNoHelp();
   }, 1000)
 });
 
@@ -16,6 +17,19 @@ function bindSelectizeChange() {
     "input[name='config.releaseName']", "id", "name");
   qtest.bindSelectizeValue("input[name='config.environmentName1']", "input[name='config.environmentId']",
     "input[name='config.environmentName']", "value", "label");
+}
+/*Hide unexpected help icon for fields, cause jenkins auto make help url of radio block inherit by our publish action help url*/
+function hideNoHelp() {
+  var parent = $j("div[descriptorid='com.qasymphony.ci.plugin.action.PushingResultAction']");
+  if (!parent || parent.length <= 0)
+    return;
+  var trNodes = parent.find("tr[class='radio-block-start '][hashelp='false'] > td[class='setting-help']");
+
+  $j.each(trNodes, function (index) {
+    var helpNode = trNodes[index];
+    if (helpNode)
+      helpNode.setAttribute('style', 'display:none');
+  });
 }
 
 function disableTextBox(disable) {

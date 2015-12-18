@@ -80,18 +80,20 @@
         <i>${%env.inactive}</i>
       </span>
     </f:entry>
-    <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}"
-                  title="${%label.autoScan}" value="true">
-      <f:description>
-        <i>${%label.resultPatternTitle}</i>
-      </f:description>
-      <f:entry title="${%label.resultPattern}" field="resultPattern">
-        <f:textbox name="config.resultPattern" value="${instance.configuration.resultPattern}"></f:textbox>
-      </f:entry>
-    </f:radioBlock>
-    <f:radioBlock inline="true" name="config.readFromJenkins" checked="${!instance.configuration.readFromJenkins}"
-                  title="${%label.readFromJenkins}" value="false">
-    </f:radioBlock>
+    <f:entry field="jenkinsProjectName">
+      <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}"
+                    title="${%label.autoScan}" value="true">
+        <f:description>
+          <i>${%label.resultPatternTitle}</i>
+        </f:description>
+        <f:entry title="${%label.resultPattern}" field="resultPattern">
+          <f:textbox name="config.resultPattern" value="${instance.configuration.resultPattern}"></f:textbox>
+        </f:entry>
+      </f:radioBlock>
+      <f:radioBlock inline="true" name="config.readFromJenkins" checked="${!instance.configuration.readFromJenkins}"
+                    title="${%label.readFromJenkins}" value="false">
+      </f:radioBlock>
+    </f:entry>
   </form>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/service.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js"></script>
