@@ -5,16 +5,20 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.NoConnectionReuseStrategy;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HttpContext;
 
 import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -34,6 +38,8 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
  * @since 1.0
  */
 public class HttpClientUtils {
+  public static Integer RETRY_MAX_COUNT = 3;
+  public static Boolean RETRY_ENABLED = false;
   private static HttpClient CLIENT;
 
   private HttpClientUtils() {
@@ -219,6 +225,15 @@ public class HttpClientUtils {
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
       .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+    httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(RETRY_MAX_COUNT, RETRY_ENABLED) {
+      @Override public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+        if (executionCount > RETRY_MAX_COUNT)
+          return false;
+        if (exception instanceof HttpHostConnectException)
+          return true;
+        return super.retryRequest(exception, executionCount, context);
+      }
+    });
     return httpClientBuilder.build();
   }
 
