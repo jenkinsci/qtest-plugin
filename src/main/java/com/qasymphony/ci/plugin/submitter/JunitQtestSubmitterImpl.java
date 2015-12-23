@@ -33,7 +33,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
     AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
       request.getTestResults(), request.getConfiguration(), OauthProvider.buildHeaders(accessToken, null));
-
+    //TODO: implement with new task status api in qTest code
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
       .setTestSuiteId(null)
