@@ -3,6 +3,8 @@ package com.qasymphony.ci.plugin.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 
+import java.io.IOException;
+
 /**
  * @author anpham
  */
@@ -28,11 +30,10 @@ public class AutomationTestResponse {
     this.state = JsonUtils.getText(node, "state");
     this.contentType = JsonUtils.getText(node, "contentType");
     content = JsonUtils.getText(node, "content");
-    JsonNode contentNode;
+    JsonNode contentNode = null;
     try {
-      contentNode = JsonUtils.readTree(content);
-    } catch (Exception e) {
-      contentNode = null;
+      contentNode = JsonUtils.parseTree(content);
+    } catch (IOException e) {
       hasError = true;
     }
     if (null != contentNode) {

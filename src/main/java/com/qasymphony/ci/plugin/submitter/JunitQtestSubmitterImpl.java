@@ -33,7 +33,15 @@ import java.util.logging.Logger;
 public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private static final Logger LOG = Logger.getLogger(JunitQtestSubmitterImpl.class.getName());
   private StoreResultService storeResultService = new StoreResultServiceImpl();
+
+  /**
+   * Retry interval for get task status in 1 second
+   */
   private static final Integer RETRY_INTERVAL = 1000;
+
+  /**
+   * State list which marked as submission have been finished
+   */
   private static final List<String> LIST_FINISHED_STATE = Arrays.asList("SUCCESS", "FAILED");
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
@@ -44,7 +52,6 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
     ResponseEntity responseEntity = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
       request.getTestResults(), request.getConfiguration(), OauthProvider.buildHeaders(accessToken, null));
-    //TODO: implement with new task status api in qTest code
     AutomationTestResponse response = null;
     if (responseEntity.getStatusCode() == HttpStatus.SC_CREATED) {
       //receive task response
@@ -54,9 +61,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       response = getSubmitLogResponse(request, task);
     } else {
       //if cannot passed validation from qTest
-      com.qasymphony.ci.plugin.model.Error error = JsonUtils.fromJson(responseEntity.getBody(), com.qasymphony.ci.plugin.model.Error.class);
-      String message = null == error ? "" : error.getMessage();
-      throw new SubmittedException(StringUtils.isEmpty(message) ? responseEntity.getBody() : message, responseEntity.getStatusCode());
+      throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
     }
 
     JunitSubmitterResult result = new JunitSubmitterResult()
@@ -92,21 +97,19 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
         mustRetry = false;
       } else {
         if (!previousState.equalsIgnoreCase(response.getState())) {
-          LoggerUtils.formatInfo(logger, "%s: Submit status is: %s", JsonUtils.getCurrentDateString(), response.getState());
+          LoggerUtils.formatInfo(logger, "%s: Submission status: %s", JsonUtils.getCurrentDateString(), response.getState());
           previousState = StringUtils.isEmpty(response.getState()) ? "" : response.getState();
         }
         if (response.hasError()) {
           //if has error while get task status
-          LoggerUtils.formatError(logger, "Cannot get read content of taskId: %s, content: %s", task.getId(), response.getContent());
+          LoggerUtils.formatError(logger, "   %s", ConfigService.getErrorMessage(response.getContent()));
+        }
+        if (LIST_FINISHED_STATE.contains(response.getState())) {
+          //if finished, we do not retry more
           mustRetry = false;
         } else {
-          if (LIST_FINISHED_STATE.contains(response.getState())) {
-            //if finished, we do not retry more
-            mustRetry = false;
-          } else {
-            //sleep in interval to get status of task
-            Thread.sleep(RETRY_INTERVAL);
-          }
+          //sleep in interval to get status of task
+          Thread.sleep(RETRY_INTERVAL);
         }
       }
     }
@@ -121,9 +124,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       ResponseEntity responseEntity = AutomationTestService.getTaskStatus(request.getConfiguration(), task.getId(), headers);
       if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
         //if error while get status from qTest
-        com.qasymphony.ci.plugin.model.Error error = JsonUtils.fromJson(responseEntity.getBody(), com.qasymphony.ci.plugin.model.Error.class);
-        String message = null == error ? "" : error.getMessage();
-        throw new SubmittedException(StringUtils.isEmpty(message) ? responseEntity.getBody() : message, responseEntity.getStatusCode());
+        throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
       }
       LOG.info(String.format("status:%s, body:%s", responseEntity.getStatusCode(), responseEntity.getBody()));
       response = new AutomationTestResponse(responseEntity.getBody());

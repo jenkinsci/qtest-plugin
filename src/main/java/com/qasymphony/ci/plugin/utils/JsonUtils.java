@@ -1,5 +1,6 @@
 package com.qasymphony.ci.plugin.utils;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -87,15 +88,19 @@ public class JsonUtils {
    */
   public static JsonNode readTree(String body) {
     JsonNode node = null;
-    if (StringUtils.isEmpty(body))
-      return node;
     try {
-      node = mapper.readTree(body);
+      node = parseTree(body);
     } catch (IOException e) {
       LOG.log(Level.WARNING, "readTree: Cannot readTree from body string.", e);
     }
-
     return node;
+  }
+
+  public static JsonNode parseTree(String body) throws IOException {
+    JsonNode node = null;
+    if (StringUtils.isEmpty(body))
+      return node;
+    return mapper.readTree(body);
   }
 
   /**
@@ -119,13 +124,24 @@ public class JsonUtils {
    */
   public static <T> T fromJson(String body, Class<T> valueType) {
     try {
-      if (StringUtils.isEmpty(body))
-        return null;
-      return mapper.readValue(body, valueType);
+      return parseJson(body, valueType);
     } catch (IOException e) {
       LOG.log(Level.WARNING, String.format("Cannot mapping from JSON to %s", valueType), e);
       return null;
     }
+  }
+
+  /**
+   * @param body
+   * @param valueType
+   * @param <T>
+   * @return
+   * @throws IOException
+   */
+  public static <T> T parseJson(String body, Class<T> valueType) throws IOException {
+    if (StringUtils.isEmpty(body))
+      return null;
+    return mapper.readValue(body, valueType);
   }
 
   public static <T> T fromJson(String body, TypeReference<T> type) {

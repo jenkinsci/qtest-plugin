@@ -104,6 +104,7 @@ public class PushingResultAction extends Notifier {
     }
     saveConfiguration(build, result, logger);
     storeResult(build, junitSubmitter, result, logger);
+    formatInfo(logger, HR_TEXT);
     return true;
   }
 
@@ -158,7 +159,8 @@ public class PushingResultAction extends Notifier {
     try {
       setting = ConfigService.saveConfiguration(configuration);
     } catch (SaveSettingException e) {
-      formatWarn(logger, "Cannot update ci setting to qTest:" + e.getMessage());
+      formatWarn(logger, "Cannot update ci setting to qTest:");
+      formatWarn(logger, "  error:%s", e.getMessage());
     }
     if (null != setting) {
       configuration.setId(setting.getId());
@@ -188,7 +190,7 @@ public class PushingResultAction extends Notifier {
       formatInfo(logger, HR_TEXT);
       return Collections.emptyList();
     }
-    formatInfo(logger, "JUnit test result found: %s, Time elapsed: %s", automationTestResults.size(), LoggerUtils.eslapedTime(start));
+    formatInfo(logger, "JUnit test result found: %s, time elapsed: %s", automationTestResults.size(), LoggerUtils.eslapedTime(start));
     formatInfo(logger, HR_TEXT);
     formatInfo(logger, "");
     return automationTestResults;
@@ -198,7 +200,7 @@ public class PushingResultAction extends Notifier {
     JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
     PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
-    formatInfo(logger, "Begin submit test result to qTest at: " + JsonUtils.getCurrentDateString());
+    formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
     long start = System.currentTimeMillis();
     try {
       result = junitSubmitter.submit(
@@ -209,11 +211,11 @@ public class PushingResultAction extends Notifier {
           .setBuildPath(build.getUrl())
           .setListener(listener));
     } catch (SubmittedException e) {
-      formatError(logger, "Cannot submit test result to qTest:");
+      formatError(logger, "Cannot submit test results to qTest:");
       formatError(logger, "   status code: " + e.getStatus());
       formatError(logger, "   error: " + e.getMessage());
     } catch (Exception e) {
-      formatError(logger, "Cannot submit test result to qTest:");
+      formatError(logger, "Cannot submit test results to qTest:");
       formatError(logger, "   error: " + e.getMessage());
     } finally {
       if (null == result) {
@@ -224,22 +226,20 @@ public class PushingResultAction extends Notifier {
           .setNumberOfTestLog(0);
       }
 
-      formatInfo(logger, "Result after submit:");
+      Boolean isSuccess = null != result.getTestSuiteId() && result.getTestSuiteId() > 0;
       formatInfo(logger, HR_TEXT);
-      if (null == result.getTestSuiteId() || result.getTestSuiteId() <= 0) {
-        formatInfo(logger, "SUBMIT FAILED");
-        formatInfo(logger, HR_TEXT);
-      } else {
-        formatInfo(logger, "SUBMIT SUCCESS");
-        formatInfo(logger, HR_TEXT);
+      formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
+      formatInfo(logger, HR_TEXT);
+      if (isSuccess) {
         formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
         formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
         formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
       }
-      formatInfo(logger, "   time to submit in: " + LoggerUtils.eslapedTime(start));
-      formatInfo(logger, "End submit test result to qTest at: %s", JsonUtils.getCurrentDateString());
+      formatInfo(logger, "Time elapsed: %s", LoggerUtils.eslapedTime(start));
+      formatInfo(logger, "End submit test results to qTest at: %s", JsonUtils.getCurrentDateString());
       formatInfo(logger, "");
     }
+
     return result;
   }
 
@@ -251,21 +251,19 @@ public class PushingResultAction extends Notifier {
       formatInfo(logger, "Save test suite to configuration success.");
     } catch (IOException e) {
       formatError(logger, "Cannot save test suite to configuration of project:");
-      formatError(logger, " error:%s", e.getMessage());
+      formatError(logger, "   error:%s", e.getMessage());
       e.printStackTrace(logger);
     }
   }
 
   private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
-    formatInfo(logger, "");
-    formatInfo(logger, "Begin store submitted result to workspace.");
     try {
       junitSubmitter.storeSubmittedResult(build, result);
+      formatInfo(logger, "Store submission result to workspace success.");
     } catch (Exception e) {
-      formatError(logger, "Cannot store submitted result." + e.getMessage());
+      formatError(logger, "Cannot store submission result: " + e.getMessage());
       e.printStackTrace(logger);
     }
-    formatInfo(logger, "End store submitted result.");
     formatInfo(logger, "");
   }
 

@@ -18,6 +18,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -279,19 +280,40 @@ public class ConfigService {
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
           responseEntity.getStatusCode(), responseEntity.getBody()));
-        throw new SaveSettingException("Cannot save setting: " + responseEntity.getBody(), responseEntity.getStatusCode());
+        throw new SaveSettingException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
       }
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
       LOG.info("Saved from qTest:" + responseEntity.getBody());
       return res;
     } catch (ClientRequestException e) {
-      throw new SaveSettingException("Cannot save setting:" + e.getMessage(), -1);
+      throw new SaveSettingException(e.getMessage(), -1);
     }
   }
 
+  /**
+   * Get plugin version
+   *
+   * @return
+   */
   public static String getBuildVersion() {
     Package pkg = ConfigService.class.getPackage();
     return StringUtils.isEmpty(pkg.getImplementationVersion()) ?
       pkg.getSpecificationVersion() : pkg.getImplementationVersion();
+  }
+
+  /**
+   * Parse error message from {@link ResponseEntity}
+   *
+   * @param body
+   * @return
+   */
+  public static String getErrorMessage(String body) {
+    com.qasymphony.ci.plugin.model.Error error = null;
+    try {
+      error = JsonUtils.parseJson(body, com.qasymphony.ci.plugin.model.Error.class);
+    } catch (IOException e) {
+      error = null;
+    }
+    return null == error ? body : error.getMessage();
   }
 }
