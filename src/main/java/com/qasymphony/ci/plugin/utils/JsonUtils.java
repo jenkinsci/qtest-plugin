@@ -61,9 +61,9 @@ public class JsonUtils {
    * @return text in node if field exists in node, otherwise return empty string
    */
   public static String getText(JsonNode node, String field) {
-    if (node.get(field) != null)
-      return node.get(field).asText();
-    return "";
+    if (null == node || node.get(field) == null)
+      return "";
+    return node.get(field).asText();
   }
 
   /**
@@ -74,9 +74,9 @@ public class JsonUtils {
    * @return
    */
   public static int getInt(JsonNode node, String field) {
-    if (node.get(field) != null)
-      return node.asInt();
-    return 0;
+    if (null == node || node.get(field) == null)
+      return 0;
+    return node.get(field).asInt();
   }
 
   /**
@@ -102,13 +102,12 @@ public class JsonUtils {
    * Get long from jsonnode
    *
    * @param node
-   * @param defaultValue
    * @return
    */
-  public static Long getLong(JsonNode node, Long defaultValue) {
-    if (null == node)
-      return defaultValue;
-    return node.asLong(0);
+  public static Long getLong(JsonNode node, String field) {
+    if (null == node || node.get(field) == null)
+      return 0L;
+    return node.get(field).asLong(0);
   }
 
   /**

@@ -118,9 +118,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "");
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestResponse response = AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, headers);
-    assertNotNull("Result is: ", response);
-    assertNotNull("Test suite id is: ", response.getTestSuiteId());
+    AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, headers);
   }
 
   @Test public void testSubmitLog()
@@ -156,9 +154,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setTestLogs(testLogs);
     }
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestResponse response = AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
-    assertNotNull("Result is: ", response);
-    assertNotNull("Test suite id is: ", response.getTestSuiteId());
+    AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
   }
 
   @Test public void testSubmitLogWithAttachment()
@@ -206,9 +202,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setAttachments(automationAttachments);
     }
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestResponse response = AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
-    assertNotNull("Result is: ", response);
-    assertNotNull("Test suite id is: ", response.getTestSuiteId());
+    AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
     System.out.println("End submit in: " + LoggerUtils.eslapedTime(start));
   }
 }

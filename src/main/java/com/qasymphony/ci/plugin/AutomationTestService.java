@@ -4,14 +4,13 @@
 package com.qasymphony.ci.plugin;
 
 import com.qasymphony.ci.plugin.exception.SubmittedException;
-import com.qasymphony.ci.plugin.model.*;
-import com.qasymphony.ci.plugin.model.Error;
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.AutomationTestResultWrapper;
+import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +22,7 @@ import java.util.Map;
 public class AutomationTestService {
   private static String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
 
-  public static AutomationTestResponse push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
+  public static ResponseEntity push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
     throws SubmittedException {
 
     if (testResults.size() <= 0)
@@ -47,14 +46,26 @@ public class AutomationTestService {
     } catch (ClientRequestException e) {
       throw new SubmittedException(e.getMessage(), null == responseEntity ? 0 : responseEntity.getStatusCode());
     }
+    return responseEntity;
+  }
 
-    if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
-      Error error = JsonUtils.fromJson(responseEntity.getBody(), Error.class);
-      String message = null == error ? "" : error.getMessage();
-      throw new SubmittedException(
-        StringUtils.isEmpty(message) ? responseEntity.getBody() : message, responseEntity.getStatusCode());
-    } else {
-      return JsonUtils.fromJson(responseEntity.getBody(), AutomationTestResponse.class);
+  /**
+   * @param configuration
+   * @param taskId
+   * @param headers
+   * @return
+   * @throws ClientRequestException
+   */
+  public static ResponseEntity getTaskStatus(Configuration configuration, long taskId, Map<String, String> headers)
+    throws ClientRequestException {
+    String url = String.format("%s/api/v3/projects/queue-processing/%s", configuration.getUrl(), taskId);
+    ResponseEntity responseEntity = null;
+    try {
+      responseEntity = HttpClientUtils.get(url, headers);
+    } catch (ClientRequestException e) {
+      throw e;
     }
+
+    return responseEntity;
   }
 }

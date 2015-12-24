@@ -8,11 +8,20 @@ import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResponse;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
+import com.qasymphony.ci.plugin.model.qtest.SubmittedTask;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
+import com.qasymphony.ci.plugin.utils.LoggerUtils;
+import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.model.AbstractBuild;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,31 +33,104 @@ import java.util.logging.Logger;
 public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private static final Logger LOG = Logger.getLogger(JunitQtestSubmitterImpl.class.getName());
   private StoreResultService storeResultService = new StoreResultServiceImpl();
+  private static final Integer RETRY_INTERVAL = 1000;
+  private static final List<String> LIST_FINISHED_STATE = Arrays.asList("SUCCESS", "FAILED");
 
-  @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws SubmittedException {
+  @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
     String accessToken = OauthProvider.getAccessToken(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey());
     if (StringUtils.isEmpty(accessToken))
       throw new SubmittedException(String.format("Cannot get access token from: %s, access token is: %s",
         request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey()));
 
-    AutomationTestResponse response = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
+    ResponseEntity responseEntity = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
       request.getTestResults(), request.getConfiguration(), OauthProvider.buildHeaders(accessToken, null));
     //TODO: implement with new task status api in qTest code
+    AutomationTestResponse response = null;
+    if (responseEntity.getStatusCode() == HttpStatus.SC_CREATED) {
+      //receive task response
+      SubmittedTask task = JsonUtils.fromJson(responseEntity.getBody(), SubmittedTask.class);
+      if (task == null || task.getId() <= 0)
+        throw new SubmittedException(responseEntity.getBody(), responseEntity.getStatusCode());
+      response = getSubmitLogResponse(request, task);
+    } else {
+      //if cannot passed validation from qTest
+      com.qasymphony.ci.plugin.model.Error error = JsonUtils.fromJson(responseEntity.getBody(), com.qasymphony.ci.plugin.model.Error.class);
+      String message = null == error ? "" : error.getMessage();
+      throw new SubmittedException(StringUtils.isEmpty(message) ? responseEntity.getBody() : message, responseEntity.getStatusCode());
+    }
+
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
-      .setTestSuiteId(null)
-      .setNumberOfTestLog(0)
       .setNumberOfTestResult(request.getTestResults().size())
-      .setTestSuiteName("");
+      .setTestSuiteId(null)
+      .setTestSuiteName("")
+      .setNumberOfTestLog(0);
     if (response == null)
       return result;
 
-    result.setTestSuiteId(response.getTestSuiteId())
-      .setNumberOfTestLog(response.getTotalTestLogs())
-      .setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
+    result.setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
+      .setTestSuiteId(response.getTestSuiteId())
       .setTestSuiteName(response.getTestSuiteName())
-      .setNumberOfTestResult(response.getTotalTestCases());
+      .setNumberOfTestLog(response.getTotalTestLogs());
     return result;
+  }
+
+  private AutomationTestResponse getSubmitLogResponse(JunitSubmitterRequest request, SubmittedTask task)
+    throws InterruptedException, SubmittedException {
+    if (task == null || task.getId() <= 0)
+      return null;
+
+    AutomationTestResponse response = null;
+    PrintStream logger = request.getListener().getLogger();
+    Map<String, String> headers = OauthProvider.buildHeaders(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey(), null);
+    Boolean mustRetry = true;
+    String previousState = "";
+    while (mustRetry) {
+      response = getTaskResponse(request, task, headers);
+      if (null == response) {
+        LoggerUtils.formatError(logger, "Cannot get response of taskId: %s", task.getId());
+        mustRetry = false;
+      } else {
+        if (!previousState.equalsIgnoreCase(response.getState())) {
+          LoggerUtils.formatInfo(logger, "%s: Submit status is: %s", JsonUtils.getCurrentDateString(), response.getState());
+          previousState = StringUtils.isEmpty(response.getState()) ? "" : response.getState();
+        }
+        if (response.hasError()) {
+          //if has error while get task status
+          LoggerUtils.formatError(logger, "Cannot get read content of taskId: %s, content: %s", task.getId(), response.getContent());
+          mustRetry = false;
+        } else {
+          if (LIST_FINISHED_STATE.contains(response.getState())) {
+            //if finished, we do not retry more
+            mustRetry = false;
+          } else {
+            //sleep in interval to get status of task
+            Thread.sleep(RETRY_INTERVAL);
+          }
+        }
+      }
+    }
+    return response;
+  }
+
+  private AutomationTestResponse getTaskResponse(JunitSubmitterRequest request, SubmittedTask task, Map<String, String> headers)
+    throws SubmittedException {
+    AutomationTestResponse response;
+    try {
+      //get task status
+      ResponseEntity responseEntity = AutomationTestService.getTaskStatus(request.getConfiguration(), task.getId(), headers);
+      if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
+        //if error while get status from qTest
+        com.qasymphony.ci.plugin.model.Error error = JsonUtils.fromJson(responseEntity.getBody(), com.qasymphony.ci.plugin.model.Error.class);
+        String message = null == error ? "" : error.getMessage();
+        throw new SubmittedException(StringUtils.isEmpty(message) ? responseEntity.getBody() : message, responseEntity.getStatusCode());
+      }
+      LOG.info(String.format("status:%s, body:%s", responseEntity.getStatusCode(), responseEntity.getBody()));
+      response = new AutomationTestResponse(responseEntity.getBody());
+    } catch (Exception e) {
+      throw new SubmittedException(e.getMessage(), -1);
+    }
+    return response;
   }
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)

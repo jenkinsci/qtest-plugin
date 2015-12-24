@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.submitter;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
+import hudson.model.BuildListener;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class JunitSubmitterRequest {
   private List<AutomationTestResult> testResults;
   private String buildNumber;
   private String buildPath;
+  private BuildListener listener;
 
   public Configuration getConfiguration() {
     return configuration;
@@ -52,4 +54,12 @@ public class JunitSubmitterRequest {
     return this;
   }
 
+  public BuildListener getListener() {
+    return listener;
+  }
+
+  public JunitSubmitterRequest setListener(BuildListener listener) {
+    this.listener = listener;
+    return this;
+  }
 }

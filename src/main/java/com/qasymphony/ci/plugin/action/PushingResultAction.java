@@ -97,7 +97,7 @@ public class PushingResultAction extends Notifier {
     List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
     if (automationTestResults.isEmpty())
       return true;
-    JunitSubmitterResult result = submitTestResult(build, logger, junitSubmitter, automationTestResults);
+    JunitSubmitterResult result = submitTestResult(build, listener, junitSubmitter, automationTestResults);
     if (null == result) {
       //if have no test result, we do not break build flow
       return true;
@@ -194,9 +194,9 @@ public class PushingResultAction extends Notifier {
     return automationTestResults;
   }
 
-  private JunitSubmitterResult submitTestResult(AbstractBuild build, PrintStream logger,
+  private JunitSubmitterResult submitTestResult(AbstractBuild build, BuildListener listener,
     JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
-
+    PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
     formatInfo(logger, "Begin submit test result to qTest at: " + JsonUtils.getCurrentDateString());
     long start = System.currentTimeMillis();
@@ -206,7 +206,8 @@ public class PushingResultAction extends Notifier {
           .setConfiguration(configuration)
           .setTestResults(automationTestResults)
           .setBuildNumber(build.getNumber() + "")
-          .setBuildPath(build.getUrl()));
+          .setBuildPath(build.getUrl())
+          .setListener(listener));
     } catch (SubmittedException e) {
       formatError(logger, "Cannot submit test result to qTest:");
       formatError(logger, "   status code: " + e.getStatus());
@@ -249,7 +250,8 @@ public class PushingResultAction extends Notifier {
       build.getProject().save();
       formatInfo(logger, "Save test suite to configuration success.");
     } catch (IOException e) {
-      formatError(logger, "Cannot save test suite to configuration of project:%s", e.getMessage());
+      formatError(logger, "Cannot save test suite to configuration of project:");
+      formatError(logger, " error:%s", e.getMessage());
       e.printStackTrace(logger);
     }
   }

@@ -20,7 +20,7 @@ public interface JunitSubmitter {
    * @return
    * @throws Exception
    */
-  JunitSubmitterResult submit(JunitSubmitterRequest junitSubmitterRequest) throws SubmittedException;
+  JunitSubmitterResult submit(JunitSubmitterRequest junitSubmitterRequest) throws Exception;
 
   /**
    * @param build
