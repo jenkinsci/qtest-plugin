@@ -39,7 +39,7 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
  */
 public class HttpClientUtils {
   public static Integer RETRY_MAX_COUNT = 3;
-  public static Boolean RETRY_ENABLED = false;
+  public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
   private static HttpClient CLIENT;
 
   private HttpClientUtils() {
@@ -225,9 +225,9 @@ public class HttpClientUtils {
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
       .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
-    httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(RETRY_MAX_COUNT, RETRY_ENABLED) {
+    httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(RETRY_MAX_COUNT, RETRY_REQUEST_SEND_RETRY_ENABLED) {
       @Override public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-        if (executionCount > RETRY_MAX_COUNT)
+        if (executionCount > this.getRetryCount())
           return false;
         if (exception instanceof HttpHostConnectException)
           return true;
