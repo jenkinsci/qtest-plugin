@@ -310,15 +310,18 @@ public class PushingResultAction extends Notifier {
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
-      Setting setting = null;
-      try {
-        setting = ConfigService.saveConfiguration(configuration);
-      } catch (SaveSettingException e) {
-        LOG.log(Level.WARNING, e.getMessage());
-      }
-      if (null != setting) {
-        configuration.setModuleId(setting.getModuleId());
-        configuration.setId(setting.getId());
+      //if have url, we try to update configuration to qTest
+      if (!StringUtils.isEmpty(configuration.getUrl())) {
+        Setting setting = null;
+        try {
+          setting = ConfigService.saveConfiguration(configuration);
+        } catch (SaveSettingException e) {
+          LOG.log(Level.WARNING, e.getMessage());
+        }
+        if (null != setting) {
+          configuration.setModuleId(setting.getModuleId());
+          configuration.setId(setting.getId());
+        }
       }
       return new PushingResultAction(configuration);
     }
