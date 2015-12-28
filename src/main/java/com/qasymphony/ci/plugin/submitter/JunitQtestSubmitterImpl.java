@@ -37,7 +37,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   /**
    * Retry interval for get task status in 1 second
    */
-  private static final Integer RETRY_INTERVAL = 1000;
+  private static final Integer RETRY_INTERVAL = 2000;
 
   /**
    * State list which marked as submission have been finished
