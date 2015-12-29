@@ -64,19 +64,14 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
     }
 
+    Boolean nullResponse = null == response;
+    Boolean isSubmitSuccess = (!nullResponse && response.getTestSuiteId() > 0) ? true : false;
     JunitSubmitterResult result = new JunitSubmitterResult()
-      .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
       .setNumberOfTestResult(request.getTestResults().size())
-      .setTestSuiteId(null)
-      .setTestSuiteName("")
-      .setNumberOfTestLog(0);
-    if (response == null)
-      return result;
-
-    result.setSubmittedStatus(JunitSubmitterResult.STATUS_SUCCESS)
-      .setTestSuiteId(response.getTestSuiteId())
-      .setTestSuiteName(response.getTestSuiteName())
-      .setNumberOfTestLog(response.getTotalTestLogs());
+      .setTestSuiteId(nullResponse ? null : response.getTestSuiteId())
+      .setTestSuiteName(nullResponse ? "" : response.getTestSuiteName())
+      .setNumberOfTestLog(nullResponse ? 0 : response.getTotalTestLogs())
+      .setSubmittedStatus(isSubmitSuccess ? JunitSubmitterResult.STATUS_SUCCESS : JunitSubmitterResult.STATUS_FAILED);
     return result;
   }
 
