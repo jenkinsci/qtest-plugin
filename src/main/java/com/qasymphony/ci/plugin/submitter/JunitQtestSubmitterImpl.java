@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.submitter;
 
 import com.qasymphony.ci.plugin.AutomationTestService;
 import com.qasymphony.ci.plugin.ConfigService;
+import com.qasymphony.ci.plugin.Constants;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
@@ -33,16 +34,6 @@ import java.util.logging.Logger;
 public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private static final Logger LOG = Logger.getLogger(JunitQtestSubmitterImpl.class.getName());
   private StoreResultService storeResultService = new StoreResultServiceImpl();
-
-  /**
-   * Retry interval for get task status in 1 second
-   */
-  private static final Integer RETRY_INTERVAL = 2000;
-
-  /**
-   * State list which marked as submission have been finished
-   */
-  private static final List<String> LIST_FINISHED_STATE = Arrays.asList("SUCCESS", "FAILED");
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
     String accessToken = OauthProvider.getAccessToken(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey());
@@ -99,12 +90,12 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
           //if has error while get task status
           LoggerUtils.formatError(logger, "   %s", ConfigService.getErrorMessage(response.getContent()));
         }
-        if (LIST_FINISHED_STATE.contains(response.getState())) {
+        if (Constants.LIST_FINISHED_STATE.contains(response.getState())) {
           //if finished, we do not retry more
           mustRetry = false;
         } else {
           //sleep in interval to get status of task
-          Thread.sleep(RETRY_INTERVAL);
+          Thread.sleep(Constants.RETRY_INTERVAL);
         }
       }
     }

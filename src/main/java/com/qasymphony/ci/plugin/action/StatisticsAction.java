@@ -24,11 +24,10 @@ import java.util.logging.Logger;
 public class StatisticsAction extends Actionable implements Action {
   private static final Logger LOG = Logger.getLogger(StatisticsAction.class.getName());
 
-  @SuppressWarnings("rawtypes")
   private AbstractProject project;
   private final StoreResultService storeResultService = new StoreResultServiceImpl();
 
-  public StatisticsAction(@SuppressWarnings("rawtypes") AbstractProject project) {
+  public StatisticsAction(AbstractProject project) {
     this.project = project;
   }
 
@@ -38,7 +37,7 @@ public class StatisticsAction extends Actionable implements Action {
    * @return the name as String
    */
   public final String getDisplayName() {
-    return this.hasPermission() ? ResourceBundle.get("extension.name") : null;
+    return this.hasPermission() ? ResourceBundle.EXT_DISPLAY_NAME : null;
   }
 
   /**
@@ -47,7 +46,7 @@ public class StatisticsAction extends Actionable implements Action {
    * @return the icon file as String
    */
   public final String getIconFileName() {
-    return this.hasPermission() ? ResourceBundle.get("extension.icon") : null;
+    return this.hasPermission() ? ResourceBundle.EXT_DISPLAY_ICON : null;
   }
 
   /**
@@ -56,7 +55,7 @@ public class StatisticsAction extends Actionable implements Action {
    * @return the url as String
    */
   public String getUrlName() {
-    return this.hasPermission() ? ResourceBundle.get("extension.url.name") : null;
+    return this.hasPermission() ? ResourceBundle.EXT_URL_NAME : null;
   }
 
   /**
@@ -65,7 +64,7 @@ public class StatisticsAction extends Actionable implements Action {
    * @return the url as String
    */
   public String getSearchUrl() {
-    return this.hasPermission() ? ResourceBundle.get("extension.url.search") : null;
+    return this.hasPermission() ? ResourceBundle.EXT_URL_SEARCH_NAME : null;
   }
 
   /**

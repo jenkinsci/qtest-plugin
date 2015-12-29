@@ -41,9 +41,6 @@ public class Setting {
   @JsonProperty("environment_id")
   private Long environmentId;
 
-  @JsonProperty("consolidate_test_run")
-  private Boolean consolidateTestRun;
-
   public Long getId() {
     return id;
   }

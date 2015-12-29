@@ -1,5 +1,6 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 
@@ -8,6 +9,7 @@ import java.io.IOException;
 /**
  * @author anpham
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AutomationTestResponse {
   private long id;
   private String type;
@@ -15,7 +17,6 @@ public class AutomationTestResponse {
   private String contentType;
   private String testSuiteName;
   private long testSuiteId;
-  private int totalTestCases;
   private int totalTestLogs;
   private String content;
   private Boolean hasError = false;
@@ -39,7 +40,6 @@ public class AutomationTestResponse {
     if (null != contentNode) {
       this.testSuiteId = JsonUtils.getLong(contentNode, "testSuiteId");
       this.testSuiteName = JsonUtils.getText(contentNode, "testSuiteName");
-      this.totalTestCases = JsonUtils.getInt(contentNode, "totalTestCases");
       this.totalTestLogs = JsonUtils.getInt(contentNode, "totalTestLogs");
     }
   }
@@ -98,14 +98,6 @@ public class AutomationTestResponse {
 
   public void setTestSuiteId(long testSuiteId) {
     this.testSuiteId = testSuiteId;
-  }
-
-  public int getTotalTestCases() {
-    return totalTestCases;
-  }
-
-  public void setTotalTestCases(int totalTestCases) {
-    this.totalTestCases = totalTestCases;
   }
 
   public int getTotalTestLogs() {

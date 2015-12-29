@@ -13,6 +13,12 @@ public class LoggerUtils {
 
   }
 
+  private static final String HR_TEXT = "------------------------------------------------------------------------";
+
+  public static void formatHR(PrintStream logger) {
+    formatInfo(logger, HR_TEXT);
+  }
+
   public static void formatInfo(PrintStream logger, String msg, Object... args) {
     format(logger, "INFO", msg, args);
   }
@@ -35,7 +41,7 @@ public class LoggerUtils {
    * @param start
    * @return
    */
-  public static String eslapedTime(long start) {
+  public static String elapsedTime(long start) {
     Long end = System.currentTimeMillis();
     Long duration = end - start;
     return String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(duration),

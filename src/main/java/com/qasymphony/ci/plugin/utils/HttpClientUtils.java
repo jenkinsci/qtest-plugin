@@ -15,6 +15,7 @@ import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
@@ -72,6 +73,17 @@ public class HttpClientUtils {
     } catch (UnsupportedEncodingException e) {
       return url;
     }
+  }
+
+  /**
+   *
+   * @param request
+   * @return
+   */
+  public static String getServerUrl(StaplerRequest request) {
+    Boolean isDefaultPort = request.getServerPort() == 443 || request.getServerPort() == 80;
+    return String.format("%s://%s%s%s%s", request.getScheme(), request.getServerName(),
+      isDefaultPort ? "" : ":", request.getServerPort(), request.getContextPath());
   }
 
   /**

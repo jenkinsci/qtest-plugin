@@ -26,8 +26,6 @@ public interface JunitSubmitter {
    * @param build
    * @param result
    * @return
-   * @throws IOException
-   * @throws InterruptedException
    * @throws StoreResultException
    */
   SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)

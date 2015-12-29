@@ -3,6 +3,7 @@
  */
 package com.qasymphony.ci.plugin.parse;
 
+import com.qasymphony.ci.plugin.Constants;
 import hudson.Util;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
@@ -37,10 +38,10 @@ import org.apache.tools.ant.types.FileSet;
  *
  */
 public class CommonParsingUtils {
-  public static final Integer LIMIT_TXT_FILES = 5;
-  public static final String EXT_TEXT_FILE = ".txt";
-  public static final String EXT_ZIP_FILE = ".zip";
-  public static final String JUNIT_PREFIX = "TEST-*";
+  private static final Integer LIMIT_TXT_FILES = 5;
+  private static final String EXT_TEXT_FILE = ".txt";
+  private static final String EXT_ZIP_FILE = ".zip";
+  private static final String JUNIT_PREFIX = "TEST-*";
   public static final String JUNIT_SUFFIX = "/*.xml";
 
   /**
@@ -133,7 +134,7 @@ public class CommonParsingUtils {
         bufferedInputStream.close();
         AutomationAttachment attachment = new AutomationAttachment();
         attachment.setData(Base64.encodeBase64String(zipFileBytes));
-        attachment.setContentType("application/zip");
+        attachment.setContentType(Constants.CONTENT_TYPE_ZIP);
         attachment.setName(automationTestResult.getName() + EXT_ZIP_FILE);
         // add zip file
         automationTestResult.setAttachments(Arrays.asList(attachment));
@@ -142,7 +143,7 @@ public class CommonParsingUtils {
       } else {
         for (int i = 0; i < totalAttachments; i++) {
           AutomationAttachment attachment = automationTestResult.getAttachments().get(i);
-          attachment.setContentType("text/plain");
+          attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
           attachment.setData(Base64.encodeBase64String(attachment.getData().getBytes()));
         }
       }

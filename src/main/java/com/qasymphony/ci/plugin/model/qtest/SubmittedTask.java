@@ -1,10 +1,13 @@
 package com.qasymphony.ci.plugin.model.qtest;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * @author trongle
  * @version 12/24/2015 12:25 AM trongle $
  * @since 1.0
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmittedTask {
   private long id;
   private String type;

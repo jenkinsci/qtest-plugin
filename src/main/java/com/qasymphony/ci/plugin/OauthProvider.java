@@ -19,7 +19,6 @@ import java.util.logging.Logger;
  */
 public class OauthProvider {
   private static final Logger LOG = Logger.getLogger(OauthProvider.class.getName());
-  private static final String HEADER_AUTH = "Authorization";
 
   private OauthProvider() {
 
@@ -38,7 +37,7 @@ public class OauthProvider {
       .append("/oauth/token?grant_type=refresh_token")
       .append("&refresh_token=").append(HttpClientUtils.encode(apiKey));
     Map<String, String> headers = new HashMap<>();
-    headers.put(HEADER_AUTH, "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==");
+    headers.put(Constants.HEADER_AUTH, "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==");
     try {
       ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
       if (HttpStatus.SC_OK != entity.getStatusCode()) {
@@ -79,8 +78,8 @@ public class OauthProvider {
   public static Map<String, String> buildHeaders(String accessToken, Map<String, String> headers) {
     Map<String, String> map = new HashMap<>();
     //appSecretKey is refresh token, so we packed with Bearer in header when build headers to qTest
-    map.put(HEADER_AUTH, "Bearer " + accessToken);
-    map.put("Content-Type", "application/json");
+    map.put(Constants.HEADER_AUTH, "Bearer " + accessToken);
+    map.put(Constants.HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_JSON);
     if (null != headers && headers.size() > 0) {
       map.putAll(headers);
     }

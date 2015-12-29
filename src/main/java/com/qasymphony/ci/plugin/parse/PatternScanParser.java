@@ -29,7 +29,7 @@ public class PatternScanParser implements TestResultParser {
    */
   public List<AutomationTestResult> parse(ParseRequest request, String testResultLocation) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
-    List<TestResult> testResults = new ArrayList<TestResult>();
+    List<TestResult> testResults = new ArrayList<>();
     AbstractBuild build = request.getBuild();
     Launcher launcher = request.getLauncher();
     BuildListener listener = request.getListener();

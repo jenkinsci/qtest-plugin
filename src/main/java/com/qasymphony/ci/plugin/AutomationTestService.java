@@ -20,7 +20,8 @@ import java.util.Map;
  * @author anpham
  */
 public class AutomationTestService {
-  private static String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
+  private static final String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
+  private static final String API_SUBMIT_TASK_STATUS = "%s/api/v3/projects/queue-processing/%s";
 
   public static ResponseEntity push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, Map<String, String> headers)
     throws SubmittedException {
@@ -58,7 +59,7 @@ public class AutomationTestService {
    */
   public static ResponseEntity getTaskStatus(Configuration configuration, long taskId, Map<String, String> headers)
     throws ClientRequestException {
-    String url = String.format("%s/api/v3/projects/queue-processing/%s", configuration.getUrl(), taskId);
+    String url = String.format(API_SUBMIT_TASK_STATUS, configuration.getUrl(), taskId);
     ResponseEntity responseEntity = null;
     try {
       responseEntity = HttpClientUtils.get(url, headers);

@@ -15,6 +15,7 @@ import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
+import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
@@ -55,7 +56,6 @@ import java.util.logging.Logger;
  */
 public class PushingResultAction extends Notifier {
   private static final Logger LOG = Logger.getLogger(PushingResultAction.class.getName());
-  private static final String HR_TEXT = "------------------------------------------------------------------------";
   private Configuration configuration;
 
   public PushingResultAction(Configuration configuration) {
@@ -83,13 +83,13 @@ public class PushingResultAction extends Notifier {
     PrintStream logger = listener.getLogger();
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     if (Result.ABORTED.equals(build.getResult())) {
-      formatWarn(logger, "Abort build action.");
+      LoggerUtils.formatWarn(logger, "Abort build action.");
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
     showInfo(logger);
     if (!validateConfig(configuration)) {
-      formatWarn(logger, "Invalid configuration to qTest, reject submit test result.");
+      LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
     }
@@ -104,7 +104,7 @@ public class PushingResultAction extends Notifier {
     }
     saveConfiguration(build, result, logger);
     storeResult(build, junitSubmitter, result, logger);
-    formatInfo(logger, HR_TEXT);
+    LoggerUtils.formatHR(logger);
     return true;
   }
 
@@ -117,7 +117,7 @@ public class PushingResultAction extends Notifier {
         .setTestSuiteId(null)
         .setSubmittedStatus(status));
     } catch (StoreResultException e) {
-      formatError(logger, e.getMessage());
+      LoggerUtils.formatError(logger, e.getMessage());
       e.printStackTrace(logger);
     } finally {
       return true;
@@ -125,20 +125,20 @@ public class PushingResultAction extends Notifier {
   }
 
   private void showInfo(PrintStream logger) {
-    formatInfo(logger, "");
-    formatInfo(logger, HR_TEXT);
-    formatInfo(logger, ResourceBundle.DISPLAY_NAME);
-    formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
-    formatInfo(logger, HR_TEXT);
-    formatInfo(logger, "Submit Junit test result to qTest at:%s", configuration.getUrl());
-    formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
-    formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
+    LoggerUtils.formatInfo(logger, "");
+    LoggerUtils.formatHR(logger);
+    LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
+    LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
+    LoggerUtils.formatHR(logger);
+    LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s", configuration.getUrl());
+    LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
+    LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
     if (configuration.getEnvironmentId() > 0) {
-      formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
+      LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
     } else {
-      formatInfo(logger, "With no environment.");
+      LoggerUtils.formatInfo(logger, "With no environment.");
     }
-    formatInfo(logger, "");
+    LoggerUtils.formatInfo(logger, "");
   }
 
   private Boolean validateConfig(Configuration configuration) {
@@ -152,15 +152,15 @@ public class PushingResultAction extends Notifier {
   private Setting checkProjectNameChanged(AbstractBuild build, PrintStream logger) {
     String currentJenkinProjectName = build.getProject().getName();
     if (!configuration.getJenkinsProjectName().equals(currentJenkinProjectName)) {
-      formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinProjectName);
+      LoggerUtils.formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinProjectName);
       configuration.setJenkinsProjectName(currentJenkinProjectName);
     }
     Setting setting = null;
     try {
       setting = ConfigService.saveConfiguration(configuration);
     } catch (SaveSettingException e) {
-      formatWarn(logger, "Cannot update ci setting to qTest:");
-      formatWarn(logger, "  error:%s", e.getMessage());
+      LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
+      LoggerUtils.formatWarn(logger, "  error:%s", e.getMessage());
     }
     if (null != setting) {
       configuration.setId(setting.getId());
@@ -172,7 +172,7 @@ public class PushingResultAction extends Notifier {
   private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
-    formatInfo(logger, HR_TEXT);
+    LoggerUtils.formatHR(logger);
     try {
       automationTestResults = JunitTestResultParser.parse(new ParseRequest()
         .setBuild(build)
@@ -181,18 +181,18 @@ public class PushingResultAction extends Notifier {
         .setListener(listener));
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
-      formatError(logger, e.getMessage());
+      LoggerUtils.formatError(logger, e.getMessage());
       automationTestResults = Collections.emptyList();
     }
     if (automationTestResults.isEmpty()) {
-      formatWarn(logger, "No JUnit test result found.");
+      LoggerUtils.formatWarn(logger, "No JUnit test result found.");
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
-      formatInfo(logger, HR_TEXT);
+      LoggerUtils.formatHR(logger);
       return Collections.emptyList();
     }
-    formatInfo(logger, "JUnit test result found: %s, time elapsed: %s", automationTestResults.size(), LoggerUtils.eslapedTime(start));
-    formatInfo(logger, HR_TEXT);
-    formatInfo(logger, "");
+    LoggerUtils.formatInfo(logger, "JUnit test result found: %s, time elapsed: %s", automationTestResults.size(), LoggerUtils.elapsedTime(start));
+    LoggerUtils.formatHR(logger);
+    LoggerUtils.formatInfo(logger, "");
     return automationTestResults;
   }
 
@@ -200,7 +200,7 @@ public class PushingResultAction extends Notifier {
     JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
     PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
-    formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
+    LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
     long start = System.currentTimeMillis();
     try {
       result = junitSubmitter.submit(
@@ -211,12 +211,12 @@ public class PushingResultAction extends Notifier {
           .setBuildPath(build.getUrl())
           .setListener(listener));
     } catch (SubmittedException e) {
-      formatError(logger, "Cannot submit test results to qTest:");
-      formatError(logger, "   status code: " + e.getStatus());
-      formatError(logger, "   error: " + e.getMessage());
+      LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
+      LoggerUtils.formatError(logger, "   status code: " + e.getStatus());
+      LoggerUtils.formatError(logger, "   error: " + e.getMessage());
     } catch (Exception e) {
-      formatError(logger, "Cannot submit test results to qTest:");
-      formatError(logger, "   error: " + e.getMessage());
+      LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
+      LoggerUtils.formatError(logger, "   error: " + e.getMessage());
     } finally {
       if (null == result) {
         result = new JunitSubmitterResult()
@@ -227,17 +227,17 @@ public class PushingResultAction extends Notifier {
       }
 
       Boolean isSuccess = null != result.getTestSuiteId() && result.getTestSuiteId() > 0;
-      formatInfo(logger, HR_TEXT);
-      formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
-      formatInfo(logger, HR_TEXT);
+      LoggerUtils.formatHR(logger);
+      LoggerUtils.formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
+      LoggerUtils.formatHR(logger);
       if (isSuccess) {
-        formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
-        formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
-        formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
+        LoggerUtils.formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
+        LoggerUtils.formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
+        LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
       }
-      formatInfo(logger, "Time elapsed: %s", LoggerUtils.eslapedTime(start));
-      formatInfo(logger, "End submit test results to qTest at: %s", JsonUtils.getCurrentDateString());
-      formatInfo(logger, "");
+      LoggerUtils.formatInfo(logger, "Time elapsed: %s", LoggerUtils.elapsedTime(start));
+      LoggerUtils.formatInfo(logger, "End submit test results to qTest at: %s", JsonUtils.getCurrentDateString());
+      LoggerUtils.formatInfo(logger, "");
     }
 
     return result;
@@ -248,10 +248,10 @@ public class PushingResultAction extends Notifier {
     configuration.setTestSuiteId(null == result.getTestSuiteId() ? configuration.getTestSuiteId() : result.getTestSuiteId());
     try {
       build.getProject().save();
-      formatInfo(logger, "Save test suite to configuration success.");
+      LoggerUtils.formatInfo(logger, "Save test suite to configuration success.");
     } catch (IOException e) {
-      formatError(logger, "Cannot save test suite to configuration of project:");
-      formatError(logger, "   error:%s", e.getMessage());
+      LoggerUtils.formatError(logger, "Cannot save test suite to configuration of project:");
+      LoggerUtils.formatError(logger, "   error:%s", e.getMessage());
       e.printStackTrace(logger);
     }
   }
@@ -259,24 +259,12 @@ public class PushingResultAction extends Notifier {
   private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
     try {
       junitSubmitter.storeSubmittedResult(build, result);
-      formatInfo(logger, "Store submission result to workspace success.");
+      LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
     } catch (Exception e) {
-      formatError(logger, "Cannot store submission result: " + e.getMessage());
+      LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());
       e.printStackTrace(logger);
     }
-    formatInfo(logger, "");
-  }
-
-  private void formatInfo(PrintStream logger, String msg, Object... args) {
-    LoggerUtils.formatInfo(logger, msg, args);
-  }
-
-  private void formatError(PrintStream logger, String msg, Object... args) {
-    LoggerUtils.formatError(logger, msg, args);
-  }
-
-  private void formatWarn(PrintStream logger, String msg, Object... args) {
-    LoggerUtils.formatWarn(logger, msg, args);
+    LoggerUtils.formatInfo(logger, "");
   }
 
   @Extension
@@ -305,7 +293,7 @@ public class PushingResultAction extends Notifier {
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
-      configuration.setJenkinsServerUrl(getServerUrl(req));
+      configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration = ConfigService.validateConfiguration(configuration, formData);
@@ -326,14 +314,10 @@ public class PushingResultAction extends Notifier {
       return new PushingResultAction(configuration);
     }
 
-    private String getServerUrl(StaplerRequest request) {
-      Boolean isDefaultPort = request.getServerPort() == 443 || request.getServerPort() == 80;
-      return String.format("%s://%s%s%s%s", request.getScheme(), request.getServerName(),
-        isDefaultPort ? "" : ":", request.getServerPort(), request.getContextPath());
-    }
-
     public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
       throws IOException, ServletException {
+      if (StringUtils.isEmpty(value))
+        return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
       try {
         new URL(value);
         Boolean isQtestUrl = ConfigService.validateQtestUrl(value);
@@ -400,7 +384,7 @@ public class PushingResultAction extends Notifier {
     public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
       final JSONObject res = new JSONObject();
       StaplerRequest request = Stapler.getCurrentRequest();
-      final String jenkinsServerName = getServerUrl(request);
+      final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
       final String accessToken = OauthProvider.getAccessToken(qTestUrl, apiKey);
 
       Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);

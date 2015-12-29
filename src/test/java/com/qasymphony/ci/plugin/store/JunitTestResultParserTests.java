@@ -203,6 +203,6 @@ public class JunitTestResultParserTests extends TestAbstracts {
     }
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
     AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
-    System.out.println("End submit in: " + LoggerUtils.eslapedTime(start));
+    System.out.println("End submit in: " + LoggerUtils.elapsedTime(start));
   }
 }
