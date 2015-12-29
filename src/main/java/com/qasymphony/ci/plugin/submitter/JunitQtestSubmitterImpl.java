@@ -64,8 +64,8 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
     }
 
-    Boolean nullResponse = null == response;
-    Boolean isSubmitSuccess = (!nullResponse && response.getTestSuiteId() > 0) ? true : false;
+    Boolean nullResponse = (null == response);
+    Boolean isSubmitSuccess = ((!nullResponse && response.getTestSuiteId() > 0) ? true : false);
     JunitSubmitterResult result = new JunitSubmitterResult()
       .setNumberOfTestResult(request.getTestResults().size())
       .setTestSuiteId(nullResponse ? null : response.getTestSuiteId())
