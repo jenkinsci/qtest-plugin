@@ -12,6 +12,7 @@ import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.model.qtest.SubmittedTask;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
+import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
@@ -79,7 +80,6 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     while (mustRetry) {
       response = getTaskResponse(request, task, headers);
       if (null == response) {
-        LoggerUtils.formatError(logger, "Cannot get response of taskId: %s", task.getId());
         mustRetry = false;
       } else {
         if (!previousState.equalsIgnoreCase(response.getState())) {
@@ -104,20 +104,21 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
   private AutomationTestResponse getTaskResponse(JunitSubmitterRequest request, SubmittedTask task, Map<String, String> headers)
     throws SubmittedException {
-    AutomationTestResponse response;
+    ResponseEntity responseEntity;
     try {
       //get task status
-      ResponseEntity responseEntity = AutomationTestService.getTaskStatus(request.getConfiguration(), task.getId(), headers);
-      if (responseEntity.getStatusCode() != HttpStatus.SC_OK) {
-        //if error while get status from qTest
-        throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
-      }
-      LOG.info(String.format("status:%s, body:%s", responseEntity.getStatusCode(), responseEntity.getBody()));
-      response = new AutomationTestResponse(responseEntity.getBody());
-    } catch (Exception e) {
+      responseEntity = AutomationTestService.getTaskStatus(request.getConfiguration(), task.getId(), headers);
+    } catch (ClientRequestException e) {
+      LoggerUtils.formatError(request.getListener().getLogger(), "Cannot get response of taskId: %s, error: %s", task.getId(), e.getMessage());
       throw new SubmittedException(e.getMessage(), -1);
     }
-    return response;
+    LOG.info(String.format("project:%s, status:%s, body:%s", request.getConfiguration().getJenkinsProjectName(),
+      null == responseEntity ? -1 : responseEntity.getStatusCode(), null == responseEntity ? "" : responseEntity.getBody()));
+
+    if ((null == responseEntity) || (responseEntity.getStatusCode() != HttpStatus.SC_OK)) {
+      throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
+    }
+    return new AutomationTestResponse(responseEntity.getBody());
   }
 
   @Override public SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)

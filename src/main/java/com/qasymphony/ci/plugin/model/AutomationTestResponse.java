@@ -34,7 +34,7 @@ public class AutomationTestResponse {
     JsonNode contentNode = null;
     try {
       contentNode = JsonUtils.parseTree(content);
-    } catch (IOException e) {
+    } catch (Exception e) {
       hasError = true;
     }
     if (null != contentNode) {
