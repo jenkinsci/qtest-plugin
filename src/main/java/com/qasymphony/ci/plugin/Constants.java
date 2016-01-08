@@ -18,6 +18,7 @@ public class Constants {
   public static final String CONTENT_TYPE_ZIP = "application/zip";
   public static final String CONTENT_TYPE_TEXT = "text/plain";
 
+  public static final String CI_TYPE = "jenkins";
   /**
    * Retry interval for get task status in 1 second
    */

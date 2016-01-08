@@ -13,9 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Setting {
   @JsonProperty("ci_type")
-  public String getCiType() {
-    return "jenkins";
-  }
+  public String ciType;
 
   @JsonProperty("id")
   private Long id;
@@ -40,6 +38,18 @@ public class Setting {
 
   @JsonProperty("environment_id")
   private Long environmentId;
+
+  @JsonProperty("ciid")
+  private String hmac;
+
+  public String getCiType() {
+    return ciType;
+  }
+
+  public Setting setCiType(String ciType) {
+    this.ciType = ciType;
+    return this;
+  }
 
   public Long getId() {
     return id;
@@ -110,6 +120,15 @@ public class Setting {
 
   public Setting setEnvironmentId(Long environmentId) {
     this.environmentId = environmentId;
+    return this;
+  }
+
+  public String getHmac() {
+    return hmac;
+  }
+
+  public Setting setHmac(String hmac) {
+    this.hmac = hmac;
     return this;
   }
 }

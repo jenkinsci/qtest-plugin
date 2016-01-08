@@ -70,7 +70,7 @@ public class HttpClientUtils {
   public static String encode(String url) {
     try {
       return URLEncoder.encode(url, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
+    } catch (Exception e) {
       return url;
     }
   }

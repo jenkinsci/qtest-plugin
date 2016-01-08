@@ -20,10 +20,7 @@ import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -93,7 +90,7 @@ public class PushingResultAction extends Notifier {
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
     }
-    checkProjectNameChanged(build, logger);
+    checkProjectNameChanged(build, listener);
     List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
     if (automationTestResults.isEmpty())
       return true;
@@ -149,16 +146,17 @@ public class PushingResultAction extends Notifier {
       configuration.getReleaseId() > 0;
   }
 
-  private Setting checkProjectNameChanged(AbstractBuild build, PrintStream logger) {
-    String currentJenkinProjectName = build.getProject().getName();
-    if (!configuration.getJenkinsProjectName().equals(currentJenkinProjectName)) {
-      LoggerUtils.formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinProjectName);
-      configuration.setJenkinsProjectName(currentJenkinProjectName);
+  private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
+    String currentJenkinsProjectName = build.getProject().getName();
+    PrintStream logger = listener.getLogger();
+    if (!configuration.getJenkinsProjectName().equals(currentJenkinsProjectName)) {
+      LoggerUtils.formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinsProjectName);
+      configuration.setJenkinsProjectName(currentJenkinsProjectName);
     }
     Setting setting = null;
     try {
-      setting = ConfigService.saveConfiguration(configuration);
-    } catch (SaveSettingException e) {
+      setting = ConfigService.saveConfiguration(configuration, ConfigService.getServerPort(build, listener));
+    } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  error:%s", e.getMessage());
     }
@@ -302,7 +300,7 @@ public class PushingResultAction extends Notifier {
       if (!StringUtils.isEmpty(configuration.getUrl())) {
         Setting setting = null;
         try {
-          setting = ConfigService.saveConfiguration(configuration);
+          setting = ConfigService.saveConfiguration(configuration, req.getServerPort());
         } catch (SaveSettingException e) {
           LOG.log(Level.WARNING, e.getMessage());
         }
@@ -383,7 +381,7 @@ public class PushingResultAction extends Notifier {
     @JavaScriptMethod
     public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
       final JSONObject res = new JSONObject();
-      StaplerRequest request = Stapler.getCurrentRequest();
+      final StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
       final String accessToken = OauthProvider.getAccessToken(qTestUrl, apiKey);
 
@@ -395,17 +393,17 @@ public class PushingResultAction extends Notifier {
         res.put("environments", "");
         return res;
       }
-
       final CountDownLatch countDownLatch = new CountDownLatch(3);
       ExecutorService fixedPool = Executors.newFixedThreadPool(3);
-
       Callable<Object> caGetSetting = new Callable<Object>() {
         @Override public Object call() throws Exception {
           try {
             //get saved setting from qtest
             Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
-              .setJenkinsProjectName(jenkinsProjectName)
-              .setProjectId(projectId), qTestUrl, accessToken);
+                .setJenkinsProjectName(jenkinsProjectName)
+                .setProjectId(projectId)
+                .setHmac(ConfigService.getHmac(request.getServerPort())),
+              qTestUrl, accessToken);
             res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
             return setting;
           } finally {

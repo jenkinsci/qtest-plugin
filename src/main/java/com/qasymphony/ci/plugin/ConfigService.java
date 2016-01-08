@@ -9,16 +9,22 @@ import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.net.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -198,8 +204,8 @@ public class ConfigService {
     Boolean getById = setting.getId() != null && setting.getId() > 0;
 
     String urlById = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
-    String urlByProject = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins", qTestUrl, setting.getProjectId(),
-      setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()));
+    String urlByProject = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins&ciid=%s", qTestUrl, setting.getProjectId(),
+      setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()), HttpClientUtils.encode(setting.getHmac()));
 
     try {
       Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
@@ -216,7 +222,18 @@ public class ConfigService {
         return null;
       }
       LOG.info(String.format("Get config from qTest:%s,%s", qTestUrl, responseEntity.getBody()));
-      return responseEntity.getBody();
+
+      // if found by id, we check if setting belonging to jenkins
+      // if ci_type equals => check hmac
+      // if hmac empty => update
+      // else if hmac equals => update otherwise=> create
+      Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
+      if (null != res && Constants.CI_TYPE.equalsIgnoreCase(res.getCiType())) {
+        if (StringUtils.isEmpty(res.getHmac()) || setting.getHmac().equalsIgnoreCase(res.getHmac())) {
+          return responseEntity.getBody();
+        }
+      }
+      return null;
     } catch (ClientRequestException e) {
       return null;
     }
@@ -254,19 +271,22 @@ public class ConfigService {
    * @param configuration
    * @return
    */
-  public static Setting saveConfiguration(Configuration configuration) throws SaveSettingException {
+  public static Setting saveConfiguration(Configuration configuration, int serverPort)
+    throws SaveSettingException {
     LOG.info("Save configuration to qTest:" + configuration);
     try {
       //get access token
       String accessToken = OauthProvider.getAccessToken(configuration.getUrl(), configuration.getAppSecretKey());
 
       //get saved setting from qTest
-      Object savedObject = getConfiguration(configuration.toSetting(), configuration.getUrl(), accessToken);
+      Setting setting = configuration.toSetting();
+      setting.setHmac(getHmac(serverPort));
+      Object savedObject = getConfiguration(setting, configuration.getUrl(), accessToken);
       Setting savedSetting = null == savedObject ? null : JsonUtils.fromJson(savedObject.toString(), Setting.class);
 
       //prepare for send request to qTest
       Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
-      Setting setting = configuration.toSetting();
+      setting.setCiType(Constants.CI_TYPE);
       ResponseEntity responseEntity = null;
 
       if (savedSetting != null && savedSetting.getId() > 0) {
@@ -316,4 +336,46 @@ public class ConfigService {
     }
     return null == error ? body : error.getMessage();
   }
+
+  /**
+   * Get server port
+   *
+   * @param build
+   * @param listener
+   * @return
+   */
+  public static int getServerPort(AbstractBuild build, BuildListener listener) {
+    URL uri = null;
+    try {
+      String url = build.getEnvironment(listener).get("JENKINS_URL");
+      uri = new URL(url);
+    } catch (Exception e) {
+    }
+    return null == uri ? 0 : uri.getPort();
+  }
+
+  /**
+   * @param serverPort
+   * @return
+   */
+  public static String getHmac(int serverPort) {
+    NetworkInterface network = null;
+    try {
+      network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+    } catch (Exception e) {
+    }
+    if (null == network)
+      return "";
+    byte[] mac = new byte[0];
+    try {
+      mac = network.getHardwareAddress();
+    } catch (SocketException e) {
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < mac.length; i++) {
+      sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+    }
+    return String.format("%s:%s", sb.toString(), serverPort);
+  }
+
 }
