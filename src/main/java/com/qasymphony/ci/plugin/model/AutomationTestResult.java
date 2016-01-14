@@ -97,21 +97,28 @@ public class AutomationTestResult {
 
   /**
    * Add testLog and resolve status of testResult
+   *
    * @param automationTestLog
    * @return
+   * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */
   public AutomationTestLog addTestLog(AutomationTestLog automationTestLog) {
     testLogs.add(automationTestLog);
-    if (CaseResult.Status.FAILED.toString().equalsIgnoreCase(automationTestLog.getStatus())) {
+    String status = automationTestLog.getStatus();
+    //regression the same as failed
+    if (CaseResult.Status.FAILED.toString().equalsIgnoreCase(status) ||
+      CaseResult.Status.REGRESSION.toString().equalsIgnoreCase(status)) {
       totalFailedTestSteps += 1;
     }
-    if (CaseResult.Status.SKIPPED.toString().equalsIgnoreCase(automationTestLog.getStatus())) {
+    if (CaseResult.Status.SKIPPED.toString().equalsIgnoreCase(status)) {
       totalSkippedTestSteps += 1;
     }
-    if (CaseResult.Status.PASSED.toString().equalsIgnoreCase(automationTestLog.getStatus())) {
+    //fixed the same as passed
+    if (CaseResult.Status.PASSED.toString().equalsIgnoreCase(status) ||
+      CaseResult.Status.FIXED.toString().equalsIgnoreCase(status)) {
       totalSuccessTestSteps += 1;
     }
-    this.setStatus(automationTestLog.getStatus());
+    this.setStatus(status);
     if (totalFailedTestSteps >= 1) {
       //if there is one failed testStep, we mark testLog as failed
       this.setStatus(CaseResult.Status.FAILED.toString());
