@@ -40,7 +40,7 @@ public class Setting {
   private Long environmentId;
 
   @JsonProperty("ciid")
-  private String hmac;
+  private String serverId;
 
   public String getCiType() {
     return ciType;
@@ -123,12 +123,12 @@ public class Setting {
     return this;
   }
 
-  public String getHmac() {
-    return hmac;
+  public String getServerId() {
+    return serverId;
   }
 
-  public Setting setHmac(String hmac) {
-    this.hmac = hmac;
+  public Setting setServerId(String serverId) {
+    this.serverId = serverId;
     return this;
   }
 }

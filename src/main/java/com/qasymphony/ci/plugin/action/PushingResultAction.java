@@ -155,7 +155,7 @@ public class PushingResultAction extends Notifier {
     }
     Setting setting = null;
     try {
-      setting = ConfigService.saveConfiguration(configuration, ConfigService.getServerPort(build, listener));
+      setting = ConfigService.saveConfiguration(configuration);
     } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  error:%s", e.getMessage());
@@ -300,7 +300,7 @@ public class PushingResultAction extends Notifier {
       if (!StringUtils.isEmpty(configuration.getUrl())) {
         Setting setting = null;
         try {
-          setting = ConfigService.saveConfiguration(configuration, req.getServerPort());
+          setting = ConfigService.saveConfiguration(configuration);
         } catch (SaveSettingException e) {
           LOG.log(Level.WARNING, e.getMessage());
         }
@@ -402,7 +402,7 @@ public class PushingResultAction extends Notifier {
             Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
                 .setJenkinsProjectName(jenkinsProjectName)
                 .setProjectId(projectId)
-                .setHmac(ConfigService.getHmac(request.getServerPort())),
+                .setServerId(ConfigService.getServerId()),
               qTestUrl, accessToken);
             res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
             return setting;

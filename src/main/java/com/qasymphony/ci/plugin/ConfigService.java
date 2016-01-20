@@ -9,9 +9,7 @@ import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
@@ -20,11 +18,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.net.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -205,7 +200,7 @@ public class ConfigService {
 
     String urlById = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
     String urlByProject = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins&ciid=%s", qTestUrl, setting.getProjectId(),
-      setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()), HttpClientUtils.encode(setting.getHmac()));
+      setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()), HttpClientUtils.encode(setting.getServerId()));
 
     try {
       Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
@@ -217,19 +212,19 @@ public class ConfigService {
       }
 
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
-        LOG.log(Level.WARNING, String.format("Cannot get config from qTest:%s, server:%s, project:%s, error:%s",
-          qTestUrl, setting.getJenkinsServer(), setting.getJenkinsProjectName(), responseEntity.getBody()));
+        LOG.log(Level.WARNING, String.format("Cannot get config from qTest: %s, server: %s, project: %s, id: %s, serverId: %s, error: %s",
+          qTestUrl, setting.getJenkinsServer(), setting.getJenkinsProjectName(), setting.getId(), setting.getServerId(), responseEntity.getBody()));
         return null;
       }
-      LOG.info(String.format("Get config from qTest:%s,%s", qTestUrl, responseEntity.getBody()));
+      LOG.info(String.format("Get config from qTest: %s,%s", qTestUrl, responseEntity.getBody()));
 
       // if found by id, we check if setting belonging to jenkins
-      // if ci_type equals => check hmac
-      // if hmac empty => update
-      // else if hmac equals => update otherwise=> create
+      // if ci_type equals => check serverId
+      // if serverId empty => update
+      // else if serverId equals => update otherwise=> create
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
       if (null != res && Constants.CI_TYPE.equalsIgnoreCase(res.getCiType())) {
-        if (StringUtils.isEmpty(res.getHmac()) || setting.getHmac().equalsIgnoreCase(res.getHmac())) {
+        if (StringUtils.isEmpty(res.getServerId()) || setting.getServerId().equalsIgnoreCase(res.getServerId())) {
           return responseEntity.getBody();
         }
       }
@@ -271,7 +266,7 @@ public class ConfigService {
    * @param configuration
    * @return
    */
-  public static Setting saveConfiguration(Configuration configuration, int serverPort)
+  public static Setting saveConfiguration(Configuration configuration)
     throws SaveSettingException {
     LOG.info("Save configuration to qTest:" + configuration);
     try {
@@ -280,7 +275,7 @@ public class ConfigService {
 
       //get saved setting from qTest
       Setting setting = configuration.toSetting();
-      setting.setHmac(getHmac(serverPort));
+      setting.setServerId(getServerId());
       Object savedObject = getConfiguration(setting, configuration.getUrl(), accessToken);
       Setting savedSetting = null == savedObject ? null : JsonUtils.fromJson(savedObject.toString(), Setting.class);
 
@@ -338,44 +333,10 @@ public class ConfigService {
   }
 
   /**
-   * Get server port
-   *
-   * @param build
-   * @param listener
+   * Get jenkins instance id
    * @return
    */
-  public static int getServerPort(AbstractBuild build, BuildListener listener) {
-    URL uri = null;
-    try {
-      String url = build.getEnvironment(listener).get("JENKINS_URL");
-      uri = new URL(url);
-    } catch (Exception e) {
-    }
-    return null == uri ? 0 : uri.getPort();
+  public static String getServerId() {
+    return Jenkins.getInstance().getLegacyInstanceId();
   }
-
-  /**
-   * @param serverPort
-   * @return
-   */
-  public static String getHmac(int serverPort) {
-    NetworkInterface network = null;
-    try {
-      network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
-    } catch (Exception e) {
-    }
-    if (null == network)
-      return "";
-    byte[] mac = new byte[0];
-    try {
-      mac = network.getHardwareAddress();
-    } catch (SocketException e) {
-    }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < mac.length; i++) {
-      sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-    }
-    return String.format("%s:%s", sb.toString(), serverPort);
-  }
-
 }
