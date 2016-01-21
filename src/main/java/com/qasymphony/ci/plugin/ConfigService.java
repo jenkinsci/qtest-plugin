@@ -20,7 +20,12 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URL;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -275,7 +280,7 @@ public class ConfigService {
 
       //get saved setting from qTest
       Setting setting = configuration.toSetting();
-      setting.setServerId(getServerId());
+      setting.setServerId(getServerId(configuration.getJenkinsServerUrl()));
       Object savedObject = getConfiguration(setting, configuration.getUrl(), accessToken);
       Setting savedSetting = null == savedObject ? null : JsonUtils.fromJson(savedObject.toString(), Setting.class);
 
@@ -333,10 +338,63 @@ public class ConfigService {
   }
 
   /**
-   * Get jenkins instance id
+   * Get jenkins instance id, when cannot get server id, we try to get mac address and port.
+   *
    * @return
    */
-  public static String getServerId() {
-    return Jenkins.getInstance().getLegacyInstanceId();
+  public static String getServerId(String jenkinsUrl) {
+    String serverId = null;
+
+    try {
+      serverId = Jenkins.getInstance().getLegacyInstanceId();
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Cannot get serverId:" + e.getMessage());
+    }
+    return StringUtils.isEmpty(serverId) ? getHmac(jenkinsUrl) : serverId;
+  }
+
+  private static String getHmac(String jenkinsUrl) {
+    URL uri = null;
+    try {
+      uri = new URL(jenkinsUrl);
+    } catch (Exception e) {
+    }
+    int port = 0;
+    if (uri != null) {
+      port = (uri.getPort() > 0 ? uri.getPort() : ("http".equalsIgnoreCase(uri.getProtocol()) ? 80 : 443));
+    }
+    return String.format("%s:%s", getMacAddress(), port);
+  }
+
+  private static String getMacAddress() {
+    NetworkInterface network = null;
+    try {
+      network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Cannot get localhost network interface: " + e.getMessage());
+    }
+    //if cannot get by localhost, we try to get first NetworkInterface
+    if (null == network) {
+      try {
+        network = NetworkInterface.getByIndex(0);
+      } catch (Exception e) {
+        LOG.log(Level.WARNING, "Cannot get first network interface: " + e.getMessage());
+      }
+    }
+    if (null == network) {
+      return "UNKNOWN_MAC_ADDRESS";
+    }
+    byte[] mac = new byte[0];
+    try {
+      mac = network.getHardwareAddress();
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Cannot get localhost mac address:" + e.getMessage());
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < mac.length; i++) {
+      sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+    }
+    return sb.toString();
   }
 }
