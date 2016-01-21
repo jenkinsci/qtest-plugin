@@ -45,6 +45,7 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
 public class HttpClientUtils {
   public static Integer RETRY_MAX_COUNT = 3;
   public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
+  private static final String AWS_METADATA_MAC_URL  ="http://169.254.169.254/latest/meta-data/mac";
   private static HttpClient CLIENT;
 
   private HttpClientUtils() {
@@ -130,7 +131,7 @@ public class HttpClientUtils {
 
     if (mac != null && mac.length <= 0) {
       //try to get mac address in AWS
-      return HttpClientUtils.get(" http://169.254.169.254/latest/meta-data/mac", null).getBody();
+      return HttpClientUtils.get(AWS_METADATA_MAC_URL, null).getBody();
     }
 
     StringBuilder sb = new StringBuilder();
