@@ -22,6 +22,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -30,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
+import java.util.logging.Level;
 
 import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
@@ -76,7 +80,6 @@ public class HttpClientUtils {
   }
 
   /**
-   *
    * @param request
    * @return
    */
@@ -84,6 +87,57 @@ public class HttpClientUtils {
     Boolean isDefaultPort = request.getServerPort() == 443 || request.getServerPort() == 80;
     return String.format("%s://%s%s%s%s", request.getScheme(), request.getServerName(),
       isDefaultPort ? "" : ":", request.getServerPort(), request.getContextPath());
+  }
+
+  /**
+   * get port from url
+   *
+   * @param url
+   * @return
+   */
+  public static int getPort(String url) {
+    URL uri = null;
+    try {
+      uri = new URL(url);
+    } catch (Exception e) {
+    }
+    int port = 0;
+    if (uri != null) {
+      port = (uri.getPort() > 0 ? uri.getPort() : ("http".equalsIgnoreCase(uri.getProtocol()) ? 80 : 443));
+    }
+    return port;
+  }
+
+  /**
+   * get mac address and port
+   *
+   * @return
+   */
+  public static String getMacAddress() throws Exception {
+    NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+
+    //if cannot get by localhost, we try to get first NetworkInterface
+    if (null == network) {
+      network = NetworkInterface.getByIndex(0);
+    }
+
+    byte[] mac;
+    try {
+      mac = network.getHardwareAddress();
+    } catch (Exception e) {
+      mac = new byte[0];
+    }
+
+    if (mac != null && mac.length <= 0) {
+      //try to get mac address in AWS
+      return HttpClientUtils.get(" http://169.254.169.254/latest/meta-data/mac", null).getBody();
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < mac.length; i++) {
+      sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+    }
+    return sb.toString();
   }
 
   /**

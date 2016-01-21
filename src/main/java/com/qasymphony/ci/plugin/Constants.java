@@ -28,4 +28,6 @@ public class Constants {
    * State list which marked as submission have been finished
    */
   public static final List<String> LIST_FINISHED_STATE = Arrays.asList("SUCCESS", "FAILED");
+
+  public static final String JENKINS_SERVER_ID_DEFAULT = "UNKNOWN_JENKINS_SERVER_ID";
 }

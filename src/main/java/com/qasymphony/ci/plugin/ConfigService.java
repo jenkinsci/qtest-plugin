@@ -339,62 +339,29 @@ public class ConfigService {
 
   /**
    * Get jenkins instance id, when cannot get server id, we try to get mac address and port.
+   * 1. get mac address:port
+   * 2. if failed, we get server id
+   * 3. if failed get by UUID
    *
    * @return
    */
   public static String getServerId(String jenkinsUrl) {
-    String serverId = null;
+    String hmac = null;
 
     try {
-      serverId = Jenkins.getInstance().getLegacyInstanceId();
-    } catch (Exception e) {
-      LOG.log(Level.WARNING, "Cannot get serverId:" + e.getMessage());
-    }
-    return StringUtils.isEmpty(serverId) ? getHmac(jenkinsUrl) : serverId;
-  }
-
-  private static String getHmac(String jenkinsUrl) {
-    URL uri = null;
-    try {
-      uri = new URL(jenkinsUrl);
-    } catch (Exception e) {
-    }
-    int port = 0;
-    if (uri != null) {
-      port = (uri.getPort() > 0 ? uri.getPort() : ("http".equalsIgnoreCase(uri.getProtocol()) ? 80 : 443));
-    }
-    return String.format("%s:%s", getMacAddress(), port);
-  }
-
-  private static String getMacAddress() {
-    NetworkInterface network = null;
-    try {
-      network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
-    } catch (Exception e) {
-      LOG.log(Level.WARNING, "Cannot get localhost network interface: " + e.getMessage());
-    }
-    //if cannot get by localhost, we try to get first NetworkInterface
-    if (null == network) {
-      try {
-        network = NetworkInterface.getByIndex(0);
-      } catch (Exception e) {
-        LOG.log(Level.WARNING, "Cannot get first network interface: " + e.getMessage());
+      String macAddress = HttpClientUtils.getMacAddress();
+      if (!StringUtils.isEmpty(macAddress)) {
+        hmac = String.format("%s:%s", macAddress, HttpClientUtils.getPort(jenkinsUrl));
       }
-    }
-    if (null == network) {
-      return "UNKNOWN_MAC_ADDRESS";
-    }
-    byte[] mac = new byte[0];
-    try {
-      mac = network.getHardwareAddress();
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Cannot get localhost mac address:" + e.getMessage());
+      LOG.log(Level.WARNING, "Cannot get mac address:port:" + e.getMessage());
     }
 
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < mac.length; i++) {
-      sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+    if (!StringUtils.isEmpty(hmac)) {
+      return hmac;
     }
-    return sb.toString();
+    return StringUtils.isEmpty(Jenkins.getInstance().getLegacyInstanceId()) ?
+      Constants.JENKINS_SERVER_ID_DEFAULT : Jenkins.getInstance().getLegacyInstanceId();
   }
+
 }

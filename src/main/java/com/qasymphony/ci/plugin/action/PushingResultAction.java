@@ -402,7 +402,7 @@ public class PushingResultAction extends Notifier {
             Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
                 .setJenkinsProjectName(jenkinsProjectName)
                 .setProjectId(projectId)
-                .setServerId(ConfigService.getServerId(request.getRequestURI())),
+                .setServerId(ConfigService.getServerId(jenkinsServerName)),
               qTestUrl, accessToken);
             res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
             return setting;
