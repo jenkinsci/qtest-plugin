@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.qasymphony.ci.plugin;
 
 import com.qasymphony.ci.plugin.exception.SubmittedException;

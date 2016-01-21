@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.qasymphony.ci.plugin;
 
 import org.jvnet.localizer.ResourceBundleHolder;

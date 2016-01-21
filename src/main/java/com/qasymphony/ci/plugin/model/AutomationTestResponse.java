@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 
-import java.io.IOException;
-
 /**
  * @author anpham
  */

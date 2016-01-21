@@ -20,12 +20,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -360,8 +355,12 @@ public class ConfigService {
     if (!StringUtils.isEmpty(hmac)) {
       return hmac;
     }
-    return StringUtils.isEmpty(Jenkins.getInstance().getLegacyInstanceId()) ?
-      Constants.JENKINS_SERVER_ID_DEFAULT : Jenkins.getInstance().getLegacyInstanceId();
+    try {
+      hmac = Jenkins.getInstance().getLegacyInstanceId();
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Cannot get server id:" + e.getMessage());
+    }
+    return StringUtils.isEmpty(hmac) ? Constants.JENKINS_SERVER_ID_DEFAULT : hmac;
   }
 
 }

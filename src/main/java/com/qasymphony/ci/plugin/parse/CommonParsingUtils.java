@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.Constants;
@@ -8,7 +5,6 @@ import hudson.Util;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
-import hudson.tasks.junit.CaseResult.Status;
 
 import java.io.BufferedInputStream;
 import java.io.File;
