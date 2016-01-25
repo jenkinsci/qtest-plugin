@@ -1,91 +1,16 @@
  ====================Setup jenkins:
  1. add to settings.xml in .m2 folder
- <pluginGroups>
- 	<pluginGroup>org.jenkins-ci.tools</pluginGroup>
- </pluginGroups>
- --------
- <profile>
- <id>jenkins</id>
- <activation>
- 	<activeByDefault>true</activeByDefault> <!-- change this to false, if you don't like to have it on per default -->
- </activation>
- <repositories>
- 	<repository>
- 		<id>repo.jenkins-ci.org</id>
- 		<url>http://repo.jenkins-ci.org/public/</url>
- 	</repository>
- </repositories>
- <pluginRepositories>
- 	<pluginRepository>
- 		<id>repo.jenkins-ci.org</id>
- 		<url>http://repo.jenkins-ci.org/public/</url>
- 	</pluginRepository>
- </pluginRepositories>
- </profile>
+  - Copy content from settins.jenkins.xml to ~/m2/settings.xml
+  - Update password for server section configured
 
- <profile>
- <repositories>
- 	<repository>
- 		<snapshots>
- 			<enabled>false</enabled>
- 		</snapshots>
- 		<id>central</id>
- 		<name>repo</name>
- 		<url>http://repo.jenkins-ci.org/repo</url>
- 	</repository>
- 	<repository>
- 		<snapshots />
- 		<id>snapshots</id>
- 		<name>public</name>
- 		<url>http://repo.jenkins-ci.org/public</url>
- 	</repository>
- </repositories>
- <pluginRepositories>
- 	<pluginRepository>
- 		<snapshots>
- 			<enabled>false</enabled>
- 		</snapshots>
- 		<id>central</id>
- 		<name>repo</name>
- 		<url>http://repo.jenkins-ci.org/repo</url>
- 	</pluginRepository>
- 	<pluginRepository>
- 		<snapshots />
- 		<id>snapshots</id>
- 		<name>public</name>
- 		<url>http://repo.jenkins-ci.org/public</url>
- 	</pluginRepository>
- </pluginRepositories>
- <id>artifactory</id>
- </profile>
-
- </profiles>
- <mirrors>
- 	<mirror>
- 		<id>repo.jenkins-ci.org</id>
- 		<url>http://repo.jenkins-ci.org/public/</url>
- 		<mirrorOf>m.g.o-public</mirrorOf>
- 	</mirror>
- </mirrors>
- <server>
- 	<id>maven.jenkins-ci.org</id>
- 	<username>gunivan</username>
- </server>
-
- <server>
- 	<username>gunivan</username>
- 	<id>central</id>
- </server>
- <server>
- 	<username>gunivan</username>
- 	<id>snapshots</id>
- </server>
-
- 2. set transaction-isolation=READ-COMMITTED in qTest
+ 2. Update qTest database setting:
+ 	- set transaction-isolation=READ-COMMITTEDdatabase
 
  3. release:
- mvn -Dresume=false release:prepare release:perform
- mvn release:rollback
- mvn release:clean
+ 	- mvn -Dresume=false release:prepare release:perform
+ 3.1. rollback a release:
+  - mvn release:rollback
+ 3.2. clean a release:
+  - mvn release:clean
  4. copy to local
- cp target\qtest.hpi \\192.168.74.80\Jenkins\qtest.hpi
+  - cp target\qtest.hpi \\192.168.74.80\Jenkins\qtest.hpi
