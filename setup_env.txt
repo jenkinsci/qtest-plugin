@@ -14,3 +14,4 @@
   - mvn release:clean
  4. copy to local
   - cp target\qtest.hpi \\192.168.74.80\Jenkins\qtest.hpi
+  
