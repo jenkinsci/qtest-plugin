@@ -80,6 +80,7 @@
         <i>${%env.inactive}</i>
       </span>
     </f:entry>
+    
     <f:entry field="jenkinsProjectName">
       <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}"
                     title="${%label.autoScan}" value="true">
@@ -92,6 +93,15 @@
       </f:radioBlock>
       <f:radioBlock inline="true" name="config.readFromJenkins" checked="${!instance.configuration.readFromJenkins}"
                     title="${%label.readFromJenkins}" value="false">
+      </f:radioBlock>
+    </f:entry>
+    
+    <f:entry title="${%label.selection_mode}" field="selectionMode">
+      <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.class_mode}" 
+      	checked="${!instance.configuration.eachMethodAsTestCase}" value="false">
+      </f:radioBlock>
+      <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.method_mode}" 
+      	checked="${instance.configuration.eachMethodAsTestCase}" value="true">
       </f:radioBlock>
     </f:entry>
   </form>

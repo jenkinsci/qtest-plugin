@@ -57,4 +57,5 @@ public class ParseRequest {
   public Boolean isMavenProject() {
     return isMavenProject;
   }
+  
 }

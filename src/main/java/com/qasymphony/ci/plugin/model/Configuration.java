@@ -31,6 +31,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    */
   private Boolean readFromJenkins;
   private String resultPattern;
+  private Boolean eachMethodAsTestCase;
 
   public static Configuration newInstance() {
     return new Configuration(0L, "", "", 0, "", 0L, "", 0, "", 0, 0, false, "");
@@ -168,6 +169,15 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return readFromJenkins == null ? true : readFromJenkins;
   }
 
+
+  public Boolean getEachMethodAsTestCase() {
+    return eachMethodAsTestCase == null ? false : eachMethodAsTestCase;
+  }
+
+  public void setEachMethodAsTestCase(Boolean eachMethodAsTestCase) {
+    this.eachMethodAsTestCase = eachMethodAsTestCase;
+  }
+
   public Configuration setReadFromJenkins(Boolean readFromJenkins) {
     this.readFromJenkins = readFromJenkins;
     return this;
@@ -199,6 +209,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
       ", readFromJenkins=" + readFromJenkins +
       ", resultPattern='" + resultPattern + '\'' +
+       ", eachMethodAsTestCase='" + eachMethodAsTestCase + '\'' +
       '}';
   }
 

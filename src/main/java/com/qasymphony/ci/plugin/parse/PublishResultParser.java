@@ -43,6 +43,6 @@ public class PublishResultParser implements TestResultParser {
     GregorianCalendar gregorianCalendar = new GregorianCalendar();
     gregorianCalendar.setTimeInMillis(build.getStartTimeInMillis());
 
-    return CommonParsingUtils.toAutomationTestResults(testResults, gregorianCalendar.getTime(), build.getTime());
+    return CommonParsingUtils.toAutomationTestResults(request.getConfiguration().getEachMethodAsTestCase(), testResults, gregorianCalendar.getTime(), build.getTime());
   }
 }

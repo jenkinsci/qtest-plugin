@@ -42,11 +42,72 @@ public class CommonParsingUtils {
 
   /**
    * 
+   * @param useTestMethodAsTestCase
    * @param testResults
    * @param startTime
+   * @param completedTime
    * @return
+   * @throws Exception
    */
-  public static List<AutomationTestResult> toAutomationTestResults(List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
+  public static List<AutomationTestResult> toAutomationTestResults(boolean useTestMethodAsTestCase, List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
+    if(useTestMethodAsTestCase){
+      return useTestMethodAsTestCase(testResults, startTime, completedTime);
+    }else {
+      return useClassNameAsTestCase(testResults, startTime, completedTime);
+    }
+  }
+ 
+  private static List<AutomationTestResult> useTestMethodAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
+    HashMap<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
+    
+    AutomationTestResult automationTestResult = null;
+    AutomationTestLog automationTestLog = null;
+    AutomationAttachment attachment = null;
+    String automationContent = null;
+    
+    for(TestResult testResult: testResults){
+      for (SuiteResult suite : testResult.getSuites()) {
+        if (suite.getCases() == null) {
+          continue;
+        } else {
+          for (CaseResult caseResult : suite.getCases()) {
+            automationContent = caseResult.getClassName() + "#" + caseResult.getName();
+                      
+            if (!automationTestResultMap.containsKey(automationContent)) {
+              automationTestResult = new AutomationTestResult();
+              automationTestResult.setName(automationContent);
+              automationTestResult.setAutomationContent(automationContent);
+              automationTestResult.setExecutedEndDate(completedTime);
+              automationTestResult.setExecutedStartDate(startTime);
+              automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
+              
+              automationTestLog = new AutomationTestLog();
+              automationTestLog.setDescription(caseResult.getName());
+              automationTestLog.setExpectedResult(caseResult.getName());
+              automationTestLog.setStatus(caseResult.getStatus().toString());
+              
+              automationTestResult.addTestLog(automationTestLog);
+              
+              if (caseResult.isFailed()) {
+                attachment = new AutomationAttachment();
+                attachment.setName(caseResult.getName().concat(EXT_TEXT_FILE));
+                attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
+                attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
+                
+                automationTestResult.getAttachments().add(attachment);
+              }
+              
+              automationTestResultMap.put(automationContent, automationTestResult);
+            }
+          }
+        }
+      }
+    }
+    
+    return new ArrayList<>(automationTestResultMap.values());
+  }
+  
+  private static List<AutomationTestResult> useClassNameAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
     HashMap<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
 
     AutomationTestResult automationTestResult = null;

@@ -294,6 +294,7 @@ public class PushingResultAction extends Notifier {
       configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
+      configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
       //if have url, we try to update configuration to qTest
