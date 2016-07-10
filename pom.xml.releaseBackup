@@ -37,12 +37,6 @@
 
   <developers>
     <developer>
-      <id>qasymphony</id>
-      <email>info@qasymphony.com</email>
-      <name>QASymphony</name>
-      <timezone>7</timezone>
-    </developer>
-    <developer>
       <id>gunivan</id>
       <email>trongle@qasymphony.com</email>
       <name>Trong Le</name>
