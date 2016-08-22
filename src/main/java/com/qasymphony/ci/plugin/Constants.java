@@ -30,4 +30,13 @@ public class Constants {
   public static final List<String> LIST_FINISHED_STATE = Arrays.asList("SUCCESS", "FAILED");
 
   public static final String JENKINS_SERVER_ID_DEFAULT = "UNKNOWN_JENKINS_SERVER_ID";
+
+  public static final class Extension {
+    public static final String TEXT_FILE = ".txt";
+    public static final String ZIP_FILE = ".zip";
+  }
+
+  public static final Integer LIMIT_TXT_FILES = 5;
+  public static final String JUNIT_PREFIX = "TEST-*";
+  public static final String JUNIT_SUFFIX = "/*.xml";
 }

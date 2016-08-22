@@ -1,5 +1,6 @@
 package com.qasymphony.ci.plugin.parse;
 
+import com.qasymphony.ci.plugin.Constants;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Util;
@@ -56,7 +57,7 @@ public class AutoScanParser extends PatternScanParser {
       for (String res : resultFolders) {
         if (res.contains(AutoScanParser.SUREFIRE_REPORT)) {
           try {
-            result.addAll(parse(request, res + CommonParsingUtils.JUNIT_SUFFIX));
+            result.addAll(parse(request, res + Constants.JUNIT_SUFFIX));
           } catch (Exception e) {
             LoggerUtils.formatWarn(logger, "Try to scan test result in: %s, error: %s", res, e.getMessage());
           }
@@ -67,7 +68,7 @@ public class AutoScanParser extends PatternScanParser {
 
     for (String res : resultFolders) {
       try {
-        result.addAll(parse(request, res + CommonParsingUtils.JUNIT_SUFFIX));
+        result.addAll(parse(request, res + Constants.JUNIT_SUFFIX));
       } catch (Exception e) {
         LoggerUtils.formatWarn(logger, "Try to scan test result in: %s, error: %s", res, e.getMessage());
       }

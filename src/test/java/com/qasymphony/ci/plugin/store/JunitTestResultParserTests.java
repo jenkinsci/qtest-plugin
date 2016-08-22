@@ -58,11 +58,13 @@ public class JunitTestResultParserTests extends TestAbstracts {
             file.setLastModified(current);
           }
         }
+        Configuration configuration = Configuration.newInstance();
+        configuration.setReadFromJenkins(true);
         automationTestResultList = JunitTestResultParser.parse(new ParseRequest()
-        .setBuild(build)
-        .setListener(listener)
-        .setLauncher(launcher)
-        .setConfiguration(Configuration.newInstance()));
+          .setBuild(build)
+          .setListener(listener)
+          .setLauncher(launcher)
+          .setConfiguration(configuration));
       } catch (Exception e) {
         e.printStackTrace();
       }

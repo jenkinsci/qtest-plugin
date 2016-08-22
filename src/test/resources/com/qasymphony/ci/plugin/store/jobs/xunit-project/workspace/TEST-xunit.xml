@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite failures="1" tests="3" errors="0" name="Hello World" skip="0">
+<testcase classname="Hello World" name="Hello World" time="0">
+</testcase>
+<testcase classname="Hello World" name="This Test Fails" time="0">
+<failure message="This is a failing test message." type="AssertionError"></failure>
+</testcase>
+<testcase classname="Hello World" name="Another Successful Test" time="0">
+</testcase>
+</testsuite>

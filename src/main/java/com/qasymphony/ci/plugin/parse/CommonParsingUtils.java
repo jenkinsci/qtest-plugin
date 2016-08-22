@@ -1,15 +1,13 @@
 package com.qasymphony.ci.plugin.parse;
 
-import com.qasymphony.ci.plugin.Constants;
+import static com.qasymphony.ci.plugin.Constants.*;
+
 import hudson.Util;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -31,17 +29,10 @@ import org.apache.tools.ant.types.FileSet;
 
 /**
  * @author anpham
- *
  */
 public class CommonParsingUtils {
-  private static final Integer LIMIT_TXT_FILES = 5;
-  private static final String EXT_TEXT_FILE = ".txt";
-  private static final String EXT_ZIP_FILE = ".zip";
-  private static final String JUNIT_PREFIX = "TEST-*";
-  public static final String JUNIT_SUFFIX = "/*.xml";
 
   /**
-   * 
    * @param useTestMethodAsTestCase
    * @param testResults
    * @param startTime
@@ -49,76 +40,64 @@ public class CommonParsingUtils {
    * @return
    * @throws Exception
    */
-  public static List<AutomationTestResult> toAutomationTestResults(boolean useTestMethodAsTestCase, List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
-    if(useTestMethodAsTestCase){
+  public static List<AutomationTestResult> toAutomationTestResults(boolean useTestMethodAsTestCase, List<TestResult> testResults, Date startTime, Date completedTime)
+    throws Exception {
+    if (useTestMethodAsTestCase) {
       return useTestMethodAsTestCase(testResults, startTime, completedTime);
-    }else {
+    } else {
       return useClassNameAsTestCase(testResults, startTime, completedTime);
     }
   }
- 
-  private static List<AutomationTestResult> useTestMethodAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
+
+  private static List<AutomationTestResult> useTestMethodAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime)
+    throws Exception {
     HashMap<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
-    
-    AutomationTestResult automationTestResult = null;
-    AutomationTestLog automationTestLog = null;
-    AutomationAttachment attachment = null;
-    String automationContent = null;
-    
-    for(TestResult testResult: testResults){
+
+    for (TestResult testResult : testResults) {
       for (SuiteResult suite : testResult.getSuites()) {
         if (suite.getCases() == null) {
           continue;
         } else {
           for (CaseResult caseResult : suite.getCases()) {
-            automationContent = caseResult.getClassName() + "#" + caseResult.getName();
-                      
+            String automationContent = caseResult.getClassName() + "#" + caseResult.getName();
+
             if (!automationTestResultMap.containsKey(automationContent)) {
-              automationTestResult = new AutomationTestResult();
+              AutomationTestResult automationTestResult = new AutomationTestResult();
               automationTestResult.setName(automationContent);
               automationTestResult.setAutomationContent(automationContent);
               automationTestResult.setExecutedEndDate(completedTime);
               automationTestResult.setExecutedStartDate(startTime);
               automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
-              
-              automationTestLog = new AutomationTestLog();
-              automationTestLog.setDescription(caseResult.getName());
-              automationTestLog.setExpectedResult(caseResult.getName());
-              automationTestLog.setStatus(caseResult.getStatus().toString());
-              
+
+              AutomationTestLog automationTestLog = new AutomationTestLog(caseResult);
               automationTestResult.addTestLog(automationTestLog);
-              
+
               if (caseResult.isFailed()) {
-                attachment = new AutomationAttachment();
-                attachment.setName(caseResult.getName().concat(EXT_TEXT_FILE));
-                attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
-                attachment.setData(Base64.encodeBase64String(caseResult.getErrorStackTrace().getBytes()));
-                
+                AutomationAttachment attachment = new AutomationAttachment(caseResult);
                 automationTestResult.getAttachments().add(attachment);
               }
-              
+
               automationTestResultMap.put(automationContent, automationTestResult);
             }
           }
         }
       }
     }
-    
+
     return new ArrayList<>(automationTestResultMap.values());
   }
-  
-  private static List<AutomationTestResult> useClassNameAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime) throws Exception{
-    HashMap<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
 
-    AutomationTestResult automationTestResult = null;
-    AutomationTestLog automationTestLog = null;
-    
-    for(TestResult testResult: testResults){
+  private static List<AutomationTestResult> useClassNameAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime)
+    throws Exception {
+    Map<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
+
+    for (TestResult testResult : testResults) {
       for (SuiteResult suite : testResult.getSuites()) {
         if (suite.getCases() == null) {
           continue;
         } else {
           for (CaseResult caseResult : suite.getCases()) {
+            AutomationTestResult automationTestResult = null;
             if (automationTestResultMap.containsKey(caseResult.getClassName())) {
               automationTestResult = automationTestResultMap.get(caseResult.getClassName());
             } else {
@@ -128,42 +107,42 @@ public class CommonParsingUtils {
               automationTestResult.setExecutedEndDate(completedTime);
               automationTestResult.setExecutedStartDate(startTime);
               automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
-
               automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
             }
-            
-            automationTestLog = new AutomationTestLog();
-            automationTestLog.setDescription(caseResult.getName());
-            automationTestLog.setExpectedResult(caseResult.getName());
-            automationTestLog.setStatus(caseResult.getStatus().toString());
 
+            AutomationTestLog automationTestLog = new AutomationTestLog(caseResult);
             automationTestResult.addTestLog(automationTestLog);
             if (caseResult.isFailed()) {
-              AutomationAttachment attachment = new AutomationAttachment();
-              attachment.setName(caseResult.getName().concat(EXT_TEXT_FILE));
-              attachment.setData(caseResult.getErrorStackTrace());
+              AutomationAttachment attachment = new AutomationAttachment(caseResult);
               automationTestResult.getAttachments().add(attachment);
             }
           }
         }
       }
     }
+    automationTestResultMap = processAttachment(automationTestResultMap);
+    return new ArrayList<>(automationTestResultMap.values());
+  }
+
+  /**
+   * Process attachment
+   *
+   * @param automationTestResultMap
+   * @return
+   * @throws Exception
+   */
+  private static Map<String, AutomationTestResult> processAttachment(Map<String, AutomationTestResult> automationTestResultMap)
+    throws Exception {
 
     Iterator<String> keys = automationTestResultMap.keySet().iterator();
-    String key = null;
-    int totalAttachments = 0;
-    File zipFile = null;
-    int zipFileLength = 0;
-    byte[] zipFileBytes = null;
-    ZipOutputStream zipOutputStream = null;
 
     while (keys.hasNext()) {
-      key = keys.next();
-      automationTestResult = automationTestResultMap.get(key);
-      totalAttachments = automationTestResult.getAttachments().size();
+      String key = keys.next();
+      AutomationTestResult automationTestResult = automationTestResultMap.get(key);
+      int totalAttachments = automationTestResult.getAttachments().size();
       if (totalAttachments > LIMIT_TXT_FILES) {
-        zipFile = File.createTempFile(automationTestResult.getName(), EXT_ZIP_FILE);
-        zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
+        File zipFile = File.createTempFile(automationTestResult.getName(), Extension.ZIP_FILE);
+        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
 
         Map<String, Integer> attachmentNames = new HashMap<>();
         for (int i = 0; i < totalAttachments; i++) {
@@ -171,7 +150,7 @@ public class CommonParsingUtils {
           String attachmentName = attachment.getName();
           if (attachmentNames.containsKey(attachment.getName())) {
             Integer count = attachmentNames.get(attachment.getName());
-            attachmentName = attachmentName.replace(EXT_TEXT_FILE, "_" + count + EXT_TEXT_FILE);
+            attachmentName = attachmentName.replace(Extension.TEXT_FILE, "_" + count + Extension.TEXT_FILE);
             attachmentNames.put(attachment.getName(), ++count);
           } else {
             attachmentNames.put(attachment.getName(), 1);
@@ -185,14 +164,14 @@ public class CommonParsingUtils {
         zipOutputStream.close();
         //get zipFile stream
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(zipFile));
-        zipFileLength = (int) zipFile.length();
-        zipFileBytes = new byte[zipFileLength];
+        int zipFileLength = (int) zipFile.length();
+        byte[] zipFileBytes = new byte[zipFileLength];
         bufferedInputStream.read(zipFileBytes, 0, zipFileLength);
         bufferedInputStream.close();
         AutomationAttachment attachment = new AutomationAttachment();
         attachment.setData(Base64.encodeBase64String(zipFileBytes));
-        attachment.setContentType(Constants.CONTENT_TYPE_ZIP);
-        attachment.setName(automationTestResult.getName() + EXT_ZIP_FILE);
+        attachment.setContentType(CONTENT_TYPE_ZIP);
+        attachment.setName(automationTestResult.getName() + Extension.ZIP_FILE);
         // add zip file
         automationTestResult.setAttachments(Arrays.asList(attachment));
         // remove zip tmp file
@@ -200,14 +179,13 @@ public class CommonParsingUtils {
       } else {
         for (int i = 0; i < totalAttachments; i++) {
           AutomationAttachment attachment = automationTestResult.getAttachments().get(i);
-          attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
+          attachment.setContentType(CONTENT_TYPE_TEXT);
           attachment.setData(Base64.encodeBase64String(attachment.getData().getBytes()));
         }
       }
     }
-    return new ArrayList<>(automationTestResultMap.values());
+    return automationTestResultMap;
   }
-
 
   /**
    * Scan junit test result folder

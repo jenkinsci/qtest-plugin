@@ -37,7 +37,8 @@ public class OauthProvider {
       .append("/oauth/token?grant_type=refresh_token")
       .append("&refresh_token=").append(HttpClientUtils.encode(apiKey));
     Map<String, String> headers = new HashMap<>();
-    headers.put(Constants.HEADER_AUTH, "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==");
+//    headers.put(Constants.HEADER_AUTH, "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==");
+    headers.put(Constants.HEADER_AUTH, "Basic bmVwaGVsZXxqZW5raW5zOmRkS3NWMDg2Y1FtbzBaNk1TMEJpTjB6SmJ1V0tuTmg0");
     try {
       ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
       if (HttpStatus.SC_OK != entity.getStatusCode()) {

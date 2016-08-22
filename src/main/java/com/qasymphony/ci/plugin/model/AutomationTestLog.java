@@ -1,10 +1,10 @@
 package com.qasymphony.ci.plugin.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import hudson.tasks.junit.CaseResult;
 
 /**
  * @author anpham
- * 
  */
 public class AutomationTestLog {
   @JsonProperty("description")
@@ -13,6 +13,22 @@ public class AutomationTestLog {
   private String expectedResult;
   private Integer order;
   private String status;
+
+  public AutomationTestLog() {
+  }
+
+  public AutomationTestLog(String description, String expectedResult, Integer order, String status) {
+    this.description = description;
+    this.expectedResult = expectedResult;
+    this.order = order;
+    this.status = status;
+  }
+
+  public AutomationTestLog(CaseResult caseResult) {
+    this.setDescription(caseResult.getName());
+    this.setExpectedResult(caseResult.getName());
+    this.setStatus(caseResult.getStatus().toString());
+  }
 
   public String getDescription() {
     return description;
