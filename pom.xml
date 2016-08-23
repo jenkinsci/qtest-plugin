@@ -9,7 +9,7 @@
 
   <groupId>com.qasymphony.ci.jenkins</groupId>
   <artifactId>qtest</artifactId>
-  <version>1.1.7</version>
+  <version>1.1.8-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
   <description>This plugin collects and reports unit test results to qTest.
@@ -32,7 +32,7 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>qtest-1.1.7</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
