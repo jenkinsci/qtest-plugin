@@ -10,7 +10,7 @@
 
   <groupId>com.qasymphony.ci.jenkins</groupId>
   <artifactId>qtest</artifactId>
-  <version>1.1.7-SNAPSHOT</version>
+  <version>1.1.8-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
   <description>This plugin collects and reports unit test results to qTest.
@@ -72,7 +72,7 @@
     </repository>
     <repository>
       <id>maven.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/releases</url>
+      <url>https://repo.jenkins-ci.org/releases</url>
     </repository>
   </repositories>
   <pluginRepositories>
