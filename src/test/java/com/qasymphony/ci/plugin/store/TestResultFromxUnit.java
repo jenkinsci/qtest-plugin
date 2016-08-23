@@ -137,7 +137,7 @@ public class TestResultFromxUnit extends TestAbstracts {
     assertNotNull("Build is: ", build);
 
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
+//    AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
   }
 
 }
