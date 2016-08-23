@@ -1,10 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>2.6</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>com.qasymphony.ci.jenkins</groupId>
@@ -23,6 +24,10 @@
       <url>http://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
+  <organization>
+    <name>QASymphony</name>
+    <url>https://www.qasymphony.com/</url>
+  </organization>
 
   <properties>
     <findbugs.skip>true</findbugs.skip>
