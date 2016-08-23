@@ -8,6 +8,7 @@
  	- set transaction-isolation=READ-COMMITTEDdatabase
 	
  3. release:
+  - login to jenkins account page: https://accounts.jenkins.io, then add ssh key.
  	- mvn -Dresume=false release:prepare release:perform
 	
  3.1. rollback a release:
@@ -20,4 +21,5 @@
   - cp target\qtest.hpi \\192.168.74.80\Jenkins\qtest.hpi
  
 - Repo store hpi versions: http://repo.jenkins-ci.org/releases/com/qasymphony/ci/jenkins/qtest/
-- Cloudbees: https://jenkins.ci.cloudbees.com/job/plugins/job/qtest-plugin/ 
+- Cloudbees: https://jenkins.ci.cloudbees.com/job/plugins/job/qtest-plugin/
+- https://wiki.jenkins-ci.org/display/JENKINS/Hosting+Plugins
