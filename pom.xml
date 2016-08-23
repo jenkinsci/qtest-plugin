@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>2.11</version>
+    <version>1.609.2</version>
     <relativePath/>
   </parent>
 
@@ -26,10 +26,12 @@
   </licenses>
 
   <properties>
+    <findbugs.skip>true</findbugs.skip>
     <checkstyle.skip>true</checkstyle.skip>
     <jackson.version>2.6.3</jackson.version>
     <junit.plugin.version>1.9</junit.plugin.version>
     <httpclient.version>4.5.1</httpclient.version>
+    <jenkins.version>2.2</jenkins.version>
   </properties>
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
@@ -132,6 +134,13 @@
         <artifactId>maven-hpi-plugin</artifactId>
         <configuration>
           <disabledTestInjection>true</disabledTestInjection>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
         </configuration>
       </plugin>
     </plugins>
