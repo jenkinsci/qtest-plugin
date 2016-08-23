@@ -19,6 +19,7 @@ import java.util.logging.Logger;
  */
 public class OauthProvider {
   private static final Logger LOG = Logger.getLogger(OauthProvider.class.getName());
+  public static String HEADER_KEY = "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==";
 
   private OauthProvider() {
 
@@ -32,13 +33,16 @@ public class OauthProvider {
    * @return
    */
   public static String getAccessToken(String url, String apiKey) {
+    return getAccessToken(url, apiKey, HEADER_KEY);
+  }
+
+  public static String getAccessToken(String url, String apiKey, String secretKey) {
     StringBuilder sb = new StringBuilder()
       .append(url)
       .append("/oauth/token?grant_type=refresh_token")
       .append("&refresh_token=").append(HttpClientUtils.encode(apiKey));
     Map<String, String> headers = new HashMap<>();
-    headers.put(Constants.HEADER_AUTH, "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==");
-//    headers.put(Constants.HEADER_AUTH, "Basic bmVwaGVsZXxqZW5raW5zOmRkS3NWMDg2Y1FtbzBaNk1TMEJpTjB6SmJ1V0tuTmg0");
+    headers.put(Constants.HEADER_AUTH, secretKey);
     try {
       ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
       if (HttpStatus.SC_OK != entity.getStatusCode()) {
