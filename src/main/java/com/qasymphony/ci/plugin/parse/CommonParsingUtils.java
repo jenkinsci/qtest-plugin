@@ -74,6 +74,7 @@ public class CommonParsingUtils {
 
               if (caseResult.isFailed()) {
                 AutomationAttachment attachment = new AutomationAttachment(caseResult);
+                attachment.setData(Base64.encodeBase64String(attachment.getData().getBytes()));
                 automationTestResult.getAttachments().add(attachment);
               }
 
