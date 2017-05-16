@@ -299,8 +299,12 @@ public class HttpClientUtils {
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
       .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+
+    timeout = timeout * 1000;
     httpClientBuilder.setDefaultRequestConfig(RequestConfig.custom()
       .setSocketTimeout(timeout)
+      .setConnectTimeout(timeout)
+      .setConnectionRequestTimeout(timeout)
       .build());
     httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(RETRY_MAX_COUNT, RETRY_REQUEST_SEND_RETRY_ENABLED) {
       @Override
