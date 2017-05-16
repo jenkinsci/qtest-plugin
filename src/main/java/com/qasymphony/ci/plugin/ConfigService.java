@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.action.PushingResultAction;
+import com.qasymphony.ci.plugin.exception.OAuthException;
 import com.qasymphony.ci.plugin.exception.SaveSettingException;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
@@ -272,12 +273,10 @@ public class ConfigService {
    * @return
    */
   public static Setting saveConfiguration(Configuration configuration)
-    throws SaveSettingException {
+    throws Exception {
     LOG.info("Save configuration to qTest:" + configuration);
+    String accessToken = OauthProvider.getAccessToken(configuration.getUrl(), configuration.getAppSecretKey());
     try {
-      //get access token
-      String accessToken = OauthProvider.getAccessToken(configuration.getUrl(), configuration.getAppSecretKey());
-
       //get saved setting from qTest
       Setting setting = configuration.toSetting();
       setting.setServerId(getServerId(configuration.getJenkinsServerUrl()));

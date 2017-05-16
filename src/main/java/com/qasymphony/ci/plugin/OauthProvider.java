@@ -1,6 +1,7 @@
 package com.qasymphony.ci.plugin;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.qasymphony.ci.plugin.exception.OAuthException;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
@@ -32,28 +33,30 @@ public class OauthProvider {
    * @param apiKey
    * @return
    */
-  public static String getAccessToken(String url, String apiKey) throws Exception {
+  public static String getAccessToken(String url, String apiKey) throws OAuthException {
     return getAccessToken(url, apiKey, HEADER_KEY);
   }
 
-  public static String getAccessToken(String url, String apiKey, String secretKey) throws Exception {
+  public static String getAccessToken(String url, String apiKey, String secretKey) throws OAuthException {
     StringBuilder sb = new StringBuilder()
       .append(url)
       .append("/oauth/token?grant_type=refresh_token")
       .append("&refresh_token=").append(HttpClientUtils.encode(apiKey));
     Map<String, String> headers = new HashMap<>();
     headers.put(Constants.HEADER_AUTH, secretKey);
-    ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
-    if (HttpStatus.SC_OK != entity.getStatusCode()) {
-      LOG.log(Level.WARNING, String.format("Cannot get access token from:%s, %s", url, entity.toString()));
-      return null;
+    try {
+      ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
+      if (HttpStatus.SC_OK != entity.getStatusCode()) {
+        throw new OAuthException(entity.getBody(), entity.getStatusCode());
+      }
+      JsonNode node = JsonUtils.readTree(entity.getBody());
+      if (null == node) {
+        throw new OAuthException("Cannot get access token from: " + entity.getBody(), entity.getStatusCode());
+      }
+      return JsonUtils.getText(node, "access_token");
+    } catch (Exception e) {
+      throw new OAuthException(e.getMessage(), e);
     }
-    JsonNode node = JsonUtils.readTree(entity.getBody());
-    if (null == node) {
-      LOG.log(Level.WARNING, "Cannot extract access token from:" + entity.getBody());
-      return null;
-    }
-    return JsonUtils.getText(node, "access_token");
   }
 
   /**
