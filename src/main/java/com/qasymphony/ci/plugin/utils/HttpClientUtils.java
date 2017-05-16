@@ -42,8 +42,9 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
  * @since 1.0
  */
 public class HttpClientUtils {
-  public static Integer RETRY_MAX_COUNT = 3;
+  public static Integer RETRY_MAX_COUNT = 5;
   public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
+  private static final Integer DEFAULT_SOCKET_TIMEOUT = 60;//seconds
   private static final String AWS_METADATA_MAC_URL = "http://169.254.169.254/latest/meta-data/mac";
   private static HttpClient CLIENT;
 
@@ -291,7 +292,7 @@ public class HttpClientUtils {
     try {
       timeout = Integer.parseInt(System.getenv("SOCKET_TIMEOUT"));
     } catch (Exception e) {
-      timeout = 60;
+      timeout = DEFAULT_SOCKET_TIMEOUT;
     }
 
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
