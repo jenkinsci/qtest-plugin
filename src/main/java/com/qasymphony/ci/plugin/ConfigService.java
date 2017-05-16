@@ -74,7 +74,12 @@ public class ConfigService {
    * @return
    */
   public static Boolean validateApiKey(String url, String apiKey) {
-    return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey));
+    try {
+      return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey));
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Error while validateApiKey:" + e.getMessage());
+      return false;
+    }
   }
 
   /**
@@ -300,7 +305,7 @@ public class ConfigService {
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
       LOG.info("Saved from qTest:" + responseEntity.getBody());
       return res;
-    } catch (ClientRequestException e) {
+    } catch (Exception e) {
       throw new SaveSettingException(e.getMessage(), -1);
     }
   }

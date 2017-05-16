@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -43,7 +44,7 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
 public class HttpClientUtils {
   public static Integer RETRY_MAX_COUNT = 3;
   public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
-  private static final String AWS_METADATA_MAC_URL  ="http://169.254.169.254/latest/meta-data/mac";
+  private static final String AWS_METADATA_MAC_URL = "http://169.254.169.254/latest/meta-data/mac";
   private static HttpClient CLIENT;
 
   private HttpClientUtils() {
@@ -286,12 +287,23 @@ public class HttpClientUtils {
   }
 
   public static HttpClient getHttpClient() throws Exception {
+    int timeout;
+    try {
+      timeout = Integer.parseInt(System.getenv("SOCKET_TIMEOUT"));
+    } catch (Exception e) {
+      timeout = 60;
+    }
+
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
       .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+    httpClientBuilder.setDefaultRequestConfig(RequestConfig.custom()
+      .setSocketTimeout(timeout)
+      .build());
     httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(RETRY_MAX_COUNT, RETRY_REQUEST_SEND_RETRY_ENABLED) {
-      @Override public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+      @Override
+      public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
         if (executionCount > this.getRetryCount())
           return false;
         if (exception instanceof HttpHostConnectException)
@@ -309,7 +321,7 @@ public class HttpClientUtils {
   }
 
   private static SSLContext getSslContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-    SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+    org.apache.http.ssl.SSLContextBuilder sslContextBuilder = new org.apache.http.ssl.SSLContextBuilder();
     KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
     TrustStrategy trustStrategy = new TrustAllStrategy();
     sslContextBuilder.loadTrustMaterial(keyStore, trustStrategy);

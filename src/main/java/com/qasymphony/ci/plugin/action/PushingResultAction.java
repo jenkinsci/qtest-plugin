@@ -195,7 +195,7 @@ public class PushingResultAction extends Notifier {
   }
 
   private JunitSubmitterResult submitTestResult(AbstractBuild build, BuildListener listener,
-    JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
+                                                JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
     PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
     LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
@@ -384,7 +384,13 @@ public class PushingResultAction extends Notifier {
       final JSONObject res = new JSONObject();
       final StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
-      final String accessToken = OauthProvider.getAccessToken(qTestUrl, apiKey);
+      String token = null;
+      try {
+        token = OauthProvider.getAccessToken(qTestUrl, apiKey);
+      } catch (Exception e) {
+        LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
+      }
+      final String accessToken = token;
 
       Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
       if (null == project) {
@@ -397,7 +403,8 @@ public class PushingResultAction extends Notifier {
       final CountDownLatch countDownLatch = new CountDownLatch(3);
       ExecutorService fixedPool = Executors.newFixedThreadPool(3);
       Callable<Object> caGetSetting = new Callable<Object>() {
-        @Override public Object call() throws Exception {
+        @Override
+        public Object call() throws Exception {
           try {
             //get saved setting from qtest
             Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
@@ -413,7 +420,8 @@ public class PushingResultAction extends Notifier {
         }
       };
       Callable<Object> caGetReleases = new Callable<Object>() {
-        @Override public Object call() throws Exception {
+        @Override
+        public Object call() throws Exception {
           try {
             Object releases = ConfigService.getReleases(qTestUrl, accessToken, projectId);
             res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
@@ -424,7 +432,8 @@ public class PushingResultAction extends Notifier {
         }
       };
       Callable<Object> caGetEnvs = new Callable<Object>() {
-        @Override public Object call() throws Exception {
+        @Override
+        public Object call() throws Exception {
           try {
             Object environments = ConfigService.getEnvironments(qTestUrl, accessToken, projectId);
             res.put("environments", null == environments ? "" : environments);

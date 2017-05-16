@@ -32,32 +32,28 @@ public class OauthProvider {
    * @param apiKey
    * @return
    */
-  public static String getAccessToken(String url, String apiKey) {
+  public static String getAccessToken(String url, String apiKey) throws Exception {
     return getAccessToken(url, apiKey, HEADER_KEY);
   }
 
-  public static String getAccessToken(String url, String apiKey, String secretKey) {
+  public static String getAccessToken(String url, String apiKey, String secretKey) throws Exception {
     StringBuilder sb = new StringBuilder()
       .append(url)
       .append("/oauth/token?grant_type=refresh_token")
       .append("&refresh_token=").append(HttpClientUtils.encode(apiKey));
     Map<String, String> headers = new HashMap<>();
     headers.put(Constants.HEADER_AUTH, secretKey);
-    try {
-      ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
-      if (HttpStatus.SC_OK != entity.getStatusCode()) {
-        LOG.log(Level.WARNING, String.format("Cannot get access token from:%s, %s", url, entity.toString()));
-        return null;
-      }
-      JsonNode node = JsonUtils.readTree(entity.getBody());
-      if (null == node) {
-        LOG.log(Level.WARNING, "Cannot extract access token from:" + entity.getBody());
-        return null;
-      }
-      return JsonUtils.getText(node, "access_token");
-    } catch (ClientRequestException e) {
+    ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
+    if (HttpStatus.SC_OK != entity.getStatusCode()) {
+      LOG.log(Level.WARNING, String.format("Cannot get access token from:%s, %s", url, entity.toString()));
       return null;
     }
+    JsonNode node = JsonUtils.readTree(entity.getBody());
+    if (null == node) {
+      LOG.log(Level.WARNING, "Cannot extract access token from:" + entity.getBody());
+      return null;
+    }
+    return JsonUtils.getText(node, "access_token");
   }
 
   /**
@@ -69,7 +65,12 @@ public class OauthProvider {
    * @return
    */
   public static Map<String, String> buildHeaders(String url, String apiKey, Map<String, String> headers) {
-    String accessToken = getAccessToken(url, apiKey);
+    String accessToken = null;
+    try {
+      accessToken = getAccessToken(url, apiKey);
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Error while build header:" + e.getMessage());
+    }
     return buildHeaders(accessToken, headers);
   }
 
