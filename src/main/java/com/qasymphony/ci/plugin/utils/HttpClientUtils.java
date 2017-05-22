@@ -85,9 +85,12 @@ public class HttpClientUtils {
    * @return
    */
   public static String getServerUrl(StaplerRequest request) {
-    Boolean isDefaultPort = request.getServerPort() == 443 || request.getServerPort() == 80;
-    return String.format("%s://%s%s%s%s", request.getScheme(), request.getServerName(),
-      isDefaultPort ? "" : ":", request.getServerPort(), request.getContextPath());
+    return getServerUrl(request.getServerPort(), request.getScheme(), request.getServerName(), request.getContextPath());
+  }
+
+  public static String getServerUrl(int serverPort, String scheme, String serverName, String contextPath) {
+    Boolean isDefaultPort = serverPort == 443 || serverPort == 80;
+    return String.format("%s://%s%s%s", scheme, serverName, isDefaultPort ? "" : ":" + serverPort, contextPath);
   }
 
   /**

@@ -131,4 +131,21 @@ public class Setting {
     this.serverId = serverId;
     return this;
   }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("Setting{");
+    sb.append("ciType='").append(ciType).append('\'');
+    sb.append(", id=").append(id);
+    sb.append(", jenkinsServer='").append(jenkinsServer).append('\'');
+    sb.append(", jenkinsProjectName='").append(jenkinsProjectName).append('\'');
+    sb.append(", projectId=").append(projectId);
+    sb.append(", releaseId=").append(releaseId);
+    sb.append(", testSuiteId=").append(testSuiteId);
+    sb.append(", moduleId=").append(moduleId);
+    sb.append(", environmentId=").append(environmentId);
+    sb.append(", serverId='").append(serverId).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }

@@ -127,7 +127,7 @@ public class PushingResultAction extends Notifier {
     LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
     LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
     LoggerUtils.formatHR(logger);
-    LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s", configuration.getUrl());
+    LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", configuration.getUrl(), configuration.getId());
     LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
     LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
     if (configuration.getEnvironmentId() > 0) {

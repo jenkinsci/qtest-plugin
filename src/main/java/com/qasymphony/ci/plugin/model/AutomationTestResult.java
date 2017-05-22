@@ -34,6 +34,7 @@ public class AutomationTestResult {
    * total success testStep
    */
   private int totalSuccessTestSteps = 0;
+  private int currentOrder = 0;
 
   public AutomationTestResult() {
     testLogs = new ArrayList<>();
@@ -103,6 +104,7 @@ public class AutomationTestResult {
    * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */
   public AutomationTestLog addTestLog(AutomationTestLog automationTestLog) {
+    automationTestLog.setOrder(currentOrder++);
     testLogs.add(automationTestLog);
     String status = automationTestLog.getStatus();
     //regression the same as failed
