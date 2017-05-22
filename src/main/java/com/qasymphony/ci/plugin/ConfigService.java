@@ -202,33 +202,25 @@ public class ConfigService {
    * @return
    */
   public static Object getConfiguration(Setting setting, String qTestUrl, String accessToken) {
-    Boolean getById = setting.getId() != null && setting.getId() > 0;
-
-    String urlById = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
     String urlByProject = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins&ciid=%s", qTestUrl, setting.getProjectId(),
       setting.getJenkinsServer(), HttpClientUtils.encode(setting.getJenkinsProjectName()), HttpClientUtils.encode(setting.getServerId()));
-
+    Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
     try {
-      Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
-      ResponseEntity responseEntity = HttpClientUtils.get(getById ? urlById : urlByProject, headers);
+      //get by qTestProjectId, ci project name, ci server name, type, ciid
+      ResponseEntity responseEntity = HttpClientUtils.get(urlByProject, headers);
 
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode() && getById) {
-        //in case not found by id, we try to get by project
-        responseEntity = HttpClientUtils.get(urlByProject, headers);
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+        //in case not found by project, we try to get by id
+        String urlById = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
+        responseEntity = HttpClientUtils.get(urlById, headers);
       }
 
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
-        LOG.log(Level.WARNING, String.format("Cannot get config from qTest: %s, server: %s, project: %s, id: %s, serverId: %s, error: %s",
-          qTestUrl, setting.getJenkinsServer(), setting.getJenkinsProjectName(), setting.getId(), setting.getServerId(), responseEntity.getBody()));
+        LOG.log(Level.WARNING, String.format("Cannot get config from qTest: %s, %s, error: %s", qTestUrl, setting, responseEntity.getBody()));
         return null;
       }
-      LOG.info(String.format("Get config from qTest: %s,%s", qTestUrl, responseEntity.getBody()));
-
-      // if found by id, we check if setting belonging to jenkins
-      // if ci_type equals => check serverId
-      // if serverId empty => update
-      // else if serverId equals => update otherwise=> create
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
+      LOG.info(String.format("Get config from qTest: %s, response: %s, setting: %s", qTestUrl, responseEntity.getBody(), res));
       if (null != res && Constants.CI_TYPE.equalsIgnoreCase(res.getCiType())) {
         if (StringUtils.isEmpty(res.getServerId()) || setting.getServerId().equalsIgnoreCase(res.getServerId())) {
           return responseEntity.getBody();
@@ -236,6 +228,7 @@ public class ConfigService {
       }
       return null;
     } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Error while get ci setting:" + e.getMessage());
       return null;
     }
   }
@@ -353,7 +346,7 @@ public class ConfigService {
         hmac = String.format("%s:%s", macAddress, HttpClientUtils.getPort(jenkinsUrl));
       }
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Cannot get mac address:port:" + e.getMessage());
+      LOG.log(Level.WARNING, "Cannot get mac address" + e.getMessage());
     }
 
     if (!StringUtils.isEmpty(hmac)) {
