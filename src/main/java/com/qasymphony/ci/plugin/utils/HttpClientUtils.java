@@ -8,7 +8,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -45,7 +44,6 @@ public class HttpClientUtils {
   public static Integer RETRY_MAX_COUNT = 5;
   public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
   private static final Integer DEFAULT_SOCKET_TIMEOUT = 60;//seconds
-  private static final String AWS_METADATA_MAC_URL = "http://169.254.169.254/latest/meta-data/mac";
   private static HttpClient CLIENT;
 
   private HttpClientUtils() {
@@ -133,8 +131,7 @@ public class HttpClientUtils {
     }
 
     if (mac != null && mac.length <= 0) {
-      //try to get mac address in AWS
-      return HttpClientUtils.get(AWS_METADATA_MAC_URL, null).getBody();
+      return null;
     }
 
     StringBuilder sb = new StringBuilder();

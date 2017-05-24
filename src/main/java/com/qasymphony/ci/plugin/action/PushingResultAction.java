@@ -159,6 +159,7 @@ public class PushingResultAction extends Notifier {
     } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  Error: %s", e.getMessage());
+      e.printStackTrace(logger);
     }
     if (null != setting) {
       configuration.setId(setting.getId());
@@ -304,6 +305,7 @@ public class PushingResultAction extends Notifier {
           setting = ConfigService.saveConfiguration(configuration);
         } catch (Exception e) {
           LOG.log(Level.WARNING, e.getMessage());
+          e.printStackTrace();
         }
         if (null != setting) {
           configuration.setModuleId(setting.getModuleId());
