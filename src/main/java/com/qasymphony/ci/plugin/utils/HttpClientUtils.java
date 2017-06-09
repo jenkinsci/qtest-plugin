@@ -67,8 +67,8 @@ public class HttpClientUtils {
   /**
    * Encode url
    *
-   * @param url
-   * @return
+   * @param url url
+   * @return encoded string
    */
   public static String encode(String url) {
     try {
@@ -79,8 +79,8 @@ public class HttpClientUtils {
   }
 
   /**
-   * @param request
-   * @return
+   * @param request request
+   * @return server url
    */
   public static String getServerUrl(StaplerRequest request) {
     return getServerUrl(request.getServerPort(), request.getScheme(), request.getServerName(), request.getContextPath());
@@ -94,8 +94,8 @@ public class HttpClientUtils {
   /**
    * get port from url
    *
-   * @param url
-   * @return
+   * @param url url
+   * @return port
    */
   public static int getPort(String url) {
     URL uri = null;
@@ -113,7 +113,8 @@ public class HttpClientUtils {
   /**
    * get mac address and port
    *
-   * @return
+   * @return mac address
+   * @throws Exception Exception
    */
   public static String getMacAddress() throws Exception {
     NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
@@ -142,10 +143,10 @@ public class HttpClientUtils {
   }
 
   /**
-   * @param url
-   * @param headers
-   * @return
-   * @throws ClientRequestException
+   * @param url     url
+   * @param headers headers
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity get(String url, Map<String, String> headers) throws ClientRequestException {
     HttpGet request = new HttpGet(url);
@@ -154,11 +155,11 @@ public class HttpClientUtils {
   }
 
   /**
-   * @param url
-   * @param headers
-   * @param data
-   * @return
-   * @throws ClientRequestException
+   * @param url     url
+   * @param headers headers
+   * @param data    data
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity post(String url, Map<String, String> headers, String data)
     throws ClientRequestException {
@@ -166,12 +167,12 @@ public class HttpClientUtils {
   }
 
   /**
-   * @param url
-   * @param headers
-   * @param data
-   * @param contentType
-   * @return
-   * @throws ClientRequestException
+   * @param url         url
+   * @param headers     headers
+   * @param data        data
+   * @param contentType contentType
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity post(String url, Map<String, String> headers, String data, ContentType contentType)
     throws ClientRequestException {
@@ -183,23 +184,23 @@ public class HttpClientUtils {
   }
 
   /**
-   * @param url
-   * @param headers
-   * @param data
-   * @return
-   * @throws ClientRequestException
+   * @param url     url
+   * @param headers headers
+   * @param data    data
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity put(String url, Map<String, String> headers, String data) throws ClientRequestException {
     return put(url, headers, data, ContentType.APPLICATION_JSON);
   }
 
   /**
-   * @param url
-   * @param headers
-   * @param data
-   * @param contentType
-   * @return
-   * @throws ClientRequestException
+   * @param url         url
+   * @param headers     headers
+   * @param data        data
+   * @param contentType contentType
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity put(String url, Map<String, String> headers, String data, ContentType contentType)
     throws ClientRequestException {
@@ -211,21 +212,21 @@ public class HttpClientUtils {
   }
 
   /**
-   * @param url
-   * @param headers
-   * @return
-   * @throws ClientRequestException
+   * @param url     url
+   * @param headers headers
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity delete(String url, Map<String, String> headers) throws ClientRequestException {
     return delete(url, headers, ContentType.APPLICATION_JSON);
   }
 
   /**
-   * @param url
-   * @param headers
-   * @param contentType
-   * @return
-   * @throws ClientRequestException
+   * @param url         url
+   * @param headers     headers
+   * @param contentType contentType
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity delete(String url, Map<String, String> headers, ContentType contentType)
     throws ClientRequestException {
@@ -252,9 +253,9 @@ public class HttpClientUtils {
   /**
    * Execute a request
    *
-   * @param request
-   * @return
-   * @throws ClientRequestException
+   * @param request request
+   * @return {@link ResponseEntity}
+   * @throws ClientRequestException ClientRequestException
    */
   public static ResponseEntity execute(HttpUriRequest request) throws ClientRequestException {
     HttpClient client;

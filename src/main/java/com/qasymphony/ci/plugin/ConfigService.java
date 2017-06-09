@@ -49,8 +49,8 @@ public class ConfigService {
   /**
    * Validate qTest Url
    *
-   * @param url
-   * @return
+   * @param url url
+   * @return true if url is valid
    */
   public static Boolean validateQtestUrl(String url) {
     String versionUrl = String.format("%s%s", url, "/version");
@@ -70,9 +70,9 @@ public class ConfigService {
   /**
    * Validate apiKey is valid in qTest
    *
-   * @param url
-   * @param apiKey
-   * @return
+   * @param url    url
+   * @param apiKey apiKey
+   * @return true if valid api key
    */
   public static Boolean validateApiKey(String url, String apiKey) {
     try {
@@ -86,10 +86,10 @@ public class ConfigService {
   /**
    * Build testSuite link to qTest
    *
-   * @param url
-   * @param projectId
-   * @param testSuiteId
-   * @return
+   * @param url         url
+   * @param projectId   projectId
+   * @param testSuiteId testSuiteId
+   * @return url to testSuite
    */
   public static String formatTestSuiteLink(String url, Long projectId, Long testSuiteId) {
     return String.format("%s/p/%s/portal/project#tab=testexecution&object=2&id=%s",
@@ -108,9 +108,9 @@ public class ConfigService {
   }
 
   /**
-   * @param qTestUrl
-   * @param apiKey
-   * @return
+   * @param qTestUrl qTestUrl
+   * @param apiKey   apiKey
+   * @return a list of projects
    */
   public static Object getProjects(String qTestUrl, String apiKey) {
     String url = String.format("%s/api/v3/projects?assigned=true", qTestUrl);
@@ -141,10 +141,10 @@ public class ConfigService {
   }
 
   /**
-   * @param qTestUrl
-   * @param accessToken
-   * @param projectId
-   * @return
+   * @param qTestUrl    qTestUrl
+   * @param accessToken accessToken
+   * @param projectId   projectId
+   * @return a list of release
    */
   public static Object getReleases(String qTestUrl, String accessToken, Long projectId) {
     String url = String.format("%s/api/v3/projects/%s/releases?includeClosed=true", qTestUrl, projectId);
@@ -163,10 +163,10 @@ public class ConfigService {
   /**
    * Get environment values of testSuite
    *
-   * @param qTestUrl
-   * @param accessToken
-   * @param projectId
-   * @return
+   * @param qTestUrl    qTestUrl
+   * @param accessToken accessToken
+   * @param projectId   projectId
+   * @return a list of environment field value
    */
   public static Object getEnvironments(String qTestUrl, String accessToken, Long projectId) {
     String url = String.format("%s/api/v3/projects/%s/settings/test-suites/fields?includeInactive=true", qTestUrl, projectId);
@@ -196,10 +196,10 @@ public class ConfigService {
   /**
    * Get saved configuration from qTest
    *
-   * @param setting
-   * @param qTestUrl
-   * @param accessToken
-   * @return
+   * @param setting     setting
+   * @param qTestUrl    qTestUrl
+   * @param accessToken accessToken
+   * @return ci config
    */
   public static Object getConfiguration(Setting setting, String qTestUrl, String accessToken) {
     String urlByProject = String.format("%s/api/v3/projects/%s/ci?server=%s&project=%s&type=jenkins&ciid=%s", qTestUrl, setting.getProjectId(),
@@ -236,9 +236,9 @@ public class ConfigService {
   /**
    * Validate configuration from save or apply setting
    *
-   * @param configuration
-   * @param formData
-   * @return
+   * @param configuration configuration
+   * @param formData      formData
+   * @return {@link Configuration}
    */
   public static Configuration validateConfiguration(Configuration configuration, JSONObject formData) {
     //make id is 0 when name is empty, we get name from selectize field.
@@ -262,8 +262,9 @@ public class ConfigService {
   }
 
   /**
-   * @param configuration
-   * @return
+   * @param configuration configuration
+   * @return {@link Setting}
+   * @throws Exception Exception
    */
   public static Setting saveConfiguration(Configuration configuration)
     throws Exception {
@@ -305,7 +306,7 @@ public class ConfigService {
   /**
    * Get plugin version
    *
-   * @return
+   * @return version
    */
   public static String getBuildVersion() {
     Package pkg = ConfigService.class.getPackage();
@@ -316,8 +317,8 @@ public class ConfigService {
   /**
    * Parse error message from {@link ResponseEntity}
    *
-   * @param body
-   * @return
+   * @param body body
+   * @return error message
    */
   public static String getErrorMessage(String body) {
     com.qasymphony.ci.plugin.model.Error error = null;
@@ -335,7 +336,8 @@ public class ConfigService {
    * 2. if failed, we get server id
    * 3. if failed get by UUID
    *
-   * @return
+   * @param jenkinsUrl jenkinsUrl
+   * @return server id
    */
   public static String getServerId(String jenkinsUrl) {
     String hmac = null;

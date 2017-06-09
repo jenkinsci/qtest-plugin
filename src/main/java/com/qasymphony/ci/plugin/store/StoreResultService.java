@@ -13,19 +13,19 @@ public interface StoreResultService {
   /**
    * Store result
    *
-   * @param project
-   * @param result
-   * @return
-   * @throws StoreResultException
+   * @param project project
+   * @param result  result
+   * @return true if save success
+   * @throws StoreResultException StoreResultException
    */
   Boolean store(AbstractProject project, final SubmittedResult result) throws StoreResultException;
 
   /**
    * Load all result
    *
-   * @param request
-   * @return
-   * @throws StoreResultException
+   * @param request request
+   * @return {@link ReadSubmitLogRequest}
+   * @throws StoreResultException StoreResultException
    */
   ReadSubmitLogResult fetchAll(ReadSubmitLogRequest request)
     throws StoreResultException;
@@ -33,9 +33,9 @@ public interface StoreResultService {
   /**
    * Fetch with paging and search from file.
    *
-   * @param request
-   * @return
-   * @throws StoreResultException
+   * @param request request
+   * @return {@link ReadSubmitLogRequest}
+   * @throws StoreResultException StoreResultException
    */
   ReadSubmitLogResult fetch(ReadSubmitLogRequest request)
     throws StoreResultException;

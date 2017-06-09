@@ -19,19 +19,19 @@ public class BufferedAccessFile extends RandomAccessFile {
   private long realPos = 0L;
 
   /**
-   * @param file
-   * @param mode
-   * @throws IOException
+   * @param file file to access
+   * @param mode mode
+   * @throws IOException IOException
    */
   public BufferedAccessFile(File file, String mode) throws IOException {
     this(file, mode, DEFAULT_BUFFER_SIZE);
   }
 
   /**
-   * @param file
-   * @param mode
-   * @param bufferSize
-   * @throws IOException
+   * @param file       file to access
+   * @param mode       mode
+   * @param bufferSize bufferSize
+   * @throws IOException IOException
    */
   public BufferedAccessFile(File file, String mode, int bufferSize)
     throws IOException {
@@ -42,9 +42,9 @@ public class BufferedAccessFile extends RandomAccessFile {
   }
 
   /**
-   * @param filename
-   * @param mode
-   * @throws IOException
+   * @param filename fileName
+   * @param mode     mode
+   * @throws IOException IOException
    */
   public BufferedAccessFile(String filename, String mode)
     throws IOException {
@@ -52,10 +52,10 @@ public class BufferedAccessFile extends RandomAccessFile {
   }
 
   /**
-   * @param filename
-   * @param mode
-   * @param bufsize
-   * @throws IOException
+   * @param filename fileName
+   * @param mode     mode
+   * @param bufsize  bufsize
+   * @throws IOException IOException
    */
   public BufferedAccessFile(String filename, String mode, int bufsize)
     throws IOException {
@@ -71,17 +71,17 @@ public class BufferedAccessFile extends RandomAccessFile {
   }
 
   /**
-   * @return
-   * @throws IOException
+   * @return line
+   * @throws IOException IOException
    */
   public final String getNextLine() throws IOException {
     return getNextLine(Charset.defaultCharset());
   }
 
   /**
-   * @param charset
-   * @return
-   * @throws IOException
+   * @param charset charset
+   * @return line
+   * @throws IOException IOException
    */
   public final String getNextLine(Charset charset) throws IOException {
     String str = null;

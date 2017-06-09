@@ -44,7 +44,7 @@ public class FileReader implements Closeable, AutoCloseable {
   }
 
   public FileReader(File file, Charset charset, int splitCount,
-    ForkJoinPool pool) throws IOException {
+                    ForkJoinPool pool) throws IOException {
     this.raf = new BufferedAccessFile(file, READ_MODE);
     this.charset = charset;
 
@@ -106,7 +106,7 @@ public class FileReader implements Closeable, AutoCloseable {
   /**
    * Get lines count of file
    *
-   * @return
+   * @return size
    */
   public int size() {
     return index.size();
@@ -115,9 +115,9 @@ public class FileReader implements Closeable, AutoCloseable {
   /**
    * Read first n line
    *
-   * @param n
-   * @return
-   * @throws IOException
+   * @param n line
+   * @return line
+   * @throws IOException IOException
    */
   public SortedMap<Integer, String> head(int n) throws IOException {
     assertIsOpen();
@@ -128,8 +128,8 @@ public class FileReader implements Closeable, AutoCloseable {
   }
 
   /**
-   * @return
-   * @throws IOException
+   * @return all line
+   * @throws IOException IOException
    */
   public SortedMap<Integer, String> readAll() throws IOException {
     assertIsOpen();
@@ -139,10 +139,10 @@ public class FileReader implements Closeable, AutoCloseable {
   /**
    * Read from line to line
    *
-   * @param from
-   * @param to
-   * @return
-   * @throws IOException
+   * @param from from
+   * @param to   to
+   * @return lines
+   * @throws IOException IOException
    */
   public SortedMap<Integer, String> readLines(int from, int to)
     throws IOException {
@@ -182,9 +182,9 @@ public class FileReader implements Closeable, AutoCloseable {
   /**
    * Read last n line from file
    *
-   * @param n
-   * @return
-   * @throws IOException
+   * @param n line
+   * @return line
+   * @throws IOException IOException
    */
   public SortedMap<Integer, String> tail(int n) throws IOException {
     assertIsOpen();

@@ -38,8 +38,8 @@ public class LoggerUtils {
   /**
    * Format duration
    *
-   * @param start
-   * @return
+   * @param start start
+   * @return time formatted
    */
   public static String elapsedTime(long start) {
     Long end = System.currentTimeMillis();

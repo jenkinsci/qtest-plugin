@@ -84,8 +84,8 @@ public class StatisticsAction extends Actionable implements Action {
   /**
    * use to get result in qTest Plugin page
    *
-   * @param page
-   * @return
+   * @param page page submitted result
+   * @return submitted result data
    */
   @JavaScriptMethod
   public JSONObject getTreeResult(int page) {

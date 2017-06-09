@@ -27,9 +27,9 @@ public class AutoScanParser extends PatternScanParser {
   public static final String TEST_RESULT_LOCATIONS = "target/surefire-reports/*.xml";
 
   /**
-   * @param request
-   * @return
-   * @throws Exception
+   * @param request request
+   * @return list of {@link AutomationTestResult}
+   * @throws Exception Exception
    */
   @Override
   public List<AutomationTestResult> parse(ParseRequest request)

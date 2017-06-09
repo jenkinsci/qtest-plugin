@@ -99,8 +99,8 @@ public class AutomationTestResult {
   /**
    * Add testLog and resolve status of testResult
    *
-   * @param automationTestLog
-   * @return
+   * @param automationTestLog automationTestLog
+   * @return {@link AutomationTestLog}
    * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */
   public AutomationTestLog addTestLog(AutomationTestLog automationTestLog) {

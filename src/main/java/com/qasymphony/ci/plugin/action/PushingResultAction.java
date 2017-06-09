@@ -362,9 +362,9 @@ public class PushingResultAction extends Notifier {
     }
 
     /**
-     * @param qTestUrl
-     * @param apiKey
-     * @return
+     * @param qTestUrl qtest url
+     * @param apiKey   api key
+     * @return a list of project
      */
     @JavaScriptMethod
     public JSONObject getProjects(String qTestUrl, String apiKey) {
@@ -376,10 +376,11 @@ public class PushingResultAction extends Notifier {
     }
 
     /**
-     * @param qTestUrl
-     * @param apiKey
-     * @param projectId
-     * @return
+     * @param qTestUrl           qTestUrl
+     * @param apiKey             apiKey
+     * @param projectId          projectId
+     * @param jenkinsProjectName jenkinsProjectName
+     * @return data
      */
     @JavaScriptMethod
     public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {

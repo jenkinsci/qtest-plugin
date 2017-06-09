@@ -29,9 +29,10 @@ public class OauthProvider {
   /**
    * Get access token from apiKey
    *
-   * @param url
-   * @param apiKey
-   * @return
+   * @param url    url
+   * @param apiKey apiKey
+   * @return access token
+   * @throws OAuthException OAuthException
    */
   public static String getAccessToken(String url, String apiKey) throws OAuthException {
     return getAccessToken(url, apiKey, HEADER_KEY);
@@ -62,10 +63,10 @@ public class OauthProvider {
   /**
    * Build header with get access token from refresh token
    *
-   * @param url
-   * @param apiKey
-   * @param headers
-   * @return
+   * @param url     url
+   * @param apiKey  apiKey
+   * @param headers headers
+   * @return headers
    */
   public static Map<String, String> buildHeaders(String url, String apiKey, Map<String, String> headers) {
     String accessToken = null;
@@ -80,9 +81,9 @@ public class OauthProvider {
   /**
    * Build headers with access token
    *
-   * @param accessToken
-   * @param headers
-   * @return
+   * @param accessToken accessToken
+   * @param headers     headers
+   * @return headers
    */
   public static Map<String, String> buildHeaders(String accessToken, Map<String, String> headers) {
     Map<String, String> map = new HashMap<>();

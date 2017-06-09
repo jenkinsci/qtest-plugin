@@ -39,8 +39,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
-    String projectName, long releaseId, String releaseName, long environmentId,
-    String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern) {
+                       String projectName, long releaseId, String releaseName, long environmentId,
+                       String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -192,7 +192,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "Configuration{" +
       "id=" + id +
       ", url='" + url + '\'' +
@@ -209,12 +210,12 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
       ", readFromJenkins=" + readFromJenkins +
       ", resultPattern='" + resultPattern + '\'' +
-       ", eachMethodAsTestCase='" + eachMethodAsTestCase + '\'' +
+      ", eachMethodAsTestCase='" + eachMethodAsTestCase + '\'' +
       '}';
   }
 
   /**
-   * @return
+   * @return {@link Setting}
    */
   public Setting toSetting() {
     return new Setting()

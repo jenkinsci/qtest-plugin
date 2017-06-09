@@ -47,13 +47,6 @@ public class AutomationTestService {
     return responseEntity;
   }
 
-  /**
-   * @param configuration
-   * @param taskId
-   * @param headers
-   * @return
-   * @throws ClientRequestException
-   */
   public static ResponseEntity getTaskStatus(Configuration configuration, long taskId, Map<String, String> headers)
     throws ClientRequestException {
     String url = String.format(API_SUBMIT_TASK_STATUS, configuration.getUrl(), taskId);

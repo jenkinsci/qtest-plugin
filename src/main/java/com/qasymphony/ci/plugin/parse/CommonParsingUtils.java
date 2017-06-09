@@ -8,13 +8,7 @@ import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,14 +26,6 @@ import org.apache.tools.ant.types.FileSet;
  */
 public class CommonParsingUtils {
 
-  /**
-   * @param useTestMethodAsTestCase
-   * @param testResults
-   * @param startTime
-   * @param completedTime
-   * @return
-   * @throws Exception
-   */
   public static List<AutomationTestResult> toAutomationTestResults(boolean useTestMethodAsTestCase, List<TestResult> testResults, Date startTime, Date completedTime)
     throws Exception {
     if (useTestMethodAsTestCase) {
@@ -65,8 +51,8 @@ public class CommonParsingUtils {
               AutomationTestResult automationTestResult = new AutomationTestResult();
               automationTestResult.setName(automationContent);
               automationTestResult.setAutomationContent(automationContent);
-              automationTestResult.setExecutedEndDate(completedTime);
               automationTestResult.setExecutedStartDate(startTime);
+              automationTestResult.setExecutedEndDate(computeEndTime(startTime, caseResult.getDuration()));
               automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
 
               AutomationTestLog automationTestLog = new AutomationTestLog(caseResult);
@@ -105,8 +91,8 @@ public class CommonParsingUtils {
               automationTestResult = new AutomationTestResult();
               automationTestResult.setName(caseResult.getClassName());
               automationTestResult.setAutomationContent(caseResult.getClassName());
-              automationTestResult.setExecutedEndDate(completedTime);
               automationTestResult.setExecutedStartDate(startTime);
+              automationTestResult.setExecutedEndDate(computeEndTime(startTime, caseResult.getDuration()));
               automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
               automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
             }
@@ -128,9 +114,7 @@ public class CommonParsingUtils {
   /**
    * Process attachment
    *
-   * @param automationTestResultMap
-   * @return
-   * @throws Exception
+   * @param automationTestResultMap automationTestResultMap
    */
   private static Map<String, AutomationTestResult> processAttachment(Map<String, AutomationTestResult> automationTestResultMap)
     throws Exception {
@@ -191,8 +175,8 @@ public class CommonParsingUtils {
   /**
    * Scan junit test result folder
    *
-   * @param basedDir
-   * @return
+   * @param basedDir basedDir
+   * @return a list of folder
    */
   public static List<String> scanJunitTestResultFolder(String basedDir) {
     File currentBasedDir = new File(basedDir);
@@ -214,5 +198,12 @@ public class CommonParsingUtils {
       }
     }
     return resultFolders;
+  }
+
+  private static Date computeEndTime(Date startTime, float duration) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(startTime);
+    calendar.add(Calendar.SECOND, (int) duration);
+    return calendar.getTime();
   }
 }

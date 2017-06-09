@@ -22,10 +22,10 @@ public class PatternScanParser implements TestResultParser {
   /**
    * Read test results with test result location pattern
    *
-   * @param request
-   * @param testResultLocation
-   * @return
-   * @throws Exception
+   * @param request            request
+   * @param testResultLocation testResultLocation
+   * @return a list of {@link AutomationTestResult}
+   * @throws Exception Exception
    */
   public List<AutomationTestResult> parse(ParseRequest request, String testResultLocation) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
@@ -42,9 +42,9 @@ public class PatternScanParser implements TestResultParser {
   }
 
   /**
-   * @param request
-   * @return
-   * @throws Exception
+   * @param request request
+   * @return a list of {@link AutomationTestResult}
+   * @throws Exception Exception
    */
   @Override
   public List<AutomationTestResult> parse(ParseRequest request)

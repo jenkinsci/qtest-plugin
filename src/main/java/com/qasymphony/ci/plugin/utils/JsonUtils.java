@@ -40,14 +40,14 @@ public class JsonUtils {
   /**
    * Create new ObjectNode
    *
-   * @return
+   * @return {@link ObjectNode}
    */
   public static ObjectNode newNode() {
     return mapper.createObjectNode();
   }
 
   /**
-   * @return
+   * @return current datetime
    */
   public static String getCurrentDateString() {
     return new SimpleDateFormat(UTC_DATE_FORMAT).format(new Date());
@@ -69,9 +69,9 @@ public class JsonUtils {
   /**
    * Get int value from JsonNode
    *
-   * @param node
-   * @param field
-   * @return
+   * @param node  node
+   * @param field field
+   * @return int
    */
   public static int getInt(JsonNode node, String field) {
     if (null == node || node.get(field) == null)
@@ -82,8 +82,8 @@ public class JsonUtils {
   /**
    * parse a string value to JsonNode
    *
-   * @param body
-   * @return
+   * @param body body
+   * @return {@link JsonNode}
    */
   public static JsonNode readTree(String body) {
     JsonNode node = null;
@@ -103,10 +103,11 @@ public class JsonUtils {
   }
 
   /**
-   * Get long from jsonnode
+   * Get long from json node
    *
-   * @param node
-   * @return
+   * @param node  node
+   * @param field field
+   * @return long value
    */
   public static Long getLong(JsonNode node, String field) {
     if (null == node || node.get(field) == null)
@@ -119,6 +120,7 @@ public class JsonUtils {
    *
    * @param body      JSON string
    * @param valueType class type to cast
+   * @param <T>       T
    * @return instance of class valueType
    */
   public static <T> T fromJson(String body, Class<T> valueType) {
@@ -131,11 +133,11 @@ public class JsonUtils {
   }
 
   /**
-   * @param body
-   * @param valueType
-   * @param <T>
-   * @return
-   * @throws IOException
+   * @param body      bodu
+   * @param valueType valueType
+   * @param <T>       T
+   * @return T
+   * @throws IOException IOException
    */
   public static <T> T parseJson(String body, Class<T> valueType) throws IOException {
     if (StringUtils.isEmpty(body))
@@ -157,6 +159,7 @@ public class JsonUtils {
   /**
    * Get JsonNode from object append field extraData to JsonNode
    *
+   * @param data data
    * @return JsonNode, if data is a instance of POJO. Otherwise return empty string
    */
   public static JsonNode toJsonNode(Object data) {
@@ -177,8 +180,8 @@ public class JsonUtils {
   /**
    * serial object to JSON string
    *
-   * @param data
-   * @return
+   * @param data data
+   * @return json string
    */
   public static String toJson(Object data) {
     if (null == data)
