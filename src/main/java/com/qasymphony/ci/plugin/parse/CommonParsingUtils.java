@@ -92,7 +92,7 @@ public class CommonParsingUtils {
               automationTestResult.setName(caseResult.getClassName());
               automationTestResult.setAutomationContent(caseResult.getClassName());
               automationTestResult.setExecutedStartDate(startTime);
-              automationTestResult.setExecutedEndDate(computeEndTime(startTime, caseResult.getDuration()));
+              automationTestResult.setExecutedEndDate(computeEndTime(startTime, suite.getDuration()));
               automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
               automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
             }
