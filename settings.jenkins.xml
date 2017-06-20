@@ -10,12 +10,17 @@
     <profile>
       <id>jenkins</id>
       <activation>
-        <activeByDefault>true</activeByDefault> <!-- change this to false, if you don't like to have it on per default -->
+        <!-- change this to false, if you don't like to have it on per default -->
+        <activeByDefault>true</activeByDefault>
       </activation>
       <repositories>
         <repository>
           <id>repo.jenkins-ci.org</id>
           <url>http://repo.jenkins-ci.org/public/</url>
+        </repository>
+        <repository>
+          <id>maven.jenkins-ci.org</id>
+          <url>https://repo.jenkins-ci.org/releases</url>
         </repository>
       </repositories>
       <pluginRepositories>
@@ -36,7 +41,7 @@
           <url>http://repo.jenkins-ci.org/repo</url>
         </repository>
         <repository>
-          <snapshots />
+          <snapshots/>
           <id>snapshots</id>
           <name>public</name>
           <url>http://repo.jenkins-ci.org/public</url>
@@ -52,7 +57,7 @@
           <url>http://repo.jenkins-ci.org/repo</url>
         </pluginRepository>
         <pluginRepository>
-          <snapshots />
+          <snapshots/>
           <id>snapshots</id>
           <name>public</name>
           <url>http://repo.jenkins-ci.org/public</url>
@@ -72,18 +77,23 @@
   <servers>
     <server>
       <id>maven.jenkins-ci.org</id>
-      <username>gunivan</username>
+      <username>qasymphony</username>
       <password></password>
     </server>
     <server>
-      <username>gunivan</username>
+      <id>repo.jenkins-ci.org</id>
+      <username>qasymphony</username>
       <password></password>
+    </server>
+    <server>
       <id>central</id>
+      <username>qasymphony</username>
+      <password></password>
     </server>
     <server>
-      <username>gunivan</username>
-      <password></password>
       <id>snapshots</id>
+      <username>qasymphony</username>
+      <password></password>
     </server>
   </servers>
   <proxies>

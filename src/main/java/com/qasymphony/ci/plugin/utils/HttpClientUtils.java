@@ -296,7 +296,8 @@ public class HttpClientUtils {
       timeout = DEFAULT_SOCKET_TIMEOUT;
     }
 
-    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
+      .useSystemProperties();
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
       .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
