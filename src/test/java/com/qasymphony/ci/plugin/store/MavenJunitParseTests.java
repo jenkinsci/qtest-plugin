@@ -1,7 +1,7 @@
 package com.qasymphony.ci.plugin.store;
 
-import com.qasymphony.ci.plugin.model.AutomationTestLog;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.PatternScanParser;
@@ -89,11 +89,11 @@ public class MavenJunitParseTests extends TestAbstracts {
     }
     assertNotNull("Calculate test is:", calculateTest);
     assertEquals("Test log size is ", 4, calculateTest.getTestLogs().size());
-    AutomationTestLog first = calculateTest.getTestLogs().get(0);
+    AutomationTestStepLog first = calculateTest.getTestLogs().get(0);
     assertEquals("Description 1 is ", "testSum_second", first.getDescription());
     assertEquals("Status 1 is ", "FAILED", first.getStatus());
 
-    AutomationTestLog second = calculateTest.getTestLogs().get(1);
+    AutomationTestStepLog second = calculateTest.getTestLogs().get(1);
     assertEquals("Description 2 is ", "testSum_one", second.getDescription());
     assertEquals("Status 2 is ", "PASSED", second.getStatus());
   }

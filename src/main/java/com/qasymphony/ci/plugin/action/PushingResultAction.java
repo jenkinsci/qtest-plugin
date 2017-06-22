@@ -3,7 +3,6 @@ package com.qasymphony.ci.plugin.action;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.ResourceBundle;
-import com.qasymphony.ci.plugin.exception.SaveSettingException;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
@@ -116,9 +115,8 @@ public class PushingResultAction extends Notifier {
     } catch (StoreResultException e) {
       LoggerUtils.formatError(logger, e.getMessage());
       e.printStackTrace(logger);
-    } finally {
-      return true;
     }
+    return true;
   }
 
   private void showInfo(PrintStream logger) {

@@ -18,7 +18,7 @@ public class AutomationAttachment {
   }
 
   public AutomationAttachment(CaseResult caseResult) {
-    this.setName(caseResult.getName().concat(Constants.Extension.TEXT_FILE));
+    this.setName(caseResult.getSafeName().concat(Constants.Extension.TEXT_FILE));
     this.setContentType(Constants.CONTENT_TYPE_TEXT);
     this.setData(StringUtils.isEmpty(caseResult.getErrorStackTrace()) ? caseResult.getErrorDetails() : caseResult.getErrorStackTrace());
   }

@@ -193,4 +193,22 @@ public class JsonUtils {
       return "";
     }
   }
+
+  /**
+   * Parse timestamp to date
+   *
+   * @param timestamp in utc format
+   * @return
+   */
+  public static Date parseTimestamp(String timestamp) {
+    if (StringUtils.isEmpty(timestamp)) {
+      return null;
+    }
+    try {
+      return new SimpleDateFormat(JsonUtils.UTC_DATE_FORMAT).parse(timestamp);
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Error while parse JUnit timestamp" + e.getMessage());
+      return null;
+    }
+  }
 }

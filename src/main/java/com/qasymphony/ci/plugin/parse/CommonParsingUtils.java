@@ -1,137 +1,160 @@
 package com.qasymphony.ci.plugin.parse;
 
-import static com.qasymphony.ci.plugin.Constants.*;
-
+import com.qasymphony.ci.plugin.model.AutomationAttachment;
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
+import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Util;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.FileSet;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.codec.binary.Base64;
-
-import com.qasymphony.ci.plugin.model.AutomationAttachment;
-import com.qasymphony.ci.plugin.model.AutomationTestLog;
-import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.types.FileSet;
+import static com.qasymphony.ci.plugin.Constants.*;
 
 /**
  * @author anpham
  */
 public class CommonParsingUtils {
 
-  public static List<AutomationTestResult> toAutomationTestResults(boolean useTestMethodAsTestCase, List<TestResult> testResults, Date startTime, Date completedTime)
+  private CommonParsingUtils() {
+
+  }
+
+  public static List<AutomationTestResult> toAutomationTestResults(ParseRequest request, List<TestResult> testResults, Date startTime)
     throws Exception {
-    if (useTestMethodAsTestCase) {
-      return useTestMethodAsTestCase(testResults, startTime, completedTime);
+    if (request.getConfiguration().getEachMethodAsTestCase()) {
+      return useTestMethodAsTestCase(request, testResults, startTime);
     } else {
-      return useClassNameAsTestCase(testResults, startTime, completedTime);
+      return useClassNameAsTestCase(request, testResults, startTime);
     }
   }
 
-  private static List<AutomationTestResult> useTestMethodAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime)
+  /**
+   * Each method as a testCase in qTest
+   *
+   * @param request     parse request
+   * @param testResults testResults
+   * @param startTime   start build time
+   * @return
+   * @throws Exception
+   */
+  private static List<AutomationTestResult> useTestMethodAsTestCase(ParseRequest request, List<TestResult> testResults, Date startTime)
     throws Exception {
-    HashMap<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
+    Map<String, AutomationTestResult> map = new HashMap<>();
 
     for (TestResult testResult : testResults) {
       for (SuiteResult suite : testResult.getSuites()) {
         if (suite.getCases() == null) {
           continue;
-        } else {
-          for (CaseResult caseResult : suite.getCases()) {
-            String automationContent = caseResult.getClassName() + "#" + caseResult.getName();
+        }
+        Date startDate = JsonUtils.parseTimestamp(suite.getTimestamp());
+        startDate = startDate == null ? startTime : startDate;
+        for (CaseResult caseResult : suite.getCases()) {
+          String automationContent = caseResult.getClassName() + "#" + caseResult.getName();
 
-            if (!automationTestResultMap.containsKey(automationContent)) {
-              AutomationTestResult automationTestResult = new AutomationTestResult();
-              automationTestResult.setName(automationContent);
-              automationTestResult.setAutomationContent(automationContent);
-              automationTestResult.setExecutedStartDate(startTime);
-              automationTestResult.setExecutedEndDate(computeEndTime(startTime, caseResult.getDuration()));
-              automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
+          if (!map.containsKey(automationContent)) {
+            AutomationTestResult testLog = new AutomationTestResult();
+            testLog.setAutomationContent(automationContent);
+            testLog.setExecutedStartDate(startDate);
+            testLog.setExecutedEndDate(computeEndTime(startTime, caseResult.getDuration()));
+            testLog.addTestStepLog(new AutomationTestStepLog(caseResult));
 
-              AutomationTestLog automationTestLog = new AutomationTestLog(caseResult);
-              automationTestResult.addTestLog(automationTestLog);
-
-              if (caseResult.isFailed()) {
+            if (caseResult.isFailed()) {
+              try {
                 AutomationAttachment attachment = new AutomationAttachment(caseResult);
                 attachment.setData(Base64.encodeBase64String(attachment.getData().getBytes()));
-                automationTestResult.getAttachments().add(attachment);
+                testLog.addAttachment(attachment);
+              } catch (Exception e) {
+                LoggerUtils.formatError(request.getListener().getLogger(), "Error while build attachment: %s, %s", e.getMessage(), e.getStackTrace());
               }
-
-              automationTestResultMap.put(automationContent, automationTestResult);
             }
+
+            map.put(automationContent, testLog);
           }
         }
       }
     }
 
-    return new ArrayList<>(automationTestResultMap.values());
+    return new ArrayList<>(map.values());
   }
 
-  private static List<AutomationTestResult> useClassNameAsTestCase(List<TestResult> testResults, Date startTime, Date completedTime)
+  /**
+   * Class name as a testCase in qTest
+   *
+   * @param request     parse request
+   * @param testResults testResults
+   * @param startTime   start build time
+   * @return
+   * @throws Exception
+   */
+  private static List<AutomationTestResult> useClassNameAsTestCase(ParseRequest request, List<TestResult> testResults, Date startTime)
     throws Exception {
-    Map<String, AutomationTestResult> automationTestResultMap = new HashMap<>();
+    Map<String, AutomationTestResult> map = new HashMap<>();
 
     for (TestResult testResult : testResults) {
       for (SuiteResult suite : testResult.getSuites()) {
         if (suite.getCases() == null) {
           continue;
-        } else {
-          for (CaseResult caseResult : suite.getCases()) {
-            AutomationTestResult automationTestResult = null;
-            if (automationTestResultMap.containsKey(caseResult.getClassName())) {
-              automationTestResult = automationTestResultMap.get(caseResult.getClassName());
-            } else {
-              automationTestResult = new AutomationTestResult();
-              automationTestResult.setName(caseResult.getClassName());
-              automationTestResult.setAutomationContent(caseResult.getClassName());
-              automationTestResult.setExecutedStartDate(startTime);
-              automationTestResult.setExecutedEndDate(computeEndTime(startTime, suite.getDuration()));
-              automationTestResult.setAttachments(new ArrayList<AutomationAttachment>());
-              automationTestResultMap.put(caseResult.getClassName(), automationTestResult);
-            }
+        }
+        Date startDate = JsonUtils.parseTimestamp(suite.getTimestamp());
+        startDate = startDate == null ? startTime : startDate;
+        for (CaseResult caseResult : suite.getCases()) {
+          AutomationTestResult testLog = null;
+          if (map.containsKey(caseResult.getClassName())) {
+            testLog = map.get(caseResult.getClassName());
+          } else {
+            testLog = new AutomationTestResult();
+            testLog.setAutomationContent(caseResult.getClassName());
+            testLog.setExecutedStartDate(startDate);
+            testLog.setExecutedEndDate(computeEndTime(startTime, suite.getDuration()));
+            map.put(caseResult.getClassName(), testLog);
+          }
 
-            AutomationTestLog automationTestLog = new AutomationTestLog(caseResult);
-            automationTestResult.addTestLog(automationTestLog);
-            if (caseResult.isFailed()) {
-              AutomationAttachment attachment = new AutomationAttachment(caseResult);
-              automationTestResult.getAttachments().add(attachment);
-            }
+          testLog.addTestStepLog(new AutomationTestStepLog(caseResult));
+          if (caseResult.isFailed()) {
+            testLog.addAttachment(new AutomationAttachment(caseResult));
           }
         }
       }
     }
-    automationTestResultMap = processAttachment(automationTestResultMap);
-    return new ArrayList<>(automationTestResultMap.values());
+    map = processAttachment(map);
+    return new ArrayList<>(map.values());
   }
 
   /**
    * Process attachment
    *
-   * @param automationTestResultMap automationTestResultMap
+   * @param map automationTestResultMap
    */
-  private static Map<String, AutomationTestResult> processAttachment(Map<String, AutomationTestResult> automationTestResultMap)
+  private static Map<String, AutomationTestResult> processAttachment(Map<String, AutomationTestResult> map)
     throws Exception {
 
-    Iterator<String> keys = automationTestResultMap.keySet().iterator();
+    Iterator<String> keys = map.keySet().iterator();
 
     while (keys.hasNext()) {
       String key = keys.next();
-      AutomationTestResult automationTestResult = automationTestResultMap.get(key);
-      int totalAttachments = automationTestResult.getAttachments().size();
+      AutomationTestResult testLog = map.get(key);
+      int totalAttachments = testLog.getAttachments().size();
       if (totalAttachments > LIMIT_TXT_FILES) {
-        File zipFile = File.createTempFile(automationTestResult.getName(), Extension.ZIP_FILE);
+        File zipFile = File.createTempFile(testLog.getName(), Extension.ZIP_FILE);
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
 
         Map<String, Integer> attachmentNames = new HashMap<>();
         for (int i = 0; i < totalAttachments; i++) {
-          AutomationAttachment attachment = automationTestResult.getAttachments().get(i);
+          AutomationAttachment attachment = testLog.getAttachments().get(i);
           String attachmentName = attachment.getName();
           if (attachmentNames.containsKey(attachment.getName())) {
             Integer count = attachmentNames.get(attachment.getName());
@@ -156,20 +179,20 @@ public class CommonParsingUtils {
         AutomationAttachment attachment = new AutomationAttachment();
         attachment.setData(Base64.encodeBase64String(zipFileBytes));
         attachment.setContentType(CONTENT_TYPE_ZIP);
-        attachment.setName(automationTestResult.getName() + Extension.ZIP_FILE);
+        attachment.setName(testLog.getName() + Extension.ZIP_FILE);
         // add zip file
-        automationTestResult.setAttachments(Arrays.asList(attachment));
+        testLog.setAttachments(Arrays.asList(attachment));
         // remove zip tmp file
         zipFile.delete();
       } else {
         for (int i = 0; i < totalAttachments; i++) {
-          AutomationAttachment attachment = automationTestResult.getAttachments().get(i);
+          AutomationAttachment attachment = testLog.getAttachments().get(i);
           attachment.setContentType(CONTENT_TYPE_TEXT);
           attachment.setData(Base64.encodeBase64String(attachment.getData().getBytes()));
         }
       }
     }
-    return automationTestResultMap;
+    return map;
   }
 
   /**
@@ -200,10 +223,15 @@ public class CommonParsingUtils {
     return resultFolders;
   }
 
+  /**
+   * @param startTime start time
+   * @param duration  in second
+   * @return
+   */
   private static Date computeEndTime(Date startTime, float duration) {
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(startTime);
-    calendar.add(Calendar.SECOND, (int) duration);
+    calendar.add(Calendar.SECOND, Math.round(duration));
     return calendar.getTime();
   }
 }

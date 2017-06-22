@@ -19,9 +19,9 @@ public class PublishResultParser implements TestResultParser {
 
   @Override
   public List<AutomationTestResult> parse(ParseRequest request) throws Exception {
-    List<TestResult> testResults = new ArrayList<>();
     AbstractBuild build = request.getBuild();
     TestResultAction resultAction = build.getAction(TestResultAction.class);
+    List<TestResult> testResults = new ArrayList<>();
     if (resultAction != null) {
       testResults.add(resultAction.getResult());
     } else {
@@ -43,6 +43,6 @@ public class PublishResultParser implements TestResultParser {
     GregorianCalendar gregorianCalendar = new GregorianCalendar();
     gregorianCalendar.setTimeInMillis(build.getStartTimeInMillis());
 
-    return CommonParsingUtils.toAutomationTestResults(request.getConfiguration().getEachMethodAsTestCase(), testResults, gregorianCalendar.getTime(), build.getTime());
+    return CommonParsingUtils.toAutomationTestResults(request, testResults, gregorianCalendar.getTime());
   }
 }

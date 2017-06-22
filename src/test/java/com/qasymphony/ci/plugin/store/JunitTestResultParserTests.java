@@ -144,14 +144,14 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setExecutedStartDate(new Date());
       automationTestResult.setExecutedEndDate(new Date());
       results.add(automationTestResult);
-      List<AutomationTestLog> testLogs = new ArrayList<>();
+      List<AutomationTestStepLog> testLogs = new ArrayList<>();
       for (int j = 0; j < 10; j++) {
-        AutomationTestLog automationTestLog = new AutomationTestLog();
-        automationTestLog.setOrder(j);
-        automationTestLog.setStatus(CaseResult.Status.PASSED.toString());
-        automationTestLog.setDescription("Test Description of " + j + " in class: " + i);
-        automationTestLog.setExpectedResult(CaseResult.Status.PASSED.toString());
-        testLogs.add(automationTestLog);
+        AutomationTestStepLog automationTestStepLog = new AutomationTestStepLog();
+        automationTestStepLog.setOrder(j);
+        automationTestStepLog.setStatus(CaseResult.Status.PASSED.toString());
+        automationTestStepLog.setDescription("Test Description of " + j + " in class: " + i);
+        automationTestStepLog.setExpectedResult(CaseResult.Status.PASSED.toString());
+        testLogs.add(automationTestStepLog);
       }
       automationTestResult.setTestLogs(testLogs);
     }
@@ -181,18 +181,18 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setExecutedStartDate(new Date());
       automationTestResult.setExecutedEndDate(new Date());
       results.add(automationTestResult);
-      List<AutomationTestLog> testLogs = new ArrayList<>();
+      List<AutomationTestStepLog> testLogs = new ArrayList<>();
       List<AutomationAttachment> automationAttachments = new ArrayList<>();
       for (int j = 0; j < 100; j++) {
-        AutomationTestLog automationTestLog = new AutomationTestLog();
-        automationTestLog.setOrder(j);
-        automationTestLog.setStatus(CaseResult.Status.FAILED.toString());
-        automationTestLog.setDescription("Test Description of " + j + " in class: " + i);
-        automationTestLog.setExpectedResult(CaseResult.Status.FAILED.toString());
-        testLogs.add(automationTestLog);
+        AutomationTestStepLog automationTestStepLog = new AutomationTestStepLog();
+        automationTestStepLog.setOrder(j);
+        automationTestStepLog.setStatus(CaseResult.Status.FAILED.toString());
+        automationTestStepLog.setDescription("Test Description of " + j + " in class: " + i);
+        automationTestStepLog.setExpectedResult(CaseResult.Status.FAILED.toString());
+        testLogs.add(automationTestStepLog);
 
         AutomationAttachment automationAttachment = new AutomationAttachment();
-        automationAttachment.setName(automationTestLog.getDescription() + ".txt");
+        automationAttachment.setName(automationTestStepLog.getDescription() + ".txt");
         automationAttachment.setContentType("text/plain");
         StringBuilder sb = new StringBuilder();
         for (int k = 0; k < 10; k++)

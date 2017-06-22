@@ -6,7 +6,7 @@ import hudson.tasks.junit.CaseResult;
 /**
  * @author anpham
  */
-public class AutomationTestLog {
+public class AutomationTestStepLog {
   @JsonProperty("description")
   private String description;
   @JsonProperty("expected_result")
@@ -14,17 +14,17 @@ public class AutomationTestLog {
   private Integer order;
   private String status;
 
-  public AutomationTestLog() {
+  public AutomationTestStepLog() {
   }
 
-  public AutomationTestLog(String description, String expectedResult, Integer order, String status) {
+  public AutomationTestStepLog(String description, String expectedResult, Integer order, String status) {
     this.description = description;
     this.expectedResult = expectedResult;
     this.order = order;
     this.status = status;
   }
 
-  public AutomationTestLog(CaseResult caseResult) {
+  public AutomationTestStepLog(CaseResult caseResult) {
     this.setDescription(caseResult.getName());
     this.setExpectedResult(caseResult.getName());
     this.setStatus(caseResult.getStatus().toString());
@@ -68,7 +68,7 @@ public class AutomationTestLog {
     if (o == null || getClass() != o.getClass())
       return false;
 
-    AutomationTestLog that = (AutomationTestLog) o;
+    AutomationTestStepLog that = (AutomationTestStepLog) o;
 
     if (description != null ? !description.equals(that.description) : that.description != null)
       return false;

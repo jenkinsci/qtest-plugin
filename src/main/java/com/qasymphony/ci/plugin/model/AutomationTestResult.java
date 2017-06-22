@@ -20,8 +20,8 @@ public class AutomationTestResult {
   private String status;
   private String name;
   @JsonProperty("test_step_logs")
-  private List<AutomationTestLog> testLogs;
-  private List<AutomationAttachment> attachments;
+  private List<AutomationTestStepLog> testLogs;
+  private List<AutomationAttachment> attachments = new ArrayList<>();
   /**
    * total failed testStep
    */
@@ -62,6 +62,7 @@ public class AutomationTestResult {
 
   public void setAutomationContent(String automationContent) {
     this.automationContent = automationContent;
+    this.setName(automationContent);
   }
 
   public String getStatus() {
@@ -72,11 +73,11 @@ public class AutomationTestResult {
     this.status = status;
   }
 
-  public List<AutomationTestLog> getTestLogs() {
+  public List<AutomationTestStepLog> getTestLogs() {
     return testLogs;
   }
 
-  public void setTestLogs(List<AutomationTestLog> testLogs) {
+  public void setTestLogs(List<AutomationTestStepLog> testLogs) {
     this.testLogs = testLogs;
   }
 
@@ -96,17 +97,22 @@ public class AutomationTestResult {
     this.attachments = attachments;
   }
 
+  public List<AutomationAttachment> addAttachment(AutomationAttachment attachment) {
+    attachments.add(attachment);
+    return attachments;
+  }
+
   /**
    * Add testLog and resolve status of testResult
    *
-   * @param automationTestLog automationTestLog
-   * @return {@link AutomationTestLog}
+   * @param automationTestStepLog automationTestStepLog
+   * @return {@link AutomationTestStepLog}
    * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */
-  public AutomationTestLog addTestLog(AutomationTestLog automationTestLog) {
-    automationTestLog.setOrder(currentOrder++);
-    testLogs.add(automationTestLog);
-    String status = automationTestLog.getStatus();
+  public AutomationTestStepLog addTestStepLog(AutomationTestStepLog automationTestStepLog) {
+    automationTestStepLog.setOrder(currentOrder++);
+    testLogs.add(automationTestStepLog);
+    String status = automationTestStepLog.getStatus();
     //regression the same as failed
     if (CaseResult.Status.FAILED.toString().equalsIgnoreCase(status) ||
       CaseResult.Status.REGRESSION.toString().equalsIgnoreCase(status)) {
@@ -133,6 +139,6 @@ public class AutomationTestResult {
         this.setStatus(CaseResult.Status.SKIPPED.toString());
       }
     }
-    return automationTestLog;
+    return automationTestStepLog;
   }
 }

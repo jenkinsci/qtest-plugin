@@ -22,9 +22,8 @@ classes/**
 ehthumbs.db
 Thumbs.db
 
-
 # Log
-logs/**
+/logs/**
 
 # JRebel
 src/main/resources/rebel.xml
@@ -32,4 +31,4 @@ sonar-project.properties
 .sonar
 .sonartmp
 /work/**
-**.log
+*.log

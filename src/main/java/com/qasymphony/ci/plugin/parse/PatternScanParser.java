@@ -29,16 +29,16 @@ public class PatternScanParser implements TestResultParser {
    */
   public List<AutomationTestResult> parse(ParseRequest request, String testResultLocation) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
-    List<TestResult> testResults = new ArrayList<>();
     AbstractBuild build = request.getBuild();
     Launcher launcher = request.getLauncher();
     BuildListener listener = request.getListener();
+    List<TestResult> testResults = new ArrayList<>();
     testResults.add(jUnitParser.parseResult(testResultLocation, build, build.getWorkspace(), launcher, listener));
 
     GregorianCalendar gregorianCalendar = new GregorianCalendar();
     gregorianCalendar.setTimeInMillis(build.getStartTimeInMillis());
 
-    return CommonParsingUtils.toAutomationTestResults(request.getConfiguration().getEachMethodAsTestCase(), testResults, gregorianCalendar.getTime(), build.getTime());
+    return CommonParsingUtils.toAutomationTestResults(request, testResults, gregorianCalendar.getTime());
   }
 
   /**
