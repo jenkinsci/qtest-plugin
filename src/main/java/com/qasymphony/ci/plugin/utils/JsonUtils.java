@@ -10,7 +10,9 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,8 +22,20 @@ import java.util.logging.Logger;
  * @since 1.0
  */
 public class JsonUtils {
-  public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
   private static final Logger LOG = Logger.getLogger(JsonUtils.class.getName());
+  public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+  private static final List<String> UTCS = Arrays.asList(
+    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSX",
+    "yyyy-MM-dd'T'HH:mm:ss.sX",
+    "yyyy-MM-dd'T'HH:mm:ssX",
+    "yyyy-MM-dd'T'HH:mm:ss");
+
   /**
    * Use for JSON
    */
@@ -213,18 +227,14 @@ public class JsonUtils {
     } catch (Exception e) {
       //fine to ignore
     }
-    String format = "yyyy-MM-dd'T'HH:mm:ss";
-    try {
-      return new SimpleDateFormat(format).parse(timestamp);
-    } catch (Exception e) {
-      LOG.log(Level.WARNING, "Timestamp is not formatted as:" + format + ", error:" + e.getMessage());
+
+    for (String format : UTCS) {
+      try {
+        return new SimpleDateFormat(format).parse(timestamp);
+      } catch (Exception e) {
+        LOG.log(Level.WARNING, "Failed to attempts parse suite timestamp:" + timestamp + ", format:" + format + ",err: " + e.getMessage());
+      }
     }
-    format = JsonUtils.UTC_DATE_FORMAT;
-    try {
-      return new SimpleDateFormat(format).parse(timestamp);
-    } catch (Exception e) {
-      LOG.log(Level.WARNING, "Error while parse suite timestamp" + e.getMessage());
-      return null;
-    }
+    return null;
   }
 }
