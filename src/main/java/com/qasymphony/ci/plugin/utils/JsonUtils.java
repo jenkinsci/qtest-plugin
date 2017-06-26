@@ -205,9 +205,25 @@ public class JsonUtils {
       return null;
     }
     try {
-      return new SimpleDateFormat(JsonUtils.UTC_DATE_FORMAT).parse(timestamp);
+      //try to attempts parse timestamp as long
+      Long time = Long.parseLong(timestamp);
+      if (time > 0) {
+        return new Date(time);
+      }
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Error while parse JUnit timestamp" + e.getMessage());
+      //fine to ignore
+    }
+    String format = "yyyy-MM-dd'T'HH:mm:ss";
+    try {
+      return new SimpleDateFormat(format).parse(timestamp);
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Timestamp is not formatted as:" + format + ", error:" + e.getMessage());
+    }
+    format = JsonUtils.UTC_DATE_FORMAT;
+    try {
+      return new SimpleDateFormat(format).parse(timestamp);
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Error while parse suite timestamp" + e.getMessage());
       return null;
     }
   }

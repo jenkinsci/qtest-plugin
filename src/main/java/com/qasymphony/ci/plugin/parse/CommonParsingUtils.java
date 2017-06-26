@@ -69,7 +69,7 @@ public class CommonParsingUtils {
             AutomationTestResult testLog = new AutomationTestResult();
             testLog.setAutomationContent(automationContent);
             testLog.setExecutedStartDate(startDate);
-            testLog.setExecutedEndDate(computeEndTime(startTime, caseResult.getDuration()));
+            testLog.setExecutedEndDate(computeEndTime(startDate, caseResult.getDuration()));
             testLog.addTestStepLog(new AutomationTestStepLog(caseResult));
 
             if (caseResult.isFailed()) {
@@ -119,7 +119,7 @@ public class CommonParsingUtils {
             testLog = new AutomationTestResult();
             testLog.setAutomationContent(caseResult.getClassName());
             testLog.setExecutedStartDate(startDate);
-            testLog.setExecutedEndDate(computeEndTime(startTime, suite.getDuration()));
+            testLog.setExecutedEndDate(computeEndTime(startDate, suite.getDuration()));
             map.put(caseResult.getClassName(), testLog);
           }
 
