@@ -1,0 +1,67 @@
+.success-icon {
+    display: inline-block;
+    position: relative;
+    border: 5em solid currentColor;
+    border-radius: 50%;
+    font-size: 0.4px;
+    width: 50em;
+    height: 50em;
+    color: #8fcf8f;
+    transform: rotate(40deg);
+    margin-left: 5px;
+    top: 5px;
+    }
+    .success-icon:before,
+    .success-icon:after {
+    content: '';
+    background-color: currentColor;
+    position: absolute;
+    width: 5em;
+    border-radius: 3px;
+    }
+    .success-icon:before {
+    height: 33em;
+    left: 50%;
+    top: 50%;
+    margin-left: 2em;
+    margin-top: -18em;
+    }
+    .success-icon:after {
+    height: 15em;
+    transform: rotate(90deg);
+    top: 50%;
+    left: 50%;
+    margin-top: 5em;
+    margin-left: -6em;
+    }
+    .fail-icon {
+    display: inline-block;
+    position: relative;
+    border: 5em solid currentColor;
+    border-radius: 50%;
+    font-size: 0.4px;
+    width: 50em;
+    height: 50em;
+    margin-left: 5px;
+    top: 5px;
+    color: #e27d7a;
+    }
+    .fail-icon:before,
+    .fail-icon:after{
+    content: '';
+    width: 5em;
+    height: 34em;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -17em;
+    margin-left: -2em;
+    background-color: currentColor;
+    border-radius: 3px;
+    }
+    .fail-icon:before {
+    transform: rotate(45deg);
+    }
+    .fail-icon:after {
+    transform: rotate(-45deg);
+    }

@@ -3,11 +3,21 @@
 
   <style type="text/css">
     @import url(${resURL}/plugin/${pluginName}/css/selectize.default.css);
+    @import url(${resURL}/plugin/${pluginName}/css/icon.css);
     .qtest-retrieve-data {
-    margin: 0px !important;
+      margin: 0px !important;
     }
     td.setting-description {
-    font-size: 0.9em !important;
+      font-size: 0.9em !important;
+    }
+    .container-pid-input {
+      width: 15%;
+    }
+    .createNewTestRunsCheckbox {
+      top: 0 !important;
+    }
+    .container-link {
+      margin-left: 10px;
     }
   </style>
 
@@ -46,6 +56,8 @@
                  value="${instance.configuration.releaseId}"/>
       <f:textbox name="config.environmentId" field="environmentId"
                  value="${instance.configuration.environmentId}"/>
+      <f:textbox name="config.containerTypeId" field="containerTypeId"
+                 value="${instance.configuration.containerTypeId}"/>
 
       <f:textbox name="config.projectName" field="projectName"
                  value="${instance.configuration.projectName}"/>
@@ -53,6 +65,8 @@
                  value="${instance.configuration.releaseName}"/>
       <f:textbox name="config.environmentName" field="environmentName"
                  value="${instance.configuration.environmentName}"/>
+      <f:textbox name="config.containerTypeName" field="containerTypeName"
+                 value="${instance.configuration.containerTypeName}"/>
     </f:invisibleEntry>
     <!--**
       Reason why projectName1, releaseName1, environmentName1 use to bind for selectize
@@ -65,12 +79,36 @@
       <f:textbox name="config.projectName1" value="${instance.configuration.projectName}"/>
     </f:entry>
 
-    <f:entry title="${%label.release}" field="releaseName">
-      <f:textbox name="config.releaseName1"
-                 value="${instance.configuration.releaseName}"/>
-      <f:description>
-        <i>${%instruction.testLog}</i>
-      </f:description>
+    <f:entry field="releaseConfig">
+      <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="${instance.configuration.submitToReleaseOption}"
+                    title="${%label.releaseOption}" value="true">
+        <f:entry title="${%label.release}" field="releaseName">
+          <f:textbox name="config.releaseName1"
+                     value="${instance.configuration.releaseName}"/>
+          <f:description>
+            <i>${%instruction.testLog}</i>
+          </f:description>
+        </f:entry>
+      </f:radioBlock>
+    </f:entry>
+
+    <f:entry field="existingContainerConfig">
+      <f:radioBlock inline="true" name="config.submitToExistingContainerOption" checked="${!instance.configuration.submitToReleaseOption}"
+                    title="${%label.existingContainerOption}" value="false">
+        <f:entry title="${%label.selectedContainerType}" field="containerTypeName">
+          <f:textbox name="config.containerTypeName1" value="${instance.configuration.containerTypeName}"/>
+        </f:entry>
+        <f:entry title="${%label.selectedContainerPid}" field="containerPid">
+          <f:textbox name="config.containerPid1" value="${instance.configuration.containerPid}" clazz="container-pid-input"/>
+          <span class="success-icon"></span>
+          <span class="fail-icon"></span>
+          <span class="container-link"><a href="https://launch.qtest-dev.qas-labs.com" target="_blank">Release 8.9 OD</a></span>
+        </f:entry>
+        <f:entry field="checkedCreateNewTestRuns">
+          <f:checkbox name="config.checkedNewTestRuns1" checked="${instance.configuration.checkedNewTestRuns}" class="createNewTestRunsCheckbox"/>
+          <span>${%label.checkedNewTestRuns}</span>
+        </f:entry>
+      </f:radioBlock>
     </f:entry>
 
     <f:entry title="${%label.environment}" field="environmentName">

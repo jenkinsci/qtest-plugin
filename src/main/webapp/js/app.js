@@ -17,6 +17,8 @@ function bindSelectizeChange() {
     "input[name='config.releaseName']", "id", "name");
   qtest.bindSelectizeValue("input[name='config.environmentName1']", "input[name='config.environmentId']",
     "input[name='config.environmentName']", "value", "label");
+  qtest.bindSelectizeValue("input[name='config.containerTypeName1']", "input[name='config.containerTypeId']",
+    "input[name='config.containerTypeName']", "id", "name");
 }
 /*Hide unexpected help icon for fields, cause jenkins auto make help url of radio block inherit by our publish action help url*/
 function hideNoHelp() {
@@ -82,6 +84,25 @@ function bindEnvironment(envs) {
     });
 }
 
+function bindContainerType() {
+  var containerTypes = [
+    {
+      id: 1,
+      name: "Release"
+    },
+    {
+      id: 2,
+      name: "Test Cycle"
+    },
+    {
+      id: 3,
+      name: "Test Suite"
+    }
+  ];
+  qtest.initSelectize("input[name='config.containerTypeName1']", 'selectizeContainerType', containerTypes);
+  qtest.selectizeContainerType.setValue(containerTypes[0].id);
+}
+
 function loadProject() {
   clearProjectData();
   var btn = $j("#fetchProjectData")[0];
@@ -121,6 +142,7 @@ function loadProjectData() {
     if (data.setting && data.setting != "") {
       qtest.setting = data.setting;
     }
+    bindContainerType();
     loadRelease(data);
     loadEnvironment(data);
     qtest.hideLoading(btn);
