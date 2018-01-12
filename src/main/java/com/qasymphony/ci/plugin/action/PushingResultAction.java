@@ -399,10 +399,13 @@ public class PushingResultAction extends Notifier {
         res.put("setting", "");
         res.put("releases", "");
         res.put("environments", "");
+        res.put("testCycles", "");
+        res.put("testSuites", "");
         return res;
       }
-      final CountDownLatch countDownLatch = new CountDownLatch(3);
-      ExecutorService fixedPool = Executors.newFixedThreadPool(3);
+      final int threadCount = 5;
+      final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+      ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
       Callable<Object> caGetSetting = new Callable<Object>() {
         @Override
         public Object call() throws Exception {
@@ -432,6 +435,30 @@ public class PushingResultAction extends Notifier {
           }
         }
       };
+      Callable<Object> caGetTestCycles = new Callable<Object>() {
+        @Override
+        public Object call() throws Exception {
+          try {
+            Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
+            res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
+            return testCycles;
+          } finally {
+            countDownLatch.countDown();
+          }
+        }
+      };
+      Callable<Object> caGetTestSuites = new Callable<Object>() {
+      @Override
+      public Object call() throws Exception {
+        try {
+            Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
+            res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
+            return testSuites;
+        } finally {
+            countDownLatch.countDown();
+        }
+      }
+      };
       Callable<Object> caGetEnvs = new Callable<Object>() {
         @Override
         public Object call() throws Exception {
@@ -447,6 +474,67 @@ public class PushingResultAction extends Notifier {
       fixedPool.submit(caGetSetting);
       fixedPool.submit(caGetReleases);
       fixedPool.submit(caGetEnvs);
+      fixedPool.submit(caGetTestCycles);
+      fixedPool.submit(caGetTestSuites);
+
+      try {
+        countDownLatch.await();
+      } catch (InterruptedException e) {
+        LOG.log(Level.WARNING, e.getMessage());
+      } finally {
+        fixedPool.shutdownNow();
+        return res;
+      }
+    }
+
+    @JavaScriptMethod
+    public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
+      final JSONObject res = new JSONObject();
+      String token = null;
+      try {
+        token = OauthProvider.getAccessToken(qTestUrl, apiKey);
+      } catch (Exception e) {
+        LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
+      }
+      final String accessToken = token;
+
+      Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
+      if (null == project) {
+        //if project not found, we return empty data
+        res.put("testCycles", "");
+        res.put("testSuites", "");
+        return res;
+      }
+      final int threadCount = 2;
+      final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+      ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
+      Callable<Object> caGetTestCycles = new Callable<Object>() {
+        @Override
+        public Object call() throws Exception {
+          try {
+            Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, parentId, parentType);
+            res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
+            return testCycles;
+          } finally {
+            countDownLatch.countDown();
+          }
+        }
+      };
+      Callable<Object> caGetTestSuites = new Callable<Object>() {
+        @Override
+        public Object call() throws Exception {
+          try {
+            Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, parentId, parentType);
+            res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
+            return testSuites;
+          } finally {
+            countDownLatch.countDown();
+          }
+        }
+      };
+      fixedPool.submit(caGetTestCycles);
+      fixedPool.submit(caGetTestSuites);
+
       try {
         countDownLatch.await();
       } catch (InterruptedException e) {

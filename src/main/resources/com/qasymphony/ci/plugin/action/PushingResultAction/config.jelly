@@ -65,8 +65,6 @@
                  value="${instance.configuration.releaseName}"/>
       <f:textbox name="config.environmentName" field="environmentName"
                  value="${instance.configuration.environmentName}"/>
-      <f:textbox name="config.containerTypeName" field="containerTypeName"
-                 value="${instance.configuration.containerTypeName}"/>
     </f:invisibleEntry>
     <!--**
       Reason why projectName1, releaseName1, environmentName1 use to bind for selectize
@@ -80,7 +78,7 @@
     </f:entry>
 
     <f:entry field="releaseConfig">
-      <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="${instance.configuration.submitToReleaseOption}"
+      <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="true"
                     title="${%label.releaseOption}" value="true">
         <f:entry title="${%label.release}" field="releaseName">
           <f:textbox name="config.releaseName1"
@@ -90,23 +88,17 @@
           </f:description>
         </f:entry>
       </f:radioBlock>
-    </f:entry>
+      <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="false"
+                    title="${%label.existingContainerOption}" value="submitToContainer">
 
-    <f:entry field="existingContainerConfig">
-      <f:radioBlock inline="true" name="config.submitToExistingContainerOption" checked="${!instance.configuration.submitToReleaseOption}"
-                    title="${%label.existingContainerOption}" value="false">
-        <f:entry title="${%label.selectedContainerType}" field="containerTypeName">
-          <f:textbox name="config.containerTypeName1" value="${instance.configuration.containerTypeName}"/>
-        </f:entry>
-        <f:entry title="${%label.selectedContainerPid}" field="containerPid">
-          <f:textbox name="config.containerPid1" value="${instance.configuration.containerPid}" clazz="container-pid-input"/>
-          <span class="success-icon"></span>
-          <span class="fail-icon"></span>
-          <span class="container-link"><a href="https://launch.qtest-dev.qas-labs.com" target="_blank">Release 8.9 OD</a></span>
+        <f:entry field="containerTypeName">
+          <div id="containerTree">
+
+          </div>
         </f:entry>
         <f:entry field="checkedCreateNewTestRuns">
-          <f:checkbox name="config.checkedNewTestRuns1" checked="${instance.configuration.checkedNewTestRuns}" class="createNewTestRunsCheckbox"/>
-          <span>${%label.checkedNewTestRuns}</span>
+          <f:checkbox id="createNewTestRun" name="config.checkedNewTestRuns1" checked="${instance.configuration.checkedNewTestRuns}" class="createNewTestRunsCheckbox"/>
+          <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
         </f:entry>
       </f:radioBlock>
     </f:entry>

@@ -84,6 +84,16 @@ var qtest = (function ($j) {
           onSuccess(t.responseObject());
       }, this));
   };
+
+  module.getContainerChildren = function (parentId, parentType, onSuccess, onError) {
+    remoteAction.getContainerChildren(getUrl(), getAppKey(), this.getProjectId(), parentId, parentType,
+        $j.proxy(function(t) {
+            if (onSuccess){
+                onSuccess(t.responseObject());
+            }
+        }, this));
+    };
+
   return module;
 }($j));
 

@@ -362,4 +362,44 @@ public class ConfigService {
     return StringUtils.isEmpty(hmac) ? Constants.JENKINS_SERVER_ID_DEFAULT : hmac;
   }
 
+  public static Object getTestCycleChildren(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType) {
+    String url = String.format("%s/api/v3/projects/%s/test-cycles?expand=descendants", qTestUrl, projectId);
+    if (null != parentId) {
+        url += "&parentId=" + parentId;
+    }
+    if (null != parentType) {
+        url += "&parentType=" + parentType;
+    }
+    try {
+      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+        return null;
+      }
+      return responseEntity.getBody();
+    } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Cannot get test-cycles from: " + qTestUrl + "," + e.getMessage());
+      return null;
+    }
+  }
+
+    public static Object getTestSuiteChildren(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType) {
+        String url = String.format("%s/api/v3/projects/%s/test-suites?", qTestUrl, projectId);
+        if (null != parentId) {
+            url += "parentId=" + parentId;
+            if (null != parentType) {
+                url += "&parentType=" + parentType;
+            }
+        }
+        try {
+            ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
+            if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+                return null;
+            }
+            return responseEntity.getBody();
+        } catch (ClientRequestException e) {
+            LOG.log(Level.WARNING, "Cannot get test-suites from: " + qTestUrl + "," + e.getMessage());
+            return null;
+        }
+    }
+
 }

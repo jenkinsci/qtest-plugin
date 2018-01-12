@@ -5,9 +5,49 @@ $j(document).ready(function () {
     onLoadProject();
     bindSelectizeChange();
     hideNoHelp();
-  }, 1000)
+  }, 1000);
+  $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
+    //console.log(event);
+    var toggleSubItem = (jIndicatorItem, jSubContent) => {
+        jSubContent.slideToggle(500, function() {
+            var className =  jSubContent.is(":visible") ?  "expand-indicator": "collapse-indicator";
+            changeIndicator(jIndicatorItem, className);
+        });
+    }
+    try {
+
+        if (event.currentTarget) {
+            if (event.currentTarget.hasAttribute("requested")){
+                toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.next()));
+            } else {
+                changeIndicator($j(event.currentTarget), "loading-indicator");
+                var contentItem = event.currentTarget.parentElement.querySelector("div[class='content']");
+                var parentId = contentItem.getAttribute("qtest.id");
+                var parentType = contentItem.getAttribute("qtest.type");
+                qtest.getContainerChildren(parentId, parentType, function(data) {
+                    loadContainers($j(event.currentTarget.parentElement.next()), data);
+                    if (!data || 0 === (data.testSuites.length + data.testCycles.length)) {
+                        changeIndicator($j(event.currentTarget), "empty-indicator");
+                        return;
+                    }
+                    toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.next()));
+                });
+                event.currentTarget.setAttribute("requested", "true");
+            }
+        }
+
+
+    } catch (ex) {
+        console.error(ex);
+    }
+
+  });
 });
 
+function changeIndicator(jNode, className) {
+    jNode.removeClass();
+    jNode.addClass(className);
+}
 function bindSelectizeChange() {
   qtest.bindSelectizeValue("input[name='config.projectName1']", "input[name='config.projectId']",
     "input[name='config.projectName']", "id", "name", function (item) {
@@ -17,8 +57,6 @@ function bindSelectizeChange() {
     "input[name='config.releaseName']", "id", "name");
   qtest.bindSelectizeValue("input[name='config.environmentName1']", "input[name='config.environmentId']",
     "input[name='config.environmentName']", "value", "label");
-  qtest.bindSelectizeValue("input[name='config.containerTypeName1']", "input[name='config.containerTypeId']",
-    "input[name='config.containerTypeName']", "id", "name");
 }
 /*Hide unexpected help icon for fields, cause jenkins auto make help url of radio block inherit by our publish action help url*/
 function hideNoHelp() {
@@ -58,6 +96,7 @@ function clearProjectData() {
   //clear release & environment
   bindRelease([]);
   bindEnvironment([]);
+  $j('#containerTree').empty();
 }
 function bindRelease(releases) {
   qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', releases,
@@ -82,25 +121,6 @@ function bindEnvironment(envs) {
       labelField: 'label',
       searchField: 'label'
     });
-}
-
-function bindContainerType() {
-  var containerTypes = [
-    {
-      id: 1,
-      name: "Release"
-    },
-    {
-      id: 2,
-      name: "Test Cycle"
-    },
-    {
-      id: 3,
-      name: "Test Suite"
-    }
-  ];
-  qtest.initSelectize("input[name='config.containerTypeName1']", 'selectizeContainerType', containerTypes);
-  qtest.selectizeContainerType.setValue(containerTypes[0].id);
 }
 
 function loadProject() {
@@ -142,9 +162,9 @@ function loadProjectData() {
     if (data.setting && data.setting != "") {
       qtest.setting = data.setting;
     }
-    bindContainerType();
     loadRelease(data);
     loadEnvironment(data);
+    loadContainers($j('#containerTree'), data);
     qtest.hideLoading(btn);
   }, function () {
     qtest.hideLoading(btn);
@@ -195,4 +215,65 @@ function loadEnvironment(data) {
   var selectedEnvironment = qtest.find(environments, "value", qtest.setting.environment_id);
   if (selectedEnvironment)
     qtest.selectizeEnvironment.setValue(selectedEnvironment.value);
+}
+
+function buildTree(jItem, data) {
+    if (data && data.length > 0) {
+        var ul = $j( "<ul></ul>" );
+        data.forEach(function(element) {
+            var li = $j( "<li></li>" );
+            var divItemContainer = $j("<div class='item-container'></div>");
+            var divMainItem = $j("<div class='main-item'></div>");
+            var divSubItems = $j("<div class='sub-item' style='display: none;'></div>");
+            divItemContainer.append(divMainItem);
+            divItemContainer.append(divSubItems);
+
+            if (element.type !== 'test-suite') {
+                divMainItem.append("<span class='collapse-indicator' style='align-self: center;'></span>");
+            } else {
+                divMainItem.append("<span class='empty-indicator'></span>");
+            }
+            var divLink = $j("<a target='_blank'></a>")
+            divLink.attr("href", element.web_url)
+            divMainItem.append(divLink);
+            var divContent = $j("<div class='content'></div>");
+            divContent.text(element.name);
+            divContent.attr("qtest.id", element.id);
+            divContent.attr("qtest.type", element.type);
+
+            divMainItem.append(divContent);
+
+//            var a = $j("<a></a>");
+//            a.attr("href", element.web_url);
+//            a.attr("target", "_blank");
+            ul.append(li.append(divItemContainer));
+        });
+        var mainDiv = $j("<div></div>");
+        mainDiv.append(ul);
+        jItem.append(mainDiv);
+    }
+
+}
+function loadContainers(jParentNode, data) {
+    var releases = data.releases || [];
+    var testCycles = data.testCycles || [];
+    var testSuites = data.testSuites || [];
+    releases.forEach(function (e) {
+        e.type = 'release';
+    });
+
+    testCycles.forEach(function (e) {
+        e.type = 'test-cycle';
+    });
+
+    testSuites.forEach(function (e) {
+        e.type = 'test-suite';
+    });
+
+    var items = releases;
+    items = items.concat(testCycles);
+    items = items.concat(testSuites);
+
+    buildTree(jParentNode, items);
+
 }
