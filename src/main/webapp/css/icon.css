@@ -51,18 +51,21 @@ div#containerTree div {
     width: 18px;
     height: 15px;
     background: url(../images/glyphicons-qtest.png) -596px -150px;
+    margin: 0 1px;
 }
 
 .test-suite-icon {
     width: 18px;
     height: 15px;
     background: url(../images/glyphicons-qtest.png) -578px -150px;
+    margin: 0 1px;
 }
 
 .test-cycle-icon {
     width: 18px;
     height: 15px;
     background: url(../images/glyphicons-qtest.png) -118px -180px;
+    margin: 0 1px;
 }
 
 .expand-indicator{
@@ -77,10 +80,12 @@ div#containerTree div {
 
 div#containerTree div.sub-item {
     height: fit-content;
+    margin-left: 15px;
 }
 
 div#containerTree div.main-item {
     display: flex;
+    padding: 5px;
 }
 div#containerTree div.content {
     margin-left: 2px;

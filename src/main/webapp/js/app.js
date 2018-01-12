@@ -24,6 +24,14 @@ $j(document).ready(function () {
         currentSelectedNode = contentItem;
     }
   });
+
+//  $j(document).on("dblclick", ".content", function(event) {
+//      var contentItem = event.currentTarget;
+//      if (contentItem) {
+//        var firstChild = contentItem.parentElement.firstElementChild;
+//        $j(firstChild).trigger("click");
+//      }
+//    });
   $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
     var toggleSubItem = function(jIndicatorItem, jSubContent) {
