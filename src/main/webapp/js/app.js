@@ -42,8 +42,7 @@ $j(document).ready(function () {
                 var nodeId = contentItem.getAttribute("qtest.id");
                 var nodeType = contentItem.getAttribute("qtest.type");
                 qtest.getContainerChildren(nodeId, nodeType, function(data) {
-                    loadContainers($j(event.currentTarget.parentElement.next()), data, nodeId);
-                    if (!data || 0 === (data.testSuites.length + data.testCycles.length)) {
+                    if (!loadContainers($j(event.currentTarget.parentElement.next()), data, nodeId)) {
                         changeIndicator($j(event.currentTarget), "empty-indicator");
                         return;
                     }
@@ -291,7 +290,7 @@ function loadContainers(jParentNode, data, qTestParentId) {
     var items = releases;
     items = items.concat(testCycles);
     items = items.concat(testSuites);
-
     buildTree(jParentNode, items, qTestParentId);
+    return items.length
 
 }

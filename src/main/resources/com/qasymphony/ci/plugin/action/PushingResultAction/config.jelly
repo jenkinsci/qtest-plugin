@@ -91,7 +91,7 @@
       <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="false"
                     title="${%label.existingContainerOption}" value="submitToContainer">
 
-        <f:entry field="containerTypeName" title="${%label.Container}">
+        <f:entry field="containerTypeName" title="${%label.container}">
           <div id="containerTree">
 
           </div>
