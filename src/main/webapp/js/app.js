@@ -1,4 +1,5 @@
 qtest.init();
+var currentSelectedNode = undefined;
 $j(document).ready(function () {
   setTimeout(function () {
     disableTextBox(true);
@@ -6,26 +7,42 @@ $j(document).ready(function () {
     bindSelectizeChange();
     hideNoHelp();
   }, 1000);
+  $j(document).on("click", ".content", function(event) {
+    var contentItem = event.currentTarget;
+    if (currentSelectedNode !== contentItem) {
+        $j(currentSelectedNode).removeAttr("selected");
+    }
+    var nodeId = contentItem.getAttribute("qtest.id");
+    var nodeType = contentItem.getAttribute("qtest.type");
+    if (nodeType === 'release' || nodeType === 'test-cycle') {
+        $j("#createNewTestRun").prop('disabled', false);
+    } else {
+        $j("#createNewTestRun").prop('disabled', true);
+    }
+    if (nodeId > 0 && nodeType) {
+        $j(contentItem).attr("selected", "true");
+        currentSelectedNode = contentItem;
+    }
+  });
   $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
-    var toggleSubItem = (jIndicatorItem, jSubContent) => {
+    var toggleSubItem = function(jIndicatorItem, jSubContent) {
         jSubContent.slideToggle(500, function() {
             var className =  jSubContent.is(":visible") ?  "expand-indicator": "collapse-indicator";
             changeIndicator(jIndicatorItem, className);
         });
-    }
+    };
     try {
-
         if (event.currentTarget) {
             if (event.currentTarget.hasAttribute("requested")){
                 toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.next()));
             } else {
                 changeIndicator($j(event.currentTarget), "loading-indicator");
                 var contentItem = event.currentTarget.parentElement.querySelector("div[class='content']");
-                var parentId = contentItem.getAttribute("qtest.id");
-                var parentType = contentItem.getAttribute("qtest.type");
-                qtest.getContainerChildren(parentId, parentType, function(data) {
-                    loadContainers($j(event.currentTarget.parentElement.next()), data);
+                var nodeId = contentItem.getAttribute("qtest.id");
+                var nodeType = contentItem.getAttribute("qtest.type");
+                qtest.getContainerChildren(nodeId, nodeType, function(data) {
+                    loadContainers($j(event.currentTarget.parentElement.next()), data, nodeId);
                     if (!data || 0 === (data.testSuites.length + data.testCycles.length)) {
                         changeIndicator($j(event.currentTarget), "empty-indicator");
                         return;
@@ -35,12 +52,9 @@ $j(document).ready(function () {
                 event.currentTarget.setAttribute("requested", "true");
             }
         }
-
-
     } catch (ex) {
         console.error(ex);
     }
-
   });
 });
 
@@ -164,7 +178,7 @@ function loadProjectData() {
     }
     loadRelease(data);
     loadEnvironment(data);
-    loadContainers($j('#containerTree'), data);
+    loadContainers($j('#containerTree'), data, 0);
     qtest.hideLoading(btn);
   }, function () {
     qtest.hideLoading(btn);
@@ -217,7 +231,7 @@ function loadEnvironment(data) {
     qtest.selectizeEnvironment.setValue(selectedEnvironment.value);
 }
 
-function buildTree(jItem, data) {
+function buildTree(jItem, data, qTestParentId) {
     if (data && data.length > 0) {
         var ul = $j( "<ul></ul>" );
         data.forEach(function(element) {
@@ -233,19 +247,23 @@ function buildTree(jItem, data) {
             } else {
                 divMainItem.append("<span class='empty-indicator'></span>");
             }
-            var divLink = $j("<a target='_blank'></a>")
-            divLink.attr("href", element.web_url)
-            divMainItem.append(divLink);
+
+            var icon = $j("<span></span>")
+            icon.addClass(element.type + "-icon");
+            divMainItem.append(icon);
+
+//            var aLink = $j("<a target='_blank' style='padding:0px 3px;'></a>")
+//            aLink.attr("href", element.web_url)
+//            aLink.text(element.pid);
+//            divMainItem.append(aLink);
+
             var divContent = $j("<div class='content'></div>");
             divContent.text(element.name);
             divContent.attr("qtest.id", element.id);
             divContent.attr("qtest.type", element.type);
+            divContent.attr("qtest.parentid", qTestParentId);
 
             divMainItem.append(divContent);
-
-//            var a = $j("<a></a>");
-//            a.attr("href", element.web_url);
-//            a.attr("target", "_blank");
             ul.append(li.append(divItemContainer));
         });
         var mainDiv = $j("<div></div>");
@@ -254,7 +272,7 @@ function buildTree(jItem, data) {
     }
 
 }
-function loadContainers(jParentNode, data) {
+function loadContainers(jParentNode, data, qTestParentId) {
     var releases = data.releases || [];
     var testCycles = data.testCycles || [];
     var testSuites = data.testSuites || [];
@@ -274,6 +292,6 @@ function loadContainers(jParentNode, data) {
     items = items.concat(testCycles);
     items = items.concat(testSuites);
 
-    buildTree(jParentNode, items);
+    buildTree(jParentNode, items, qTestParentId);
 
 }

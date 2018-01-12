@@ -1,6 +1,6 @@
 #containerTree {
     width: 100%;
-    height: 111px;
+    height: 200px;
     border: 1px solid #ccc;
     background: #fff;
     overflow: auto;
@@ -38,7 +38,7 @@ div#containerTree div {
 .collapse-indicator{
    width: 16px;
        height: 16px;
-       background: url(../images/glyphicons-halflings.png) -454px -72px;
+       background: url(../images/glyphicons-qtest.png) -136px -180px;
 }
 
 .loading-indicator {
@@ -47,14 +47,32 @@ div#containerTree div {
     background: url(../images/spinner.gif) 0px 0px;
 }
 
+.release-icon {
+    width: 18px;
+    height: 15px;
+    background: url(../images/glyphicons-qtest.png) -596px -150px;
+}
+
+.test-suite-icon {
+    width: 18px;
+    height: 15px;
+    background: url(../images/glyphicons-qtest.png) -578px -150px;
+}
+
+.test-cycle-icon {
+    width: 18px;
+    height: 15px;
+    background: url(../images/glyphicons-qtest.png) -118px -180px;
+}
+
 .expand-indicator{
     width: 16px;
-        height: 16px;
-        background: url(../images/glyphicons-halflings.png) -311px -120px;
+    height: 16px;
+    background: url(../images/glyphicons-qtest.png) -154px -180px;
 }
 
 .empty-indicator {
-   width: 14px;
+   width: 16px;
 }
 
 div#containerTree div.sub-item {
@@ -64,4 +82,14 @@ div#containerTree div.sub-item {
 div#containerTree div.main-item {
     display: flex;
 }
+div#containerTree div.content {
+    margin-left: 2px;
+}
 
+div#containerTree div[selected] {
+    background-color: lightblue;
+}
+
+div#containerTree div[selected]:hover{
+    background: lightblue;
+}
