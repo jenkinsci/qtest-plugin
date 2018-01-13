@@ -26,6 +26,9 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private long moduleId;
   private String jenkinsServerUrl;
   private String jenkinsProjectName;
+
+  private boolean submitToContainer;
+  private boolean createNewTestRunsEveryBuild;
   /**
    * Read from testResult action from jenkins
    */
@@ -34,13 +37,15 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private Boolean eachMethodAsTestCase;
 
   public static Configuration newInstance() {
-    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "", 0, 0, false, "");
+    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
+            0, 0, false, "", false, false);
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
-                       String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern) {
+                       String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
+                       Boolean submitToContainer, Boolean createNewTestRunsEveryBuild) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -54,6 +59,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.id = id;
     this.readFromJenkins = readFromJenkins;
     this.resultPattern = resultPattern;
+    this.submitToContainer = submitToContainer;
+    this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
   }
 
   public Long getId() {
@@ -189,6 +196,24 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public Configuration setResultPattern(String resultPattern) {
     this.resultPattern = resultPattern;
+    return this;
+  }
+
+  public boolean isSubmitToContainer() {
+    return submitToContainer;
+  }
+
+  public Configuration setSubmitToContainer(boolean submitToContainer) {
+    this.submitToContainer = submitToContainer;
+    return this;
+  }
+
+  public boolean isCreateNewTestRunsEveryBuild() {
+    return createNewTestRunsEveryBuild;
+  }
+
+  public Configuration setCreateNewTestRunsEveryBuild(boolean createNewTestRunsEveryBuild) {
+    this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
     return this;
   }
 
