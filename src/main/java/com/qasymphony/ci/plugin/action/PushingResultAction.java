@@ -293,7 +293,7 @@ public class PushingResultAction extends Notifier {
       configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
       configuration.setSubmitToContainer(formData.getBoolean("submitToContainer"));
-      configuration.setCreateNewTestRunsEveryBuild(formData.getBoolean("createNewTestRunsEveryBuild"));
+      configuration.setCreateNewTestSuiteEveryBuild(formData.getBoolean("createNewTestSuiteEveryBuild"));
       configuration.setContainerId(formData.getLong("containerId"));
       configuration.setContainerType(formData.getString("containerType"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));

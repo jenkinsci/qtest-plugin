@@ -28,7 +28,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private String jenkinsProjectName;
 
   private boolean submitToContainer;
-  private boolean createNewTestRunsEveryBuild;
+  private boolean createNewTestSuiteEveryBuild;
   private long containerId;
   private String containerType;
   /**
@@ -47,7 +47,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, Boolean createNewTestRunsEveryBuild, long containerId, String containerType) {
+                       Boolean submitToContainer, Boolean createNewTestSuiteEveryBuild, long containerId, String containerType) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -62,7 +62,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.readFromJenkins = readFromJenkins;
     this.resultPattern = resultPattern;
     this.submitToContainer = submitToContainer;
-    this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
+    this.createNewTestSuiteEveryBuild = createNewTestSuiteEveryBuild;
     this.containerId = containerId;
     this.containerType = containerType;
   }
@@ -203,7 +203,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public boolean isSubmitToContainer() {
+  public boolean getSubmitToContainer() {
     return submitToContainer;
   }
 
@@ -212,12 +212,12 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public boolean isCreateNewTestRunsEveryBuild() {
-    return createNewTestRunsEveryBuild;
+  public boolean getCreateNewTestSuiteEveryBuild() {
+    return createNewTestSuiteEveryBuild;
   }
 
-  public Configuration setCreateNewTestRunsEveryBuild(boolean createNewTestRunsEveryBuild) {
-    this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
+  public Configuration setCreateNewTestSuiteEveryBuild(boolean createNewTestSuiteEveryBuild) {
+    this.createNewTestSuiteEveryBuild = createNewTestSuiteEveryBuild;
     return this;
   }
 

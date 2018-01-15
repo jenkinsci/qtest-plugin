@@ -36,6 +36,9 @@ public class Setting {
   @JsonProperty("module_id")
   private Long moduleId;
 
+  @JsonProperty("container")
+  private Container container;
+
   @JsonProperty("environment_id")
   private Long environmentId;
 
@@ -112,6 +115,14 @@ public class Setting {
   public Setting setModuleId(Long moduleId) {
     this.moduleId = moduleId;
     return this;
+  }
+
+  public Container getContainer() {
+    return container;
+  }
+
+  public void setContainer(Container container) {
+    this.container = container;
   }
 
   public Long getEnvironmentId() {

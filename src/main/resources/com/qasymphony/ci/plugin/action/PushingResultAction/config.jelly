@@ -13,7 +13,7 @@
     .container-pid-input {
       width: 15%;
     }
-    .createNewTestRunsCheckbox {
+    .createNewTestSuiteCheckbox {
       top: 0 !important;
     }
     .container-link {
@@ -99,8 +99,8 @@
           </div>
         </f:entry>
         <f:entry field="checkedCreateNewTestRuns">
-          <f:checkbox id="createNewTestRun" name="config.createNewTestRunsEveryBuild" checked="${instance.configuration.createNewTestRunsEveryBuild}"
-                      class="createNewTestRunsCheckbox" value="true"/>
+          <f:checkbox id="createNewTestRun" name="config.createNewTestSuiteEveryBuild" checked="${instance.configuration.createNewTestSuiteEveryBuild}"
+                      class="createNewTestSuiteCheckbox" value="true"/>
           <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
         </f:entry>
       </f:radioBlock>
