@@ -29,6 +29,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   private boolean submitToContainer;
   private boolean createNewTestRunsEveryBuild;
+  private long containerId;
+  private String containerType;
   /**
    * Read from testResult action from jenkins
    */
@@ -38,14 +40,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public static Configuration newInstance() {
     return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
-            0, 0, false, "", false, false);
+            0, 0, false, "", false, false, 0, "");
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, Boolean createNewTestRunsEveryBuild) {
+                       Boolean submitToContainer, Boolean createNewTestRunsEveryBuild, long containerId, String containerType) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -61,6 +63,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.resultPattern = resultPattern;
     this.submitToContainer = submitToContainer;
     this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
+    this.containerId = containerId;
+    this.containerType = containerType;
   }
 
   public Long getId() {
@@ -217,26 +221,42 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
+  public long getContainerId() {
+    return containerId;
+  }
+
+  public void setContainerId(long containerId) {
+    this.containerId = containerId;
+  }
+
+  public String getContainerType() {
+    return containerType;
+  }
+
+  public void setContainerType(String containerType) {
+    this.containerType = containerType;
+  }
+
   @Override
   public String toString() {
     return "Configuration{" +
-      "id=" + id +
-      ", url='" + url + '\'' +
-      ", appSecretKey='" + appSecretKey + '\'' +
-      ", projectId=" + projectId +
-      ", projectName='" + projectName + '\'' +
-      ", releaseId=" + releaseId +
-      ", releaseName='" + releaseName + '\'' +
-      ", environmentId=" + environmentId +
-      ", environmentName='" + environmentName + '\'' +
-      ", testSuiteId=" + testSuiteId +
-      ", moduleId=" + moduleId +
-      ", jenkinsServerUrl='" + jenkinsServerUrl + '\'' +
-      ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
-      ", readFromJenkins=" + readFromJenkins +
-      ", resultPattern='" + resultPattern + '\'' +
-      ", eachMethodAsTestCase='" + eachMethodAsTestCase + '\'' +
-      '}';
+            "id=" + id +
+            ", url='" + url + '\'' +
+            ", appSecretKey='" + appSecretKey + '\'' +
+            ", projectId=" + projectId +
+            ", projectName='" + projectName + '\'' +
+            ", releaseId=" + releaseId +
+            ", releaseName='" + releaseName + '\'' +
+            ", environmentId=" + environmentId +
+            ", environmentName='" + environmentName + '\'' +
+            ", testSuiteId=" + testSuiteId +
+            ", moduleId=" + moduleId +
+            ", jenkinsServerUrl='" + jenkinsServerUrl + '\'' +
+            ", jenkinsProjectName='" + jenkinsProjectName + '\'' +
+            ", readFromJenkins=" + readFromJenkins +
+            ", resultPattern='" + resultPattern + '\'' +
+            ", eachMethodAsTestCase='" + eachMethodAsTestCase + '\'' +
+            '}';
   }
 
   /**
@@ -244,14 +264,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    */
   public Setting toSetting() {
     return new Setting()
-      .setId(this.id)
-      .setJenkinsServer(this.jenkinsServerUrl)
-      .setJenkinsProjectName(this.jenkinsProjectName)
-      .setProjectId(this.projectId)
-      .setReleaseId(this.releaseId)
-      .setModuleId(this.moduleId)
-      .setEnvironmentId(this.environmentId)
-      .setTestSuiteId(this.testSuiteId);
+            .setId(this.id)
+            .setJenkinsServer(this.jenkinsServerUrl)
+            .setJenkinsProjectName(this.jenkinsProjectName)
+            .setProjectId(this.projectId)
+            .setReleaseId(this.releaseId)
+            .setModuleId(this.moduleId)
+            .setEnvironmentId(this.environmentId)
+            .setTestSuiteId(this.testSuiteId);
   }
 
   @Extension

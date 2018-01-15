@@ -14,6 +14,12 @@ $j(document).ready(function () {
     }
     var nodeId = contentItem.getAttribute("qtest.id");
     var nodeType = contentItem.getAttribute("qtest.type");
+
+    var containerIdField = $j("input[name='config.containerId']");
+    containerIdField.val(nodeId ? nodeId : null);
+    var containerTypeField = $j("input[name='config.containerType']");
+    containerTypeField.val(nodeType ? nodeType : null);
+
     if (nodeType === 'release' || nodeType === 'test-cycle') {
         $j("#createNewTestRun").prop('disabled', false);
     } else {

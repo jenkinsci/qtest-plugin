@@ -56,8 +56,10 @@
                  value="${instance.configuration.releaseId}"/>
       <f:textbox name="config.environmentId" field="environmentId"
                  value="${instance.configuration.environmentId}"/>
-      <f:textbox name="config.containerTypeId" field="containerTypeId"
-                 value="${instance.configuration.containerTypeId}"/>
+      <f:textbox name="config.containerId" field="containerId"
+                 value="${instance.configuration.containerId}"/>
+      <f:textbox name="config.containerType" field="containerType"
+                 value="${instance.configuration.containerType}"/>
 
       <f:textbox name="config.projectName" field="projectName"
                  value="${instance.configuration.projectName}"/>
