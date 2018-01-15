@@ -20,24 +20,27 @@ public class Container {
     return id;
   }
 
-  public void setId(Long id) {
+  public Container setId(Long id) {
     this.id = id;
+    return this;
   }
 
   public String getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public Container setType(String type) {
     this.type = type;
+    return this;
   }
 
   public Boolean getCreateNewTestSuiteEveryBuild() {
     return createNewTestSuiteEveryBuild;
   }
 
-  public void setCreateNewTestSuiteEveryBuild(Boolean createNewTestSuiteEveryBuild) {
+  public Container setCreateNewTestSuiteEveryBuild(Boolean createNewTestSuiteEveryBuild) {
     this.createNewTestSuiteEveryBuild = createNewTestSuiteEveryBuild;
+    return this;
   }
 
 }

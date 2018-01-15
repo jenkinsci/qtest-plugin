@@ -1,5 +1,6 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.qasymphony.ci.plugin.model.qtest.Container;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
@@ -247,6 +248,9 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
             ", projectName='" + projectName + '\'' +
             ", releaseId=" + releaseId +
             ", releaseName='" + releaseName + '\'' +
+            ", containerId=" + containerId +
+            ", containerType='" + containerType + '\'' +
+            ", createNewTestSuiteEveryBuild='" + createNewTestSuiteEveryBuild +
             ", environmentId=" + environmentId +
             ", environmentName='" + environmentName + '\'' +
             ", testSuiteId=" + testSuiteId +
@@ -263,6 +267,21 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    * @return {@link Setting}
    */
   public Setting toSetting() {
+    if (this.submitToContainer == true) {
+      Container container = new Container()
+              .setId(this.containerId)
+              .setType(this.containerType)
+              .setCreateNewTestSuiteEveryBuild(this.createNewTestSuiteEveryBuild);
+      return new Setting()
+              .setId(this.id)
+              .setJenkinsServer(this.jenkinsServerUrl)
+              .setJenkinsProjectName(this.jenkinsProjectName)
+              .setProjectId(this.projectId)
+              .setContainer(container)
+              .setModuleId(this.moduleId)
+              .setEnvironmentId(this.environmentId)
+              .setTestSuiteId(this.testSuiteId);
+    }
     return new Setting()
             .setId(this.id)
             .setJenkinsServer(this.jenkinsServerUrl)
