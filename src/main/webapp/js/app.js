@@ -7,7 +7,7 @@ $j(document).ready(function () {
     bindSelectizeChange();
     hideNoHelp();
   }, 1000);
-  $j(document).on("click", ".content", function(event) {
+  $j("#containerTree").on("click", ".content", function(event) {
     var contentItem = event.currentTarget;
     if (currentSelectedNode !== contentItem) {
         $j(currentSelectedNode).removeAttr("selected");
@@ -25,17 +25,17 @@ $j(document).ready(function () {
     }
   });
 
-//  $j(document).on("dblclick", ".content", function(event) {
+//  $j("#containerTree").on("dblclick", ".content", function(event) {
 //      var contentItem = event.currentTarget;
 //      if (contentItem) {
 //        var firstChild = contentItem.parentElement.firstElementChild;
 //        $j(firstChild).trigger("click");
 //      }
 //    });
-  $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
+  $j("#containerTree").on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
     var toggleSubItem = function(jIndicatorItem, jSubContent) {
-        jSubContent.slideToggle(500, function() {
+        jSubContent.slideToggle(300, function() {
             var className =  jSubContent.is(":visible") ?  "expand-indicator": "collapse-indicator";
             changeIndicator(jIndicatorItem, className);
         });
