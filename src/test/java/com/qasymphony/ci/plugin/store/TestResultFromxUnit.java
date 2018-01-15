@@ -127,7 +127,8 @@ public class TestResultFromxUnit extends TestAbstracts {
     Long ciId = 1L;
     Long qTestProjectId = 1L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "");
+      releaseId, "releaseName", 0L, "environment", 0L, 0L,
+            false, "", false, false);
 
     configuration.setResultPattern("*.xml");
 

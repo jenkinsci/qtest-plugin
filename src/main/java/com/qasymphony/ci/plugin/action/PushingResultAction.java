@@ -292,6 +292,8 @@ public class PushingResultAction extends Notifier {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
       configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
+      configuration.setSubmitToContainer(formData.getBoolean("submitToContainer"));
+      configuration.setCreateNewTestRunsEveryBuild(formData.getBoolean("createNewTestRunsEveryBuild"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
       configuration = ConfigService.validateConfiguration(configuration, formData);

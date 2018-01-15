@@ -77,9 +77,9 @@
       <f:textbox name="config.projectName1" value="${instance.configuration.projectName}"/>
     </f:entry>
 
-    <f:entry field="releaseConfig">
-      <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="true"
-                    title="${%label.releaseOption}" value="true">
+    <f:entry field="optionConfig">
+      <f:radioBlock inline="true" name="config.submitToContainer" checked="${!instance.configuration.submitToContainer}"
+                    title="${%label.releaseOption}" value="false">
         <f:entry title="${%label.release}" field="releaseName">
           <f:textbox name="config.releaseName1"
                      value="${instance.configuration.releaseName}"/>
@@ -88,8 +88,8 @@
           </f:description>
         </f:entry>
       </f:radioBlock>
-      <f:radioBlock inline="true" name="config.submitToReleaseOption" checked="false"
-                    title="${%label.existingContainerOption}" value="submitToContainer">
+      <f:radioBlock inline="true" name="config.submitToContainer" checked="${instance.configuration.submitToContainer}"
+                    title="${%label.existingContainerOption}" value="true">
 
         <f:entry field="containerTypeName" title="${%label.container}">
           <div id="containerTree">
@@ -97,7 +97,8 @@
           </div>
         </f:entry>
         <f:entry field="checkedCreateNewTestRuns">
-          <f:checkbox id="createNewTestRun" name="config.checkedNewTestRuns1" checked="${instance.configuration.checkedNewTestRuns}" class="createNewTestRunsCheckbox"/>
+          <f:checkbox id="createNewTestRun" name="config.createNewTestRunsEveryBuild" checked="${instance.configuration.createNewTestRunsEveryBuild}"
+                      class="createNewTestRunsCheckbox" value="true"/>
           <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
         </f:entry>
       </f:radioBlock>
