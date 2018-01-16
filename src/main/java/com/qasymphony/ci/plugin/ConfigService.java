@@ -273,6 +273,7 @@ public class ConfigService {
     try {
       //get saved setting from qTest
       Setting setting = configuration.toSetting();
+      LOG.info("Save setting to qTest:" + JsonUtils.toJson(setting));
       setting.setServerId(getServerId(configuration.getJenkinsServerUrl()));
       Object savedObject = getConfiguration(setting, configuration.getUrl(), accessToken);
       Setting savedSetting = null == savedObject ? null : JsonUtils.fromJson(savedObject.toString(), Setting.class);

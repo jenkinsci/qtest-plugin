@@ -36,6 +36,9 @@ public class Setting {
   @JsonProperty("module_id")
   private Long moduleId;
 
+  @JsonProperty("container")
+  private Container container;
+
   @JsonProperty("environment_id")
   private Long environmentId;
 
@@ -114,6 +117,15 @@ public class Setting {
     return this;
   }
 
+  public Container getContainer() {
+    return container;
+  }
+
+  public Setting setContainer(Container container) {
+    this.container = container;
+    return this;
+  }
+
   public Long getEnvironmentId() {
     return environmentId;
   }
@@ -141,6 +153,13 @@ public class Setting {
     sb.append(", jenkinsProjectName='").append(jenkinsProjectName).append('\'');
     sb.append(", projectId=").append(projectId);
     sb.append(", releaseId=").append(releaseId);
+    if(container != null) {
+      sb.append(", Container{");
+      sb.append(", containerId=").append(container.getId());
+      sb.append(", containerType='").append(container.getType()).append('\'');
+      sb.append(", createNewTestSuiteEveryBuild='").append(container.getCreateNewTestSuiteEveryBuild()).append('\'');
+      sb.append('}');
+    }
     sb.append(", testSuiteId=").append(testSuiteId);
     sb.append(", moduleId=").append(moduleId);
     sb.append(", environmentId=").append(environmentId);

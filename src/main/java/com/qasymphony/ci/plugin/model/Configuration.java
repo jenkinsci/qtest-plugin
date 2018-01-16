@@ -1,10 +1,13 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.qasymphony.ci.plugin.model.qtest.Container;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -30,7 +33,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private String jenkinsProjectName;
 
   private boolean submitToContainer;
-  private boolean createNewTestRunsEveryBuild;
+  private String containerJSONSetting;
   /**
    * Read from testResult action from jenkins
    */
@@ -46,18 +49,18 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.containerJSONSetting = containerJSONSetting;
   }
 
-  private String containerJSONSetting;
+
 
   public static Configuration newInstance() {
     return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
-            0, 0, false, "", false, "",false);
+            0, 0, false, "", false, "{}");
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, String containerJSONSetting, Boolean createNewTestRunsEveryBuild) {
+                       Boolean submitToContainer, String containerJSONSetting) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -72,7 +75,6 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.readFromJenkins = readFromJenkins;
     this.resultPattern = resultPattern;
     this.submitToContainer = submitToContainer;
-    this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
     this.containerJSONSetting = containerJSONSetting;
   }
 
@@ -221,14 +223,20 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public boolean isCreateNewTestRunsEveryBuild() {
-    return createNewTestRunsEveryBuild;
+  public boolean isCreateNewTestSuiteEveryBuild() {
+    try {
+      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+      if (selectedContainer.has("daily_create_test_suite")) {
+        return selectedContainer.getBoolean("daily_create_test_suite");
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+
+    return false;
   }
 
-  public Configuration setCreateNewTestRunsEveryBuild(boolean createNewTestRunsEveryBuild) {
-    this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
-    return this;
-  }
 
   @Override
   public String toString() {
@@ -256,6 +264,33 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    * @return {@link Setting}
    */
   public Setting toSetting() {
+    long nodeId = -1;
+    String nodeType = "";
+    boolean createTestSuiteEveryBuildDate = false;
+    try {
+      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+      if (selectedContainer.has("daily_create_test_suite")) {
+        createTestSuiteEveryBuildDate = selectedContainer.getBoolean("daily_create_test_suite");
+      }
+
+      JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
+      if (0 < containerPath.size()) {
+        JSONObject container = containerPath.getJSONObject(containerPath.size() - 1);
+        if (null != container) {
+          nodeType = container.getString("nodeType");
+          nodeId = container.getLong("nodeId");
+        }
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+
+
+    Container container = new Container();
+    container.setId(nodeId);
+    container.setType(nodeType);
+    container.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
     return new Setting()
       .setId(this.id)
       .setJenkinsServer(this.jenkinsServerUrl)
@@ -264,15 +299,21 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       .setReleaseId(this.releaseId)
       .setModuleId(this.moduleId)
       .setEnvironmentId(this.environmentId)
-      .setTestSuiteId(this.testSuiteId);
+      .setTestSuiteId(this.testSuiteId)
+      .setContainer(container);
   }
 
   public  String getFakeContainerName() {
-    JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
-    JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-    if (selectedContainer.has("name")) {
-      return selectedContainer.getString("name");
+    try {
+      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+      if (selectedContainer.has("name")) {
+        return selectedContainer.getString("name");
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
     }
+
     return "";
 
   }

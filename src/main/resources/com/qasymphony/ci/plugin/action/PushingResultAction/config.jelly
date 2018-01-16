@@ -13,7 +13,7 @@
     .container-pid-input {
       width: 15%;
     }
-    .createNewTestRunsCheckbox {
+    .createNewTestSuiteCheckbox {
       top: 0 !important;
     }
     .container-link {
@@ -56,8 +56,10 @@
                  value="${instance.configuration.releaseId}"/>
       <f:textbox name="config.environmentId" field="environmentId"
                  value="${instance.configuration.environmentId}"/>
-      <f:textbox name="config.containerTypeId" field="containerTypeId"
-                 value="${instance.configuration.containerTypeId}"/>
+      <f:textbox name="config.containerId" field="containerId"
+                 value="${instance.configuration.containerId}"/>
+      <f:textbox name="config.containerType" field="containerType"
+                 value="${instance.configuration.containerType}"/>
 
       <f:textbox name="config.projectName" field="projectName"
                  value="${instance.configuration.projectName}"/>
@@ -96,11 +98,11 @@
         <f:entry field="containerTypeName" title="${%label.container}">
           <div id="containerTree"/>
 
-          <f:textbox name="fakeContainerName" value="${instance.configuration.fakeContainerName}" />
+          <f:textbox name="fakeContainerName" field="fakeContainerName" value="${instance.configuration.fakeContainerName}" />
         </f:entry>
         <f:entry field="checkedCreateNewTestRuns">
-          <f:checkbox id="createNewTestRun" name="config.createNewTestRunsEveryBuild" checked="${instance.configuration.createNewTestRunsEveryBuild}"
-                      class="createNewTestRunsCheckbox" value="true"/>
+          <f:checkbox id="createNewTestRun" name="config.createNewTestSuiteEveryBuild" checked="${instance.configuration.createNewTestSuiteEveryBuild}"
+                      class="createNewTestSuiteCheckbox" value="true"/>
           <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
         </f:entry>
       </f:radioBlock>

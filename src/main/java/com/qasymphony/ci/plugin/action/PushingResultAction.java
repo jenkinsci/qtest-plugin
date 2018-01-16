@@ -293,7 +293,6 @@ public class PushingResultAction extends Notifier {
       configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
       configuration.setSubmitToContainer(formData.getBoolean("submitToContainer"));
-      configuration.setCreateNewTestRunsEveryBuild(formData.getBoolean("createNewTestRunsEveryBuild"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
       configuration.setContainerJSONSetting(formData.getString("containerJSONSetting"));
@@ -360,6 +359,26 @@ public class PushingResultAction extends Notifier {
     public FormValidation doCheckResultPattern(@QueryParameter String value)
       throws IOException, ServletException {
       return FormValidation.ok();
+    }
+    public FormValidation doCheckFakeContainerName(@QueryParameter String value)
+      throws IOException, ServletException {
+//      if (!StringUtils.isBlank(value)) {
+//        try {
+//          JSONObject json = JSONObject.fromObject(value);
+//          JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+//          if (selectedContainer.has("name")) {
+//            if (!StringUtils.isBlank(selectedContainer.getString("name"))){
+//              return FormValidation.ok();
+//            }
+//          }
+//        } catch (Exception ex) {
+//          ex.printStackTrace();
+//        }
+//      }
+      if (!StringUtils.isBlank(value)) {
+        return FormValidation.ok();
+      }
+      return FormValidation.error(ResourceBundle.MSG_INVALID_CONTAINER);
     }
 
     /**

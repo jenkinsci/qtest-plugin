@@ -1,6 +1,12 @@
 qtest.init();
-var currentSelectedNode = undefined;
-
+var currentSelectedNodeId = -1;
+var currentJSONContainer = {
+        selectedContainer: {
+            name: "",
+            daily_create_test_suite: false
+        },
+        containerPath: []
+    };
 $j(document).ready(function () {
   setTimeout(function () {
     disableTextBox(true);
@@ -8,12 +14,14 @@ $j(document).ready(function () {
     onLoadProject();
     bindSelectizeChange();
     hideNoHelp();
+    initContainerJSON();
   }, 1000);
   $j("#containerTree").on("click", ".content", function(event) {
-    var contentItem = event.currentTarget;
-    if (currentSelectedNode !== contentItem) {
-        $j(currentSelectedNode).removeAttr("selected");
+    var htmlPrevNode = document.querySelector("div[qtestid='" + currentSelectedNodeId + "']");
+    if (htmlPrevNode) {
+        $j(htmlPrevNode).removeAttr("selected");
     }
+    var contentItem = event.currentTarget;
     var nodeId = contentItem.getAttribute("qtestid");
     var nodeType = contentItem.getAttribute("qtesttype");
     if (nodeType === 'release' || nodeType === 'test-cycle') {
@@ -23,9 +31,9 @@ $j(document).ready(function () {
     }
     if (nodeId > 0 && nodeType) {
         $j(contentItem).attr("selected", "true");
-        currentSelectedNode = contentItem;
+        currentSelectedNodeId = nodeId;
     }
-    updateSelectedContainer(currentSelectedNode);
+    updateSelectedContainer(contentItem);
   });
 
 //  $j("#containerTree").on("dblclick", ".content", function(event) {
@@ -35,6 +43,11 @@ $j(document).ready(function () {
 //        $j(firstChild).trigger("click");
 //      }
 //    });
+
+  $j("#createNewTestRun").on("click", function (event) {
+    currentJSONContainer.selectedContainer.daily_create_test_suite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
+    document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
+  });
   $j("#containerTree").on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
     var toggleSubItem = function(jIndicatorItem, jSubContent) {
@@ -102,11 +115,13 @@ function disableTextBox(disable) {
     $j("input[name='config.releaseName1']").attr('readonly', 'readonly');
     $j("input[name='config.environmentName1']").attr('readonly', 'readonly');
     $j("input[name='fakeContainerName']").attr('readonly', 'readonly');
+    $j("#createNewTestRun").prop('disabled', true);
   } else {
     $j("input[name='config.projectName1']").removeAttr('readonly');
     $j("input[name='config.releaseName1']").removeAttr('readonly');
     $j("input[name='config.environmentName1']").removeAttr('readonly');
-    $j("input[name='fakeContainerName']").removeAttr('readonly');
+    //$j("input[name='fakeContainerName']").removeAttr('readonly');
+    $j("#createNewTestRun").prop('disabled', false);
   }
 }
 function toggleControls(visible) {
@@ -114,7 +129,7 @@ function toggleControls(visible) {
         $j("input[name='fakeContainerName']").show();
         $j("#containerTree").hide();
     } else {
-        $j("input[name='fakeContainerName']").hide()
+        $j("input[name='fakeContainerName']").hide();
         $j("#containerTree").show();
     }
 }
@@ -185,6 +200,14 @@ function loadProject() {
 
 function loadProjectData() {
   clearProjectData();
+  currentJSONContainer = {
+    selectedContainer: {
+        name: "",
+        daily_create_test_suite: false
+    },
+    containerPath: []
+  };
+ updateSelectedContainer(undefined);
   var btn = $j("#fetchProjectData")[0];
   if (qtest.getProjectId() <= 0) {
     qtest.hideLoading(btn);
@@ -200,7 +223,16 @@ function loadProjectData() {
     loadRelease(data);
     loadEnvironment(data);
     loadContainers($j('#containerTree'), data, 0);
-    qtest.hideLoading(btn);
+    loadToCurrentSelectedContainer(function() {
+        qtest.hideLoading(btn);
+        if (-1 === currentSelectedNodeId) {
+            try {
+                $j("#containerTree").find("div.content:first").trigger('click');
+            } catch (ex) {}
+
+        }
+    });
+
   }, function () {
     qtest.hideLoading(btn);
   })
@@ -317,38 +349,122 @@ function loadContainers(jParentNode, data, qTestParentId) {
 
 }
 
-function updateSelectedContainer(jSelectedItem) {
-    var nodeId = +(jSelectedItem.getAttribute("qtestid"));
-    var nodeType = jSelectedItem.getAttribute("qtesttype");
-    var parentId = +(jSelectedItem.getAttribute("qtestparentid"));
-    var itemName = jSelectedItem.textContent;
-    var obj = {
-        selectedContainer: {
-            name: itemName,
-            daily_create_test_suite: $j("#createNewTestRun").prop('disabled') ? false : $j("#createNewTestRun").prop( "checked" )
-        },
-        containerPath: [
-            {
-                nodeId: nodeId,
-                parentId: parentId,
-                nodeType: nodeType
+function updateSelectedContainer(htmlSelectedItem) {
+    var nodeId = undefined;
+    var nodeType = undefined;
+    var parentId = undefined;
+    var itemName = "";
+    initContainerJSON();
+    if (htmlSelectedItem) {
+        nodeId = +(htmlSelectedItem.getAttribute("qtestid"));
+        nodeType = htmlSelectedItem.getAttribute("qtesttype");
+        parentId = +(htmlSelectedItem.getAttribute("qtestparentid"));
+        itemName = htmlSelectedItem.textContent || "";
+        currentJSONContainer.selectedContainer.name = itemName;
+        currentJSONContainer.containerPath = [];
+        currentJSONContainer.containerPath.unshift({
+            nodeId: nodeId,
+            parentId: parentId,
+            nodeType: nodeType
+        });
+        while(parentId !== 0) {
+            var parent = document.querySelector("div[qtestid='" + parentId + "']");
+            if (parent) {
+                nodeId = +parent.getAttribute("qtestid");
+                nodeType = parent.getAttribute("qtesttype");
+                parentId = +parent.getAttribute("qtestparentid");
+                currentJSONContainer.containerPath.unshift({
+                    nodeId: nodeId,
+                    parentId: parentId,
+                    nodeType: nodeType
+                })
             }
-        ]
-    }
-
-    while(parentId !== 0) {
-        var parent = document.querySelector("div[qtestid='" + parentId + "']");
-        if (parent) {
-            nodeId = +parent.getAttribute("qtestid");
-            nodeType = parent.getAttribute("qtesttype");
-            parentId = +parent.getAttribute("qtestparentid");
-            obj.containerPath.unshift({
-                nodeId: nodeId,
-                parentId: parentId,
-                nodeType: nodeType
-            })
         }
     }
-    document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(obj);
-    //console.log(JSON.stringify(obj));
+
+    document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
+    $j("input[name='fakeContainerName']").val(itemName);
+    $j("input[name='fakeContainerName']").trigger('change');
+    //console.log(JSON.stringify(currentJSONContainer));
+}
+
+function loadToCurrentSelectedContainer(callback) {
+    currentJSONContainer.containerPath = currentJSONContainer.containerPath || [];
+    var len = currentJSONContainer.containerPath.length;
+    var simulateClick = function(itemList, index, cb) {
+        if (index === len - 1) {
+            cb(true);
+            return;
+        }
+        var element = itemList[index];
+        var htmlNode = document.querySelector("div[qtestid='" + element.nodeId + "']");
+        if (htmlNode) {
+            var firstChild = htmlNode.parentElement.firstElementChild;
+            if (firstChild) {
+                $j(firstChild).trigger("click");
+                // wait for sub-items completely loaded
+                var tryCount = 10;
+                var interval = setInterval(function() {
+                    if ($j(htmlNode.parentElement.next()).is(":visible")) {
+                        clearInterval(interval);
+                        simulateClick(itemList, ++index, cb);
+                    } else {
+                        tryCount --;
+                        if (0 >= tryCount) {
+                            clearInterval(interval);
+                            cb(false);
+                            return;
+                        }
+                        // check timeout
+                        // could not load sub-items
+
+                    }
+                }, 500);
+
+            }
+        } else {
+            cb(false);
+        }
+    }
+    if (0 < len) {
+        var htmlNode = undefined;
+        simulateClick(currentJSONContainer.containerPath, 0, function(ret) {
+            if (ret) {
+                htmlNode = document.querySelector("div[qtestid='" +currentJSONContainer.containerPath[len-1].nodeId + "']");
+                if (htmlNode) {
+                    $j(htmlNode).trigger("click");
+                }
+            }
+            // high lighted selected item if any;
+            updateSelectedContainer(htmlNode);
+            callback();
+        });
+    } else {
+        // high lighted selected item if any;
+        updateSelectedContainer(htmlNode);
+        callback();
+    }
+}
+
+function initContainerJSON() {
+    var jsonString = document.querySelector("input[name='config.containerJSONSetting']").value;
+        if (jsonString && jsonString.length > 0) {
+            var temp = undefined;
+            try {
+                temp = JSON.parse(jsonString);
+                if (0 < Object.keys(temp).length) {
+                    temp.containerPath = JSON.parse(temp.containerPath || "[]");
+                } else {
+                    temp = undefined;
+                }
+
+            } catch (ex) {
+                error.log(ex);
+            }
+            if (temp) {
+                currentJSONContainer = temp;
+            }
+            temp = undefined;
+     }
+
 }
