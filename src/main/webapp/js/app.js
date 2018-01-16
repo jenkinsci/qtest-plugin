@@ -1,8 +1,10 @@
 qtest.init();
 var currentSelectedNode = undefined;
+
 $j(document).ready(function () {
   setTimeout(function () {
     disableTextBox(true);
+    toggleControls(true);
     onLoadProject();
     bindSelectizeChange();
     hideNoHelp();
@@ -12,8 +14,8 @@ $j(document).ready(function () {
     if (currentSelectedNode !== contentItem) {
         $j(currentSelectedNode).removeAttr("selected");
     }
-    var nodeId = contentItem.getAttribute("qtest.id");
-    var nodeType = contentItem.getAttribute("qtest.type");
+    var nodeId = contentItem.getAttribute("qtestid");
+    var nodeType = contentItem.getAttribute("qtesttype");
     if (nodeType === 'release' || nodeType === 'test-cycle') {
         $j("#createNewTestRun").prop('disabled', false);
     } else {
@@ -23,6 +25,7 @@ $j(document).ready(function () {
         $j(contentItem).attr("selected", "true");
         currentSelectedNode = contentItem;
     }
+    updateSelectedContainer(currentSelectedNode);
   });
 
 //  $j("#containerTree").on("dblclick", ".content", function(event) {
@@ -47,8 +50,8 @@ $j(document).ready(function () {
             } else {
                 changeIndicator($j(event.currentTarget), "loading-indicator");
                 var contentItem = event.currentTarget.parentElement.querySelector("div[class='content']");
-                var nodeId = contentItem.getAttribute("qtest.id");
-                var nodeType = contentItem.getAttribute("qtest.type");
+                var nodeId = contentItem.getAttribute("qtestid");
+                var nodeType = contentItem.getAttribute("qtesttype");
                 qtest.getContainerChildren(nodeId, nodeType, function(data) {
                     if (!loadContainers($j(event.currentTarget.parentElement.next()), data, nodeId)) {
                         changeIndicator($j(event.currentTarget), "empty-indicator");
@@ -98,18 +101,29 @@ function disableTextBox(disable) {
     $j("input[name='config.projectName1']").attr('readonly', 'readonly');
     $j("input[name='config.releaseName1']").attr('readonly', 'readonly');
     $j("input[name='config.environmentName1']").attr('readonly', 'readonly');
+    $j("input[name='fakeContainerName']").attr('readonly', 'readonly');
   } else {
     $j("input[name='config.projectName1']").removeAttr('readonly');
     $j("input[name='config.releaseName1']").removeAttr('readonly');
     $j("input[name='config.environmentName1']").removeAttr('readonly');
+    $j("input[name='fakeContainerName']").removeAttr('readonly');
   }
 }
-
+function toggleControls(visible) {
+    if (visible) {
+        $j("input[name='fakeContainerName']").show();
+        $j("#containerTree").hide();
+    } else {
+        $j("input[name='fakeContainerName']").hide()
+        $j("#containerTree").show();
+    }
+}
 function onLoadProject() {
   $j("#fetchProjectData").on('click', function (e) {
     e.preventDefault();
     qtest.showLoading(this);
     disableTextBox(false);
+    toggleControls(false);
     loadProject();
   });
 }
@@ -266,9 +280,9 @@ function buildTree(jItem, data, qTestParentId) {
 
             var divContent = $j("<div class='content'></div>");
             divContent.text(element.name);
-            divContent.attr("qtest.id", element.id);
-            divContent.attr("qtest.type", element.type);
-            divContent.attr("qtest.parentid", qTestParentId);
+            divContent.attr("qtestid", element.id);
+            divContent.attr("qtesttype", element.type);
+            divContent.attr("qtestparentid", qTestParentId);
 
             divMainItem.append(divContent);
             ul.append(li.append(divItemContainer));
@@ -301,4 +315,40 @@ function loadContainers(jParentNode, data, qTestParentId) {
     buildTree(jParentNode, items, qTestParentId);
     return items.length
 
+}
+
+function updateSelectedContainer(jSelectedItem) {
+    var nodeId = +(jSelectedItem.getAttribute("qtestid"));
+    var nodeType = jSelectedItem.getAttribute("qtesttype");
+    var parentId = +(jSelectedItem.getAttribute("qtestparentid"));
+    var itemName = jSelectedItem.textContent;
+    var obj = {
+        selectedContainer: {
+            name: itemName,
+            daily_create_test_suite: $j("#createNewTestRun").prop('disabled') ? false : $j("#createNewTestRun").prop( "checked" )
+        },
+        containerPath: [
+            {
+                nodeId: nodeId,
+                parentId: parentId,
+                nodeType: nodeType
+            }
+        ]
+    }
+
+    while(parentId !== 0) {
+        var parent = document.querySelector("div[qtestid='" + parentId + "']");
+        if (parent) {
+            nodeId = +parent.getAttribute("qtestid");
+            nodeType = parent.getAttribute("qtesttype");
+            parentId = +parent.getAttribute("qtestparentid");
+            obj.containerPath.unshift({
+                nodeId: nodeId,
+                parentId: parentId,
+                nodeType: nodeType
+            })
+        }
+    }
+    document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(obj);
+    //console.log(JSON.stringify(obj));
 }

@@ -4,6 +4,8 @@ import com.qasymphony.ci.plugin.model.qtest.Setting;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import net.sf.json.JSON;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -36,16 +38,26 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private String resultPattern;
   private Boolean eachMethodAsTestCase;
 
+  public String getContainerJSONSetting() {
+    return containerJSONSetting;
+  }
+
+  public void setContainerJSONSetting(String containerJSONSetting) {
+    this.containerJSONSetting = containerJSONSetting;
+  }
+
+  private String containerJSONSetting;
+
   public static Configuration newInstance() {
     return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
-            0, 0, false, "", false, false);
+            0, 0, false, "", false, "",false);
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, Boolean createNewTestRunsEveryBuild) {
+                       Boolean submitToContainer, String containerJSONSetting, Boolean createNewTestRunsEveryBuild) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -61,6 +73,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.resultPattern = resultPattern;
     this.submitToContainer = submitToContainer;
     this.createNewTestRunsEveryBuild = createNewTestRunsEveryBuild;
+    this.containerJSONSetting = containerJSONSetting;
   }
 
   public Long getId() {
@@ -252,6 +265,16 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       .setModuleId(this.moduleId)
       .setEnvironmentId(this.environmentId)
       .setTestSuiteId(this.testSuiteId);
+  }
+
+  public  String getFakeContainerName() {
+    JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+    JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+    if (selectedContainer.has("name")) {
+      return selectedContainer.getString("name");
+    }
+    return "";
+
   }
 
   @Extension

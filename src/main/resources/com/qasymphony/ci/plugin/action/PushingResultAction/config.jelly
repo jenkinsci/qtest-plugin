@@ -65,6 +65,8 @@
                  value="${instance.configuration.releaseName}"/>
       <f:textbox name="config.environmentName" field="environmentName"
                  value="${instance.configuration.environmentName}"/>
+      <f:textbox name="config.containerJSONSetting" field="containerJSONSetting"
+                 value="${instance.configuration.containerJSONSetting}" default="{}" />
     </f:invisibleEntry>
     <!--**
       Reason why projectName1, releaseName1, environmentName1 use to bind for selectize
@@ -92,9 +94,9 @@
                     title="${%label.existingContainerOption}" value="true">
 
         <f:entry field="containerTypeName" title="${%label.container}">
-          <div id="containerTree">
+          <div id="containerTree"/>
 
-          </div>
+          <f:textbox name="fakeContainerName" value="${instance.configuration.fakeContainerName}" />
         </f:entry>
         <f:entry field="checkedCreateNewTestRuns">
           <f:checkbox id="createNewTestRun" name="config.createNewTestRunsEveryBuild" checked="${instance.configuration.createNewTestRunsEveryBuild}"
