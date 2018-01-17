@@ -22,7 +22,7 @@ $j(document).ready(function () {
         $j(htmlPrevNode).removeAttr("selected");
     }
     var contentItem = event.currentTarget;
-    var nodeId = contentItem.getAttribute("qtestid");
+    var nodeId = +contentItem.getAttribute("qtestid");
     var nodeType = contentItem.getAttribute("qtesttype");
     if (nodeType === 'release' || nodeType === 'test-cycle') {
         $j("#createNewTestRun").prop('disabled', false);
@@ -200,6 +200,7 @@ function loadProject() {
 
 function loadProjectData() {
   clearProjectData();
+  currentSelectedNodeId = -1;
   currentJSONContainer = {
     selectedContainer: {
         name: "",
@@ -403,7 +404,7 @@ function loadToCurrentSelectedContainer(callback) {
             if (firstChild) {
                 $j(firstChild).trigger("click");
                 // wait for sub-items completely loaded
-                var tryCount = 10;
+                var tryCount = 20;
                 var interval = setInterval(function() {
                     if ($j(htmlNode.parentElement.next()).is(":visible")) {
                         clearInterval(interval);
@@ -448,23 +449,22 @@ function loadToCurrentSelectedContainer(callback) {
 
 function initContainerJSON() {
     var jsonString = document.querySelector("input[name='config.containerJSONSetting']").value;
-        if (jsonString && jsonString.length > 0) {
-            var temp = undefined;
-            try {
-                temp = JSON.parse(jsonString);
-                if (0 < Object.keys(temp).length) {
-                    temp.containerPath = JSON.parse(temp.containerPath || "[]");
-                } else {
-                    temp = undefined;
-                }
-
-            } catch (ex) {
-                error.log(ex);
+    if (jsonString && jsonString.length > 0) {
+        var temp = undefined;
+        try {
+            temp = JSON.parse(jsonString);
+            if (0 < Object.keys(temp).length) {
+                temp.containerPath = JSON.parse(temp.containerPath || "[]");
+            } else {
+                temp = undefined;
             }
-            if (temp) {
-                currentJSONContainer = temp;
-            }
-            temp = undefined;
-     }
 
+        } catch (ex) {
+            error.log(ex);
+        }
+        if (temp) {
+            currentJSONContainer = temp;
+        }
+        temp = undefined;
+    }
 }
