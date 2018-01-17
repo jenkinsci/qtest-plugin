@@ -264,43 +264,47 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    * @return {@link Setting}
    */
   public Setting toSetting() {
-    long nodeId = -1;
-    String nodeType = "";
-    boolean createTestSuiteEveryBuildDate = false;
-    try {
-      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
-      JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-      if (selectedContainer.has("daily_create_test_suite")) {
-        createTestSuiteEveryBuildDate = selectedContainer.getBoolean("daily_create_test_suite");
-      }
+    Setting setting = new Setting()
+            .setId(this.id)
+            .setJenkinsServer(this.jenkinsServerUrl)
+            .setJenkinsProjectName(this.jenkinsProjectName)
+            .setProjectId(this.projectId)
+            .setModuleId(this.moduleId)
+            .setEnvironmentId(this.environmentId)
+            .setTestSuiteId(this.testSuiteId);
 
-      JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
-      if (0 < containerPath.size()) {
-        JSONObject container = containerPath.getJSONObject(containerPath.size() - 1);
-        if (null != container) {
-          nodeType = container.getString("nodeType");
-          nodeId = container.getLong("nodeId");
+    if (this.submitToContainer) {
+      long nodeId = -1;
+      String nodeType = "";
+      boolean createTestSuiteEveryBuildDate = false;
+      try {
+        JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+        JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+        if (selectedContainer.has("daily_create_test_suite")) {
+          createTestSuiteEveryBuildDate = selectedContainer.getBoolean("daily_create_test_suite");
         }
+
+        JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
+        if (0 < containerPath.size()) {
+          JSONObject jsonContainer = containerPath.getJSONObject(containerPath.size() - 1);
+          if (null != jsonContainer) {
+            nodeType = jsonContainer.getString("nodeType");
+            nodeId = jsonContainer.getLong("nodeId");
+          }
+        }
+      } catch (Exception ex) {
+        ex.printStackTrace();
       }
-    } catch (Exception ex) {
-      ex.printStackTrace();
+
+      Container container = new Container();
+      container.setId(nodeId);
+      container.setType(nodeType);
+      container.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
+      setting.setContainer(container);
+    } else {
+      setting.setReleaseId(this.releaseId);
     }
-
-
-    Container container = new Container();
-    container.setId(nodeId);
-    container.setType(nodeType);
-    container.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
-    return new Setting()
-      .setId(this.id)
-      .setJenkinsServer(this.jenkinsServerUrl)
-      .setJenkinsProjectName(this.jenkinsProjectName)
-      .setProjectId(this.projectId)
-      .setReleaseId(this.releaseId)
-      .setModuleId(this.moduleId)
-      .setEnvironmentId(this.environmentId)
-      .setTestSuiteId(this.testSuiteId)
-      .setContainer(container);
+    return setting;
   }
 
   public  String getFakeContainerName() {
