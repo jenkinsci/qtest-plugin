@@ -13,7 +13,7 @@
     .container-pid-input {
       width: 15%;
     }
-    .createNewTestSuiteCheckbox {
+    .checkbox-input {
       top: 0 !important;
     }
     .container-link {
@@ -56,10 +56,6 @@
                  value="${instance.configuration.releaseId}"/>
       <f:textbox name="config.environmentId" field="environmentId"
                  value="${instance.configuration.environmentId}"/>
-      <f:textbox name="config.containerId" field="containerId"
-                 value="${instance.configuration.containerId}"/>
-      <f:textbox name="config.containerType" field="containerType"
-                 value="${instance.configuration.containerType}"/>
 
       <f:textbox name="config.projectName" field="projectName"
                  value="${instance.configuration.projectName}"/>
@@ -102,7 +98,7 @@
         </f:entry>
         <f:entry field="checkedCreateNewTestRuns">
           <f:checkbox id="createNewTestRun" name="config.createNewTestSuiteEveryBuild" checked="${instance.configuration.createNewTestSuiteEveryBuild}"
-                      class="createNewTestSuiteCheckbox" value="true"/>
+                      class="checkbox-input" value="true"/>
           <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
         </f:entry>
       </f:radioBlock>
@@ -115,8 +111,14 @@
         <i>${%env.inactive}</i>
       </span>
     </f:entry>
-    
-    <f:entry field="jenkinsProjectName">
+
+    <f:block>
+      <f:checkbox  id="overwriteExistingTestSteps" name="config.overwriteExistingTestSteps" checked="${instance.configuration.overwriteExistingTestSteps}"
+                      class="checkbox-input" value="true"/>
+      <label for="overwriteExistingTestSteps">${%label.overwriteExistingTestSteps}</label>
+    </f:block>
+
+      <f:entry field="jenkinsProjectName">
       <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}"
                     title="${%label.autoScan}" value="true">
         <f:description>

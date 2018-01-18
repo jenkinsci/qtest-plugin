@@ -34,6 +34,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   private boolean submitToContainer;
   private String containerJSONSetting;
+  private boolean overwriteExistingTestSteps;
   /**
    * Read from testResult action from jenkins
    */
@@ -53,14 +54,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public static Configuration newInstance() {
     return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
-            0, 0, false, "", false, "{}");
+            0, 0, false, "", false, "{}", false);
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, String containerJSONSetting) {
+                       Boolean submitToContainer, String containerJSONSetting, Boolean overwriteExistingTestSteps) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -76,6 +77,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.resultPattern = resultPattern;
     this.submitToContainer = submitToContainer;
     this.containerJSONSetting = containerJSONSetting;
+    this.overwriteExistingTestSteps = overwriteExistingTestSteps;
   }
 
   public Long getId() {
@@ -223,6 +225,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
+  public boolean isOverwriteExistingTestSteps() {
+    return overwriteExistingTestSteps;
+  }
+
+  public void setOverwriteExistingTestSteps(boolean overwriteExistingTestSteps) {
+    this.overwriteExistingTestSteps = overwriteExistingTestSteps;
+  }
+
   public boolean isCreateNewTestSuiteEveryBuild() {
     try {
       JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
@@ -271,6 +281,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
             .setProjectId(this.projectId)
             .setModuleId(this.moduleId)
             .setEnvironmentId(this.environmentId)
+            .setOverwriteExistingTestSteps(this.overwriteExistingTestSteps)
             .setTestSuiteId(this.testSuiteId);
 
     if (this.submitToContainer) {

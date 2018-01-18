@@ -45,6 +45,9 @@ public class Setting {
   @JsonProperty("ciid")
   private String serverId;
 
+  @JsonProperty("overwrite_existing_test_steps")
+  private Boolean overwriteExistingTestSteps;
+
   public String getCiType() {
     return ciType;
   }
@@ -144,6 +147,15 @@ public class Setting {
     return this;
   }
 
+  public Boolean getOverwriteExistingTestSteps() {
+    return overwriteExistingTestSteps;
+  }
+
+  public Setting setOverwriteExistingTestSteps(Boolean overwriteExistingTestSteps) {
+    this.overwriteExistingTestSteps = overwriteExistingTestSteps;
+    return this;
+  }
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("Setting{");
@@ -163,6 +175,7 @@ public class Setting {
     sb.append(", testSuiteId=").append(testSuiteId);
     sb.append(", moduleId=").append(moduleId);
     sb.append(", environmentId=").append(environmentId);
+    sb.append(", overwriteExistingTestSteps=").append(overwriteExistingTestSteps);
     sb.append(", serverId='").append(serverId).append('\'');
     sb.append('}');
     return sb.toString();
