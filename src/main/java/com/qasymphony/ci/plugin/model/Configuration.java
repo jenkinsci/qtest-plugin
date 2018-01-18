@@ -317,9 +317,19 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     } catch (Exception ex) {
       ex.printStackTrace();
     }
-
     return "";
+  }
 
+  public JSONObject getContainerJSONObject() {
+    try {
+      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
+      json.put("containerPath", containerPath);
+      return json;
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return null;
   }
 
   @Extension

@@ -383,24 +383,46 @@ public class ConfigService {
     }
   }
 
-    public static Object getTestSuiteChildren(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType) {
-        String url = String.format("%s/api/v3/projects/%s/test-suites?", qTestUrl, projectId);
-        if (null != parentId) {
-            url += "parentId=" + parentId;
-            if (null != parentType) {
-                url += "&parentType=" + parentType;
-            }
-        }
-        try {
-            ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
-            if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
-                return null;
-            }
-            return responseEntity.getBody();
-        } catch (ClientRequestException e) {
-            LOG.log(Level.WARNING, "Cannot get test-suites from: " + qTestUrl + "," + e.getMessage());
-            return null;
-        }
-    }
+  public static Object getTestSuiteChildren(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType) {
+      String url = String.format("%s/api/v3/projects/%s/test-suites?", qTestUrl, projectId);
+      if (null != parentId) {
+          url += "parentId=" + parentId;
+          if (null != parentType) {
+              url += "&parentType=" + parentType;
+          }
+      }
+      try {
+          ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
+          if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+              return null;
+          }
+          return responseEntity.getBody();
+      } catch (ClientRequestException e) {
+          LOG.log(Level.WARNING, "Cannot get test-suites from: " + qTestUrl + "," + e.getMessage());
+          return null;
+      }
+  }
 
+  public static Object createTestSuite(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType, String testSuiteName) {
+    String url = String.format("%s/api/v3/projects/%s/test-suites?", qTestUrl, projectId);
+    if (null != parentId) {
+      url += "parentId=" + parentId;
+      if (null != parentType) {
+        url += "&parentType=" + parentType;
+      }
+    }
+    JSONObject json = new JSONObject();
+    json.put("name", testSuiteName);
+
+    try {
+      ResponseEntity responseEntity = HttpClientUtils.post(url, OauthProvider.buildHeaders(accessToken, null), JsonUtils.toJson(json));
+      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+        return null;
+      }
+      return responseEntity.getBody();
+    } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Cannot create test-suites from: " + qTestUrl + "," + e.getMessage());
+      return null;
+    }
+  }
 }

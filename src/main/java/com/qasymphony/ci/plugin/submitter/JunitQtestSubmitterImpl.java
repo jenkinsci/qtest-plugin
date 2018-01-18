@@ -41,7 +41,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
         request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey()));
 
     ResponseEntity responseEntity = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
-      request.getTestResults(), request.getConfiguration(), OauthProvider.buildHeaders(accessToken, null));
+      request.getTestResults(), request.getConfiguration(), accessToken);
     AutomationTestResponse response = null;
     if (responseEntity.getStatusCode() == HttpStatus.SC_CREATED) {
       //receive task response

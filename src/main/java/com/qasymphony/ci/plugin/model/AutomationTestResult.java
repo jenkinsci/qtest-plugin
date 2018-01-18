@@ -11,6 +11,12 @@ import java.util.List;
  * @author anpham
  */
 public class AutomationTestResult {
+  @JsonProperty("build_number")
+  private String buildNumber;
+
+  @JsonProperty("build_url")
+  private String buildURL;
+
   @JsonProperty("exe_start_date")
   private Date executedStartDate;
   @JsonProperty("exe_end_date")
@@ -101,6 +107,22 @@ public class AutomationTestResult {
     attachments.add(attachment);
     return attachments;
   }
+  public String getBuildNumber() {
+    return buildNumber;
+  }
+
+  public void setBuildNumber(String buildNumber) {
+    this.buildNumber = buildNumber;
+  }
+
+  public String getBuildURL() {
+    return buildURL;
+  }
+
+  public void setBuildURL(String buildURL) {
+    this.buildURL = buildURL;
+  }
+
 
   /**
    * Add testLog and resolve status of testResult

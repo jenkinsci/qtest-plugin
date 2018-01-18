@@ -3,7 +3,7 @@ var currentSelectedNodeId = -1;
 var currentJSONContainer = {
         selectedContainer: {
             name: "",
-            daily_create_test_suite: false
+            daily_create_test_suite: true
         },
         containerPath: []
     };
@@ -204,7 +204,7 @@ function loadProjectData() {
   currentJSONContainer = {
     selectedContainer: {
         name: "",
-        daily_create_test_suite: false
+        daily_create_test_suite: true
     },
     containerPath: []
   };
