@@ -296,6 +296,7 @@ public class PushingResultAction extends Notifier {
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
       configuration.setContainerJSONSetting(formData.getString("containerJSONSetting"));
+      configuration.setOverwriteExistingTestSteps(formData.getBoolean("overwriteExistingTestSteps"));
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
       //if have url, we try to update configuration to qTest
