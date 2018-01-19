@@ -127,7 +127,17 @@ public class PushingResultAction extends Notifier {
     LoggerUtils.formatHR(logger);
     LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", configuration.getUrl(), configuration.getId());
     LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
-    LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
+    if (!configuration.isSubmitToContainer()) {
+      LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
+    } else {
+      JSONObject json = configuration.getContainerJSONObject();
+      JSONArray containerPath = json.getJSONArray("containerPath");
+
+      LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
+              json.getJSONObject("selectedContainer").getString("name"),
+              containerPath.getJSONObject(containerPath.size() - 1).getLong("nodeId"),
+              containerPath.getJSONObject(containerPath.size() - 1).getString("nodeType"));
+    }
     if (configuration.getEnvironmentId() > 0) {
       LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
     } else {
@@ -137,11 +147,17 @@ public class PushingResultAction extends Notifier {
   }
 
   private Boolean validateConfig(Configuration configuration) {
-    return configuration != null &&
-      !StringUtils.isEmpty(configuration.getUrl()) &&
-      !StringUtils.isEmpty(configuration.getAppSecretKey()) &&
-      configuration.getProjectId() > 0 &&
-      configuration.getReleaseId() > 0;
+    if (null == configuration
+            || StringUtils.isEmpty(configuration.getUrl())
+            || StringUtils.isEmpty(configuration.getAppSecretKey())
+            || 0 >= configuration.getProjectId()) {
+      return false;
+    }
+    if (!configuration.isSubmitToContainer()) {
+      return configuration.getReleaseId() > 0;
+    } else {
+      return null != configuration.getContainerJSONObject();
+    }
   }
 
   private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
