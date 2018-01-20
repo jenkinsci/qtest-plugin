@@ -1,5 +1,6 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hudson.tasks.junit.CaseResult;
 
@@ -26,6 +27,7 @@ public class AutomationTestResult {
   private String status;
   private String name;
   @JsonProperty("test_step_logs")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<AutomationTestStepLog> testLogs;
   private List<AutomationAttachment> attachments = new ArrayList<>();
   /**
@@ -131,9 +133,11 @@ public class AutomationTestResult {
    * @return {@link AutomationTestStepLog}
    * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */
-  public AutomationTestStepLog addTestStepLog(AutomationTestStepLog automationTestStepLog) {
+  public AutomationTestStepLog addTestStepLog(AutomationTestStepLog automationTestStepLog, Configuration configuration) {
     automationTestStepLog.setOrder(currentOrder++);
-    testLogs.add(automationTestStepLog);
+    if (configuration != null && configuration.isOverwriteExistingTestSteps() == true) {
+      testLogs.add(automationTestStepLog);
+    }
     String status = automationTestStepLog.getStatus();
     //regression the same as failed
     if (CaseResult.Status.FAILED.toString().equalsIgnoreCase(status) ||
