@@ -35,6 +35,9 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private boolean submitToContainer;
   private String containerJSONSetting;
   private boolean overwriteExistingTestSteps;
+
+
+  private long environmentParentId;
   /**
    * Read from testResult action from jenkins
    */
@@ -54,14 +57,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public static Configuration newInstance() {
     return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
-            0, 0, false, "", false, "{}", false);
+            0, 0, false, "", false, "{}", false, 0);
   }
 
   @DataBoundConstructor
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, String containerJSONSetting, Boolean overwriteExistingTestSteps) {
+                       Boolean submitToContainer, String containerJSONSetting, Boolean overwriteExistingTestSteps, long environmentParentId) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -78,6 +81,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.submitToContainer = submitToContainer;
     this.containerJSONSetting = containerJSONSetting;
     this.overwriteExistingTestSteps = overwriteExistingTestSteps;
+    this.environmentParentId = environmentParentId;
   }
 
   public Long getId() {
@@ -245,6 +249,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     }
 
     return false;
+  }
+
+  public long getEnvironmentParentId() {
+    return environmentParentId;
+  }
+
+  public void setEnvironmentParentId(long environmentParentId) {
+    this.environmentParentId = environmentParentId;
   }
 
 

@@ -92,7 +92,14 @@ public class AutomationTestService {
   }
 
   private static Long createNewTestSuite(Configuration configuration, String accessToken, Long parentId, String parentType, String testSuiteName) {
-    Object createResult = ConfigService.createTestSuite(configuration.getUrl(), accessToken, configuration.getProjectId(), parentId, parentType, testSuiteName);
+    Object createResult = ConfigService.createTestSuite(configuration.getUrl(),
+            accessToken,
+            configuration.getProjectId(),
+            parentId,
+            parentType,
+            testSuiteName,
+            configuration.getEnvironmentParentId(),
+            configuration.getEnvironmentId());
     JSONObject retObj = JSONObject.fromObject(createResult);
     return retObj.getLong("id");
   }
@@ -122,16 +129,7 @@ public class AutomationTestService {
     Date now = new Date();
     SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
     String testSuiteName = String.format("%s %s", configuration.getJenkinsProjectName(), ft.format(now));
-    if (!configuration.isSubmitToContainer()) {
-      // submit to release
-      // create/get testsuite under create configuration.getReleaseId()
-      Long foundTestSuiteId = findTestSuiteUnderContainerByName(configuration, accessToken, configuration.getReleaseId(), "release", testSuiteName);
-      if (-1L != foundTestSuiteId) {
-        return foundTestSuiteId;
-      }
-      // create new test suite
-      return createNewTestSuite(configuration, accessToken, configuration.getReleaseId(), "release", testSuiteName );
-    } else {
+
       JSONObject json = configuration.getContainerJSONObject();
       if (null == json) {
         return -1L;
@@ -162,7 +160,7 @@ public class AutomationTestService {
             return nodeId;
         }
       }
-    }
+
     return -1L;
   }
 }

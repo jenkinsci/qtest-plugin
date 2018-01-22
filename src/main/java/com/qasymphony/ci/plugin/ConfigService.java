@@ -403,7 +403,7 @@ public class ConfigService {
       }
   }
 
-  public static Object createTestSuite(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType, String testSuiteName) {
+  public static Object createTestSuite(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType, String testSuiteName, Long environmentParentId, Long environmentId) {
     String url = String.format("%s/api/v3/projects/%s/test-suites?", qTestUrl, projectId);
     if (null != parentId) {
       url += "parentId=" + parentId;
@@ -413,9 +413,15 @@ public class ConfigService {
     }
     JSONObject json = new JSONObject();
     json.put("name", testSuiteName);
+    if (0 < environmentId && 0 < environmentParentId) {
+      JSONArray array = JSONArray.fromObject(String.format("[{\"field_id\": %d, \"field_value\": %d}]", environmentParentId, environmentId ));
+      json.put("properties", array);
+
+    }
 
     try {
-      ResponseEntity responseEntity = HttpClientUtils.post(url, OauthProvider.buildHeaders(accessToken, null), JsonUtils.toJson(json));
+      String jsonData = JsonUtils.toJson(json);
+      ResponseEntity responseEntity = HttpClientUtils.post(url, OauthProvider.buildHeaders(accessToken, null), jsonData);
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         return null;
       }

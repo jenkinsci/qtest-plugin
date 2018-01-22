@@ -93,7 +93,9 @@ function bindSelectizeChange() {
   qtest.bindSelectizeValue("input[name='config.releaseName1']", "input[name='config.releaseId']",
     "input[name='config.releaseName']", "id", "name");
   qtest.bindSelectizeValue("input[name='config.environmentName1']", "input[name='config.environmentId']",
-    "input[name='config.environmentName']", "value", "label");
+    "input[name='config.environmentName']", "value", "label", function(item) {
+        $j("input[name='config.environmentParentId']").val(item.field_id);
+    });
 }
 /*Hide unexpected help icon for fields, cause jenkins auto make help url of radio block inherit by our publish action help url*/
 function hideNoHelp() {
@@ -267,6 +269,7 @@ function loadEnvironment(data) {
       $j.each(data.environments.allowed_values, function (index) {
         var item = data.environments.allowed_values[index];
         if (item.is_active) {
+          item.field_id = data.environments.id;
           environments.push(item);
         } else {
           hasInActiveValue = true;
