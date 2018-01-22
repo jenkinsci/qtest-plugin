@@ -70,7 +70,7 @@ public class CommonParsingUtils {
             testLog.setAutomationContent(automationContent);
             testLog.setExecutedStartDate(startDate);
             testLog.setExecutedEndDate(computeEndTime(startDate, caseResult.getDuration()));
-            testLog.addTestStepLog(new AutomationTestStepLog(caseResult));
+            testLog.addTestStepLog(new AutomationTestStepLog(caseResult), request.getConfiguration());
 
             if (caseResult.isFailed()) {
               try {
@@ -123,7 +123,7 @@ public class CommonParsingUtils {
             map.put(caseResult.getClassName(), testLog);
           }
 
-          testLog.addTestStepLog(new AutomationTestStepLog(caseResult));
+          testLog.addTestStepLog(new AutomationTestStepLog(caseResult), request.getConfiguration());
           if (caseResult.isFailed()) {
             testLog.addAttachment(new AutomationAttachment(caseResult));
           }
