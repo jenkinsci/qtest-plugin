@@ -22,7 +22,8 @@ import java.util.Map;
  * @author anpham
  */
 public class AutomationTestService {
-  private static final String AUTO_TEST_LOG_ENDPOINT = "%s/api/v3.1/projects/%s/test-runs/%s/auto-test-logs?type=automation";
+  private static final String AUTO_TEST_LOG_ENDPOINT_V3_1 = "%s/api/v3.1/projects/%s/test-runs/%s/auto-test-logs?type=automation";
+  private static final String AUTO_TEST_LOG_ENDPOINT_V3 = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
   private static final String API_SUBMIT_TASK_STATUS = "%s/api/v3/projects/queue-processing/%s";
 
   public static ResponseEntity push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, String accessToken)
@@ -30,41 +31,45 @@ public class AutomationTestService {
 
     if (testResults.size() <= 0)
       return null;
-    String fullURL = configuration.getJenkinsServerUrl();
-    if (!fullURL.endsWith("/")) {
-      fullURL += "/";
-    }
-    fullURL += buildPath;
-    for (int i = 0; i < testResults.size(); i++) {
-      AutomationTestResult result = testResults.get(i);
-      result.setBuildNumber(buildNumber);
-      result.setBuildURL(fullURL);
-    }
+    String url;
     AutomationTestResultWrapper wrapper = new AutomationTestResultWrapper();
-
     wrapper.setBuildNumber(buildNumber);
-    Long moduleId = configuration.getModuleId();
-    if (0 < moduleId) {
-      wrapper.setParent_module(moduleId);
-    }
     wrapper.setBuildPath(buildPath);
-    wrapper.setTest_logs(testResults);
 
-    Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
-    /**
-     * using {@link String#format(Locale, String, Object...)}  instead {@link java.text.MessageFormat#format(String, Object...)}
-     * to avoid unexpected formatted link. see: QTE-2798 for more details.
-     */
-    String url = String.format(AUTO_TEST_LOG_ENDPOINT, configuration.getUrl(), configuration.getProjectId(), 0);
-
-    ResponseEntity responseEntity = null;
-    try {
+    if (configuration.isSubmitToContainer()) {
+      String fullURL = configuration.getJenkinsServerUrl();
+      if (!fullURL.endsWith("/")) {
+        fullURL += "/";
+      }
+      fullURL += buildPath;
+      for (int i = 0; i < testResults.size(); i++) {
+        AutomationTestResult result = testResults.get(i);
+        result.setBuildNumber(buildNumber);
+        result.setBuildURL(fullURL);
+      }
+      Long moduleId = configuration.getModuleId();
+      if (0 < moduleId) {
+        wrapper.setParent_module(moduleId);
+      }
+      url = String.format(AUTO_TEST_LOG_ENDPOINT_V3_1, configuration.getUrl(), configuration.getProjectId(), 0);
       Long testSuiteId = prepareTestSuite(configuration, accessToken);
       if (-1 == testSuiteId) {
-        throw new SubmittedException("Could not find or create test suite to submit test logs");
+        throw new SubmittedException("Could not find or create test suite to submit test logs", -1);
       }
       wrapper.setTest_suite(testSuiteId);
+      wrapper.setTest_logs(testResults);
+    } else {
+      /**
+       * using {@link String#format(Locale, String, Object...)}  instead {@link java.text.MessageFormat#format(String, Object...)}
+       * to avoid unexpected formatted link. see: QTE-2798 for more details.
+       */
+      url = String.format(AUTO_TEST_LOG_ENDPOINT_V3, configuration.getUrl(), configuration.getProjectId(), 0, configuration.getId());
+      wrapper.setTestResults(testResults);
+    }
 
+    Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
+    ResponseEntity responseEntity = null;
+    try {
       String data = JsonUtils.toJson(wrapper);
       responseEntity = HttpClientUtils.post(url, headers, data);
     } catch (ClientRequestException e) {

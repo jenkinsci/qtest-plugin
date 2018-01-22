@@ -10,6 +10,7 @@ public class AutomationTestResultWrapper {
   private String buildNumber;
   private String buildPath;
 
+  // V3.1
   private Long test_suite;
 
   public Long getParent_module() {
@@ -48,6 +49,7 @@ public class AutomationTestResultWrapper {
   }
 
   private String execution_date;
+  //~V3.1
 
   public String getBuildNumber() {
     return buildNumber;
@@ -65,6 +67,15 @@ public class AutomationTestResultWrapper {
     this.buildPath = buildPath;
   }
 
+  //V3
+  private List<AutomationTestResult> testResults;
 
+  public List<AutomationTestResult> getTestResults() {
+    return testResults;
+  }
 
+  public void setTestResults(List<AutomationTestResult> testResults) {
+    this.testResults = testResults;
+  }
+  //~V3
 }
