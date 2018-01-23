@@ -40,15 +40,6 @@ public class AutomationTestResultWrapper {
     this.test_logs = test_logs;
   }
 
-  public String getExecution_date() {
-    return execution_date;
-  }
-
-  public void setExecution_date(String execution_date) {
-    this.execution_date = execution_date;
-  }
-
-  private String execution_date;
   //~V3.1
 
   public String getBuildNumber() {
