@@ -118,9 +118,10 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Long ciId = 1L;
     Long qTestProjectId = 3L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false);
-    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, headers);
+      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false, "{}" ,
+            false,
+            0);
+    AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, configuration.getAppSecretKey());
   }
 
   @Test public void testSubmitLog()
@@ -132,8 +133,24 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Long releaseId = 1L;
     Long ciId = 3L;
     Long qTestProjectId = 1L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false);
+    Configuration configuration = new Configuration(
+            ciId,
+            "https://localhost:7443",
+            apiKey,
+            qTestProjectId,
+            projectName,
+            releaseId,
+            "releaseName",
+            0L,
+            "environment",
+            0L,
+            0L,
+            false,
+            "",
+            false,
+            "{}" ,
+            false,
+            0);
     List<AutomationTestResult> results = new ArrayList<>();
     int total = 1000;
     for (int i = 0; i < total; i++) {
@@ -155,8 +172,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
       }
       automationTestResult.setTestLogs(testLogs);
     }
-    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
+    AutomationTestService.push(buildNumber, buildPath, results, configuration, configuration.getAppSecretKey());
   }
 
   @Test public void testSubmitLogWithAttachment()
@@ -169,7 +185,9 @@ public class JunitTestResultParserTests extends TestAbstracts {
     Long ciId = 3L;
     Long qTestProjectId = 1L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
-      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false);
+      releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false,"{}" ,
+            false,
+            0);
     List<AutomationTestResult> results = new ArrayList<>();
     long start = System.currentTimeMillis();
     int total = 1000;
@@ -203,8 +221,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setTestLogs(testLogs);
       automationTestResult.setAttachments(automationAttachments);
     }
-    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    AutomationTestService.push(buildNumber, buildPath, results, configuration, headers);
+    AutomationTestService.push(buildNumber, buildPath, results, configuration, configuration.getAppSecretKey());
     System.out.println("End submit in: " + LoggerUtils.elapsedTime(start));
   }
 }

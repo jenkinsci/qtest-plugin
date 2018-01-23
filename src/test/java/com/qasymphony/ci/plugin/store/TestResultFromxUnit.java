@@ -107,9 +107,8 @@ public class TestResultFromxUnit extends TestAbstracts {
     assertNotNull("Build is: ", build);
     String buildNumber = "1";
     String buildPath = "/jobs/TestResultFromxUnitProject/" + buildNumber;
-    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
     try {
-      AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
+      AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, configuration.getAppSecretKey());
     } catch (SubmittedException e) {
       e.printStackTrace();
     }
@@ -128,7 +127,7 @@ public class TestResultFromxUnit extends TestAbstracts {
     Long qTestProjectId = 1L;
     Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L,
-            false, "", false, false);
+            false, "", false,  "{}", false, 0);
 
     configuration.setResultPattern("*.xml");
 
