@@ -22,7 +22,7 @@ import java.util.Map;
  * @author anpham
  */
 public class AutomationTestService {
-  private static final String AUTO_TEST_LOG_ENDPOINT_V3_1 = "%s/api/v3.1/projects/%s/test-runs/%s/auto-test-logs?type=automation";
+  private static final String AUTO_TEST_LOG_ENDPOINT_V3_1 = "%s/api/v3.1/projects/%s/test-runs/%s/auto-test-logs?type=jenkins";
   private static final String AUTO_TEST_LOG_ENDPOINT_V3 = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
   private static final String API_SUBMIT_TASK_STATUS = "%s/api/v3/projects/queue-processing/%s";
 

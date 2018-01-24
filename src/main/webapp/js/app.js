@@ -16,7 +16,7 @@ $j(document).ready(function () {
     hideNoHelp();
     initContainerJSON();
   }, 1000);
-  $j("#containerTree").on("click", ".content", function(event) {
+  $j(document).on("click", ".content", function(event) {
     var htmlPrevNode = document.querySelector("div[qtestid='" + currentSelectedNodeId + "']");
     if (htmlPrevNode) {
         $j(htmlPrevNode).removeAttr("selected");
