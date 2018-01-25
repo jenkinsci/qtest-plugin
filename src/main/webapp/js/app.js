@@ -48,7 +48,7 @@ $j(document).ready(function () {
     currentJSONContainer.selectedContainer.daily_create_test_suite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
     document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
   });
-  $j("#containerTree").on("click", ".collapse-indicator, .expand-indicator", function(event) {
+  $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
     var toggleSubItem = function(jIndicatorItem, jSubContent) {
         jSubContent.slideToggle(300, function() {
