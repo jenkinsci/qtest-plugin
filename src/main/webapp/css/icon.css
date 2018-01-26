@@ -91,6 +91,10 @@ div#containerTree div.content {
     margin-left: 2px;
     margin-top: -1px;
     padding: 0px 3px;
+    white-space: nowrap;
+    width: 36em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 div#containerTree div[selected] {
