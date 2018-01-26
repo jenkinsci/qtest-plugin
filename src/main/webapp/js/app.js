@@ -231,8 +231,25 @@ function loadProjectData() {
         qtest.hideLoading(btn);
         if (-1 === currentSelectedNodeId) {
             try {
-                $j("#containerTree").find("div.content:first").trigger('click');
-            } catch (ex) {}
+                var first = $j("#containerTree").find("div.content:first");
+                if (first.length) {
+                    $j("#containerTree").find("div.content:first").trigger('click');
+                } else {
+                    throw "no container";
+                }
+
+            } catch (ex) {
+                currentJSONContainer = {
+                    selectedContainer: {
+                        name: "",
+                        daily_create_test_suite: $j("#createNewTestRun").prop("checked")
+                    },
+                    containerPath: []
+                };
+                document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
+                $j("input[name='fakeContainerName']").val(currentJSONContainer.selectedContainer.name);
+                $j("input[name='fakeContainerName']").trigger('change');
+            }
 
         }
     });

@@ -132,11 +132,15 @@ public class PushingResultAction extends Notifier {
     } else {
       JSONObject json = configuration.getContainerJSONObject();
       JSONArray containerPath = json.getJSONArray("containerPath");
-
+      Long nodeId = 0L;
+      String nodeType = "N/A";
+      if (0 < containerPath.size()) {
+        nodeId = containerPath.getJSONObject(containerPath.size() - 1).getLong("nodeId");
+        nodeType = containerPath.getJSONObject(containerPath.size() - 1).getString("nodeType");
+      }
       LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
               json.getJSONObject("selectedContainer").getString("name"),
-              containerPath.getJSONObject(containerPath.size() - 1).getLong("nodeId"),
-              containerPath.getJSONObject(containerPath.size() - 1).getString("nodeType"));
+              nodeId, nodeType);
     }
     if (configuration.getEnvironmentId() > 0) {
       LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
