@@ -15,6 +15,7 @@ $j(document).ready(function () {
     bindSelectizeChange();
     hideNoHelp();
     initContainerJSON();
+    currentJSONContainer.selectedContainer.daily_create_test_suite = $j("#createNewTestRun").prop("checked");
   }, 1000);
   $j(document).on("click", ".content", function(event) {
     var htmlPrevNode = document.querySelector("div[qtestid='" + currentSelectedNodeId + "']");
@@ -206,7 +207,7 @@ function loadProjectData() {
   currentJSONContainer = {
     selectedContainer: {
         name: "",
-        daily_create_test_suite: true
+        daily_create_test_suite: $j("#createNewTestRun").prop("checked")
     },
     containerPath: []
   };
