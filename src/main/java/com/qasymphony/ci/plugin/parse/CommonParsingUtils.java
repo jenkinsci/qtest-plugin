@@ -54,6 +54,7 @@ public class CommonParsingUtils {
   private static List<AutomationTestResult> useTestMethodAsTestCase(ParseRequest request, List<TestResult> testResults, Date startTime)
     throws Exception {
     Map<String, AutomationTestResult> map = new HashMap<>();
+    int currentTestLogOrder = 0;
 
     for (TestResult testResult : testResults) {
       for (SuiteResult suite : testResult.getSuites()) {
@@ -67,6 +68,7 @@ public class CommonParsingUtils {
 
           if (!map.containsKey(automationContent)) {
             AutomationTestResult testLog = new AutomationTestResult();
+            testLog.setOrder(currentTestLogOrder++);
             testLog.setAutomationContent(automationContent);
             testLog.setExecutedStartDate(startDate);
             testLog.setExecutedEndDate(computeEndTime(startDate, caseResult.getDuration()));
@@ -103,6 +105,7 @@ public class CommonParsingUtils {
   private static List<AutomationTestResult> useClassNameAsTestCase(ParseRequest request, List<TestResult> testResults, Date startTime)
     throws Exception {
     Map<String, AutomationTestResult> map = new HashMap<>();
+    int currentTestLogOrder = 0;
 
     for (TestResult testResult : testResults) {
       for (SuiteResult suite : testResult.getSuites()) {
@@ -117,6 +120,7 @@ public class CommonParsingUtils {
             testLog = map.get(caseResult.getClassName());
           } else {
             testLog = new AutomationTestResult();
+            testLog.setOrder(currentTestLogOrder++);
             testLog.setAutomationContent(caseResult.getClassName());
             testLog.setExecutedStartDate(startDate);
             testLog.setExecutedEndDate(computeEndTime(startDate, suite.getDuration()));

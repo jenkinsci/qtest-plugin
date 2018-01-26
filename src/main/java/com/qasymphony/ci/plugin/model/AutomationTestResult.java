@@ -26,6 +26,8 @@ public class AutomationTestResult {
   private String automationContent;
   private String status;
   private String name;
+
+  private Integer order;
   @JsonProperty("test_step_logs")
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<AutomationTestStepLog> testLogs;
@@ -123,6 +125,14 @@ public class AutomationTestResult {
 
   public void setBuildURL(String buildURL) {
     this.buildURL = buildURL;
+  }
+
+  public Integer getOrder() {
+    return order;
+  }
+
+  public void setOrder(Integer order) {
+    this.order = order;
   }
 
 
