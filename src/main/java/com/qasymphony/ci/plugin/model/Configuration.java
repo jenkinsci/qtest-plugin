@@ -230,6 +230,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   }
 
   public boolean isOverwriteExistingTestSteps() {
+    if (null == this.containerJSONSetting)
+      overwriteExistingTestSteps = true; // for backward compatible
     return overwriteExistingTestSteps;
   }
 
