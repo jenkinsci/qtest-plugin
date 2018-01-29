@@ -89,7 +89,9 @@ public class PushingResultAction extends Notifier {
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
     }
-    checkProjectNameChanged(build, listener);
+    if (null == checkProjectNameChanged(build, listener)) {
+      return true;
+    }
     List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
     if (automationTestResults.isEmpty())
       return true;

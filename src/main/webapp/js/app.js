@@ -45,7 +45,7 @@ $j(document).ready(function () {
 //      }
 //    });
 
-  $j("#createNewTestRun").on("click", function (event) {
+  $j(document).on("click", "#createNewTestRun", function (event) {
     currentJSONContainer.selectedContainer.daily_create_test_suite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
     document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
   });
