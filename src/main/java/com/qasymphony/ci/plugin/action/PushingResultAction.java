@@ -318,7 +318,7 @@ public class PushingResultAction extends Notifier {
       configuration.setSubmitToContainer(formData.getBoolean("submitToContainer"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
-      configuration.setContainerJSONSetting(formData.getString("containerJSONSetting"));
+      configuration.setContainerSetting(formData.getString("containerSetting"));
       configuration.setOverwriteExistingTestSteps(formData.getBoolean("overwriteExistingTestSteps"));
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
