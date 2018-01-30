@@ -33,7 +33,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private String jenkinsProjectName;
 
   private boolean submitToContainer;
-  private String containerJSONSetting;
+  private String containerSetting;
   private boolean overwriteExistingTestSteps;
 
 
@@ -45,12 +45,12 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   private String resultPattern;
   private Boolean eachMethodAsTestCase;
 
-  public String getContainerJSONSetting() {
-    return containerJSONSetting;
+  public String getContainerSetting() {
+    return containerSetting;
   }
 
-  public void setContainerJSONSetting(String containerJSONSetting) {
-    this.containerJSONSetting = containerJSONSetting;
+  public void setContainerSetting(String containerSetting) {
+    this.containerSetting = containerSetting;
   }
 
 
@@ -64,7 +64,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   public Configuration(Long id, String url, String appSecretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, String containerJSONSetting, Boolean overwriteExistingTestSteps, long environmentParentId) {
+                       Boolean submitToContainer, String containerSetting, Boolean overwriteExistingTestSteps, long environmentParentId) {
     this.url = url;
     this.appSecretKey = appSecretKey;
     this.projectId = projectId;
@@ -79,7 +79,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.readFromJenkins = readFromJenkins;
     this.resultPattern = resultPattern;
     this.submitToContainer = submitToContainer;
-    this.containerJSONSetting = containerJSONSetting;
+    this.containerSetting = containerSetting;
     this.overwriteExistingTestSteps = overwriteExistingTestSteps;
     this.environmentParentId = environmentParentId;
   }
@@ -230,7 +230,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   }
 
   public boolean isOverwriteExistingTestSteps() {
-    if (null == this.containerJSONSetting)
+    if (null == this.containerSetting)
       overwriteExistingTestSteps = true; // for backward compatible
     return overwriteExistingTestSteps;
   }
@@ -241,10 +241,10 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public boolean isCreateNewTestSuiteEveryBuild() {
     try {
-      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONObject json = JSONObject.fromObject(this.containerSetting);
       JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-      if (selectedContainer.has("daily_create_test_suite")) {
-        return selectedContainer.getBoolean("daily_create_test_suite");
+      if (selectedContainer.has("dailyCreateTestSuite")) {
+        return selectedContainer.getBoolean("dailyCreateTestSuite");
       }
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -303,10 +303,10 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       String nodeType = "";
       boolean createTestSuiteEveryBuildDate = false;
       try {
-        JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+        JSONObject json = JSONObject.fromObject(this.containerSetting);
         JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-        if (selectedContainer.has("daily_create_test_suite")) {
-          createTestSuiteEveryBuildDate = selectedContainer.getBoolean("daily_create_test_suite");
+        if (selectedContainer.has("dailyCreateTestSuite")) {
+          createTestSuiteEveryBuildDate = selectedContainer.getBoolean("dailyCreateTestSuite");
         }
 
         JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
@@ -334,7 +334,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public  String getFakeContainerName() {
     try {
-      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONObject json = JSONObject.fromObject(this.containerSetting);
       JSONObject selectedContainer = json.getJSONObject("selectedContainer");
       if (selectedContainer.has("name")) {
         return selectedContainer.getString("name");
@@ -347,7 +347,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public JSONObject getContainerJSONObject() {
     try {
-      JSONObject json = JSONObject.fromObject(this.containerJSONSetting);
+      JSONObject json = JSONObject.fromObject(this.containerSetting);
       JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
       json.put("containerPath", containerPath);
       return json;

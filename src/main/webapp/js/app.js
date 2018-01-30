@@ -3,7 +3,7 @@ var currentSelectedNodeId = -1;
 var currentJSONContainer = {
         selectedContainer: {
             name: "",
-            daily_create_test_suite: true
+            dailyCreateTestSuite: true
         },
         containerPath: []
     };
@@ -15,7 +15,7 @@ $j(document).ready(function () {
     bindSelectizeChange();
     hideNoHelp();
     initContainerJSON();
-    currentJSONContainer.selectedContainer.daily_create_test_suite = $j("#createNewTestRun").prop("checked");
+    currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j("#createNewTestRun").prop("checked");
   }, 1000);
   $j(document).on("click", ".content", function(event) {
     var htmlPrevNode = document.querySelector("div[qtestid='" + currentSelectedNodeId + "']");
@@ -46,8 +46,8 @@ $j(document).ready(function () {
 //    });
 
   $j(document).on("click", "#createNewTestRun", function (event) {
-    currentJSONContainer.selectedContainer.daily_create_test_suite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
-    document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
+    currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
+    document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
   });
   $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
@@ -207,7 +207,7 @@ function loadProjectData() {
   currentJSONContainer = {
     selectedContainer: {
         name: "",
-        daily_create_test_suite: $j("#createNewTestRun").prop("checked")
+        dailyCreateTestSuite: $j("#createNewTestRun").prop("checked")
     },
     containerPath: []
   };
@@ -242,11 +242,11 @@ function loadProjectData() {
                 currentJSONContainer = {
                     selectedContainer: {
                         name: "",
-                        daily_create_test_suite: $j("#createNewTestRun").prop("checked")
+                        dailyCreateTestSuite: $j("#createNewTestRun").prop("checked")
                     },
                     containerPath: []
                 };
-                document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
+                document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
                 $j("input[name='fakeContainerName']").val(currentJSONContainer.selectedContainer.name);
                 $j("input[name='fakeContainerName']").trigger('change');
             }
@@ -405,7 +405,7 @@ function updateSelectedContainer(htmlSelectedItem) {
         }
     }
 
-    document.querySelector("input[name='config.containerJSONSetting']").value = JSON.stringify(currentJSONContainer);
+    document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
     $j("input[name='fakeContainerName']").val(itemName);
     $j("input[name='fakeContainerName']").trigger('change');
     //console.log(JSON.stringify(currentJSONContainer));
@@ -470,7 +470,7 @@ function loadToCurrentSelectedContainer(callback) {
 }
 
 function initContainerJSON() {
-    var jsonString = document.querySelector("input[name='config.containerJSONSetting']").value;
+    var jsonString = document.querySelector("input[name='config.containerSetting']").value;
     if (jsonString && jsonString.length > 0) {
         var temp = undefined;
         try {

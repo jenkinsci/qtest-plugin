@@ -63,8 +63,8 @@
                  value="${instance.configuration.releaseName}"/>
       <f:textbox name="config.environmentName" field="environmentName"
                  value="${instance.configuration.environmentName}"/>
-      <f:textbox name="config.containerJSONSetting" field="containerJSONSetting"
-                 value="${instance.configuration.containerJSONSetting}" default="{}" />
+      <f:textbox name="config.containerSetting" field="containerSetting"
+                 value="${instance.configuration.containerSetting}" default="{}" />
       <f:textbox name='config.environmentParentId' field="environmentParentId"
                  value="${instance.configuration.environmentParentId}" />
     </f:invisibleEntry>
