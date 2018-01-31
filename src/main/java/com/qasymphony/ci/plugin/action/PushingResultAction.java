@@ -251,7 +251,8 @@ public class PushingResultAction extends Notifier {
       LoggerUtils.formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
       LoggerUtils.formatHR(logger);
       if (isSuccess) {
-        LoggerUtils.formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
+        int numberTestLog = 0 != result.getNumberOfTestLog() ? result.getNumberOfTestLog() : automationTestResults.size();
+        LoggerUtils.formatInfo(logger, "   testLogs: %s", numberTestLog);
         LoggerUtils.formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
         LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
       }

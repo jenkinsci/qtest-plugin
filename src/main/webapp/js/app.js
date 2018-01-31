@@ -138,11 +138,17 @@ function toggleControls(visible) {
 }
 function onLoadProject() {
   $j("#fetchProjectData").on('click', function (e) {
-    e.preventDefault();
-    qtest.showLoading(this);
-    disableTextBox(false);
-    toggleControls(false);
-    loadProject();
+    $j(this).prop('disabled', true);
+    try {
+        e.preventDefault();
+        qtest.showLoading(this);
+        disableTextBox(false);
+        toggleControls(false);
+        loadProject();
+    } catch(ex) {
+
+    }
+    $j(this).prop('disabled', false)
   });
 }
 function clearProjectData() {
@@ -226,6 +232,7 @@ function loadProjectData() {
     }
     loadRelease(data);
     loadEnvironment(data);
+    $j('#containerTree').empty();
     loadContainers($j('#containerTree'), data, 0);
     loadToCurrentSelectedContainer(function() {
         qtest.hideLoading(btn);
