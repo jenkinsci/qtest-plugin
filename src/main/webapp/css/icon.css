@@ -104,3 +104,8 @@ div#containerTree div[selected] {
 div#containerTree div[selected]:hover{
     background: lightblue;
 }
+.hidden {
+    visibility: hidden;
+    width: 0px;
+    height: 0px;
+}

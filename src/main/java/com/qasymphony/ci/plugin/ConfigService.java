@@ -101,7 +101,7 @@ public class ConfigService {
 
     for (int i = 0; i < publishers.size(); i++) {
       if (publishers.get(i) instanceof PushingResultAction) {
-        return ((PushingResultAction) publishers.get(i)).getConfiguration();
+        return (Configuration)(((PushingResultAction) publishers.get(i)).getConfiguration());
       }
     }
     return null;
@@ -243,20 +243,20 @@ public class ConfigService {
   public static Configuration validateConfiguration(Configuration configuration, JSONObject formData) {
     //make id is 0 when name is empty, we get name from selectize field.
     if (StringUtils.isEmpty(formData.getString("environmentName1"))) {
-      configuration.setEnvironmentId(0);
+      configuration.setEnvironmentId(0L);
       configuration.setEnvironmentName("");
     }
     if (StringUtils.isEmpty(formData.getString("projectName1"))) {
-      configuration.setProjectId(0);
+      configuration.setProjectId(0L);
       configuration.setProjectName("");
     }
     if (StringUtils.isEmpty(formData.getString("releaseName1"))) {
-      configuration.setReleaseId(0);
+      configuration.setReleaseId(0L);
       configuration.setReleaseName("");
     }
-    if (configuration.getProjectId() <= 0 || configuration.getReleaseId() <= 0) {
+    if (configuration.getProjectId() <= 0L || configuration.getReleaseId() <= 0L) {
       configuration.setId(0L);
-      configuration.setModuleId(0);
+      configuration.setModuleId(0L);
     }
     return configuration;
   }

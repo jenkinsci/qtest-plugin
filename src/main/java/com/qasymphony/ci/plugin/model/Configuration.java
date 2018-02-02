@@ -2,9 +2,12 @@ package com.qasymphony.ci.plugin.model;
 
 import com.qasymphony.ci.plugin.model.qtest.Container;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -12,36 +15,36 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * @author anpham
  */
-public class Configuration extends AbstractDescribableImpl<Configuration> {
+public class Configuration extends PipelineConfiguration implements hudson.model.Describable<PipelineConfiguration> {
   private Long id;
-  private String url;
+  //private String url;
   /**
    * Refresh token
    */
-  private String appSecretKey;
-  private long projectId;
+  //private String appSecretKey;
+  //private long projectId;
   private String projectName;
-  private long releaseId;
+  //private long releaseId;
   private String releaseName;
-  private long environmentId;
+  //private long environmentId;
   private String environmentName;
   private long testSuiteId;
-  private long moduleId;
+  //private long moduleId;
   private String jenkinsServerUrl;
   private String jenkinsProjectName;
 
-  private boolean submitToContainer;
+  //private boolean submitToContainer;
   private String containerSetting;
-  private boolean overwriteExistingTestSteps;
+  //private boolean overwriteExistingTestSteps;
 
 
   private long environmentParentId;
   /**
    * Read from testResult action from jenkins
    */
-  private Boolean readFromJenkins;
-  private String resultPattern;
-  private Boolean eachMethodAsTestCase;
+  //private Boolean readFromJenkins;
+  //private String resultPattern;
+  //private Boolean eachMethodAsTestCase;
 
   public String getContainerSetting() {
     return containerSetting;
@@ -51,34 +54,45 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.containerSetting = containerSetting;
   }
 
-
-
   public static Configuration newInstance() {
-    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
-            0, 0, false, "", false, "{}", false, 0);
+    return new Configuration(0L, "", "", 0L, "", 0L, "", 0L, "",
+            0L, 0L, false, "", false, "{}", false, 0L);
   }
 
   @DataBoundConstructor
-  public Configuration(Long id, String url, String appSecretKey, long projectId,
-                       String projectName, long releaseId, String releaseName, long environmentId,
-                       String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
-                       Boolean submitToContainer, String containerSetting, Boolean overwriteExistingTestSteps, long environmentParentId) {
-    this.url = url;
-    this.appSecretKey = appSecretKey;
-    this.projectId = projectId;
+  public Configuration(Long id, String url, String appSecretKey, Long projectId,
+                       String projectName, Long releaseId, String releaseName, Long environmentId,
+                       String environmentName, Long testSuiteId, Long moduleId, Boolean readFromJenkins, String resultPattern,
+                       Boolean submitToContainer, String containerSetting, Boolean overwriteExistingTestSteps, Long environmentParentId) {
+    super(url,
+            appSecretKey,
+            projectId,
+            releaseId,
+            "release",
+            environmentId,
+            resultPattern,
+            moduleId,
+            overwriteExistingTestSteps,
+            false, // fake data, is set in newInstance
+            readFromJenkins,
+            false, // fake data, is set in newInstance
+            submitToContainer);
+    //this.url = url;
+    //this.appSecretKey = appSecretKey;
+    //this.projectId = projectId;
     this.projectName = projectName;
-    this.releaseId = releaseId;
+    //this.releaseId = releaseId;
     this.releaseName = releaseName;
-    this.environmentId = environmentId;
+    //this.environmentId = environmentId;
     this.environmentName = environmentName;
     this.testSuiteId = testSuiteId;
-    this.moduleId = moduleId;
+    //this.moduleId = moduleId;
     this.id = id;
-    this.readFromJenkins = readFromJenkins;
-    this.resultPattern = resultPattern;
-    this.submitToContainer = submitToContainer;
+    //this.readFromJenkins = readFromJenkins;
+    //this.resultPattern = resultPattern;
+    //this.submitToContainer = submitToContainer;
     this.containerSetting = containerSetting;
-    this.overwriteExistingTestSteps = overwriteExistingTestSteps;
+    //this.overwriteExistingTestSteps = overwriteExistingTestSteps;
     this.environmentParentId = environmentParentId;
   }
 
@@ -91,29 +105,6 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public String getUrl() {
-    return url;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
-  }
-
-  public String getAppSecretKey() {
-    return appSecretKey;
-  }
-
-  public void setAppSecretKey(String appSecretKey) {
-    this.appSecretKey = appSecretKey;
-  }
-
-  public long getProjectId() {
-    return projectId;
-  }
-
-  public void setProjectId(long projectId) {
-    this.projectId = projectId;
-  }
 
   public String getProjectName() {
     return projectName;
@@ -124,11 +115,11 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   }
 
   public long getReleaseId() {
-    return releaseId;
+    return containerId;
   }
 
   public void setReleaseId(long releaseId) {
-    this.releaseId = releaseId;
+    this.containerId = releaseId;
   }
 
   public String getReleaseName() {
@@ -147,14 +138,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.environmentName = environmentName;
   }
 
-  public long getEnvironmentId() {
-    return environmentId;
-  }
 
-  public Configuration setEnvironmentId(long environmentId) {
-    this.environmentId = environmentId;
-    return this;
-  }
 
   public long getTestSuiteId() {
     return testSuiteId;
@@ -164,13 +148,6 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.testSuiteId = testSuiteId;
   }
 
-  public long getModuleId() {
-    return moduleId;
-  }
-
-  public void setModuleId(long moduleId) {
-    this.moduleId = moduleId;
-  }
 
   public String getJenkinsServerUrl() {
     return jenkinsServerUrl;
@@ -190,7 +167,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     return this;
   }
 
-  public Boolean getReadFromJenkins() {
+
+  public boolean getReadFromJenkins() {
     //new version: make default read by parse file
     return readFromJenkins == null ? true : readFromJenkins;
   }
@@ -204,40 +182,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     this.eachMethodAsTestCase = eachMethodAsTestCase;
   }
 
-  public Configuration setReadFromJenkins(Boolean readFromJenkins) {
-    this.readFromJenkins = readFromJenkins;
-    return this;
-  }
-
-  public String getResultPattern() {
-    return resultPattern;
-  }
-
-  public Configuration setResultPattern(String resultPattern) {
-    this.resultPattern = resultPattern;
-    return this;
-  }
-
-  public boolean isSubmitToContainer() {
-    return submitToContainer;
-  }
-
-  public Configuration setSubmitToContainer(boolean submitToContainer) {
-    this.submitToContainer = submitToContainer;
-    return this;
-  }
-
-  public boolean isOverwriteExistingTestSteps() {
+  public Boolean isOverwriteExistingTestSteps() {
     if (null == this.containerSetting)
       overwriteExistingTestSteps = true; // for backward compatible
     return overwriteExistingTestSteps;
   }
 
-  public void setOverwriteExistingTestSteps(boolean overwriteExistingTestSteps) {
-    this.overwriteExistingTestSteps = overwriteExistingTestSteps;
-  }
 
-  public boolean isCreateNewTestSuiteEveryBuild() {
+  public Boolean isCreateNewTestSuiteEveryBuild() {
     try {
       JSONObject json = JSONObject.fromObject(this.containerSetting);
       JSONObject selectedContainer = json.getJSONObject("selectedContainer");
@@ -268,7 +220,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ", appSecretKey='" + appSecretKey + '\'' +
       ", projectId=" + projectId +
       ", projectName='" + projectName + '\'' +
-      ", releaseId=" + releaseId +
+      ", releaseId=" + containerId +
       ", releaseName='" + releaseName + '\'' +
       ", environmentId=" + environmentId +
       ", environmentName='" + environmentName + '\'' +
@@ -325,7 +277,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       container.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
       setting.setContainer(container);
     } else {
-      setting.setReleaseId(this.releaseId);
+      setting.setReleaseId(this.containerId);
     }
     return setting;
   }
@@ -356,7 +308,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   }
 
   @Extension
-  public static class DescriptorImpl extends Descriptor<Configuration> {
+  public static class DescriptorImpl extends Descriptor<PipelineConfiguration> {
     public String getDisplayName() {
       return "";
     }
