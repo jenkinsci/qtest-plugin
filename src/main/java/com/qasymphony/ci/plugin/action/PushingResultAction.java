@@ -133,14 +133,17 @@ public class PushingResultAction extends Notifier {
     if (!configuration.isSubmitToContainer()) {
       LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
     } else {
-      JSONObject json = configuration.getContainerJSONObject();
-      JSONArray containerPath = json.getJSONArray("containerPath");
       Long nodeId = 0L;
       String nodeType = "N/A";
-      if (0 < containerPath.size()) {
-        nodeId = containerPath.getJSONObject(containerPath.size() - 1).getLong("nodeId");
-        nodeType = containerPath.getJSONObject(containerPath.size() - 1).getString("nodeType");
+      JSONObject json = configuration.getContainerJSONObject();
+      if (null != json) {
+        JSONArray containerPath = json.optJSONArray("containerPath");
+        if (null != containerPath && 0 < containerPath.size()) {
+          nodeId = containerPath.getJSONObject(containerPath.size() - 1).optLong("nodeId", 0L);
+          nodeType = containerPath.getJSONObject(containerPath.size() - 1).optString("nodeType", "");
+        }
       }
+
       LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
               json.getJSONObject("selectedContainer").getString("name"),
               nodeId, nodeType);

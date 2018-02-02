@@ -2,11 +2,9 @@ package com.qasymphony.ci.plugin.model;
 
 import com.qasymphony.ci.plugin.model.qtest.Container;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
-import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;

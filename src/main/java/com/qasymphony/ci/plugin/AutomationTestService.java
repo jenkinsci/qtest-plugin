@@ -134,7 +134,7 @@ public class AutomationTestService {
       if (null == json) {
         return -1L;
       }
-      JSONArray containerPath = json.getJSONArray("containerPath");
+      JSONArray containerPath = json.optJSONArray("containerPath");
       if (null == containerPath) {
         return -1L;
       }
