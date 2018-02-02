@@ -71,7 +71,6 @@ public class Configuration extends PipelineConfiguration implements hudson.model
             "release",
             environmentId,
             resultPattern,
-            moduleId,
             overwriteExistingTestSteps,
             false, // fake data, is set in newInstance
             readFromJenkins,

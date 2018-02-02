@@ -9,7 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfiguration> {
 
     public static PipelineConfiguration newInstance() {
-        return new PipelineConfiguration("", "", 0L, 0L, "", 0L, "", 0L,
+        return new PipelineConfiguration("", "", 0L, 0L, "", 0L, "",
                 false, false, false,  false, false);
     }
     @DataBoundConstructor
@@ -20,7 +20,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
             String containerType,
             Long environmentId,
             String resultPattern,
-            Long moduleId,
             Boolean overwriteExistingTestSteps,
             Boolean createNewTestSuiteEveryBuild,
             Boolean readFromJenkins,
@@ -33,7 +32,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         this.containerType = containerType;
         this.environmentId = environmentId;
         this.resultPattern = resultPattern;
-        this.moduleId = moduleId;
+        this.moduleId = 0L;
         this.overwriteExistingTestSteps = overwriteExistingTestSteps;
         this.createNewTestSuiteEveryBuild = createNewTestSuiteEveryBuild;
         this.readFromJenkins = readFromJenkins;

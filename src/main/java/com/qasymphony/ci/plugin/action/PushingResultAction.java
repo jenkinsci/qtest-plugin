@@ -172,7 +172,7 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
     if (!configuration.isSubmitToContainer()) {
       return configuration.getReleaseId() > 0;
     } else {
-      return null != configuration.getContainerJSONObject();
+        return configuration.getContainerId() > 0L;
     }
   }
 
