@@ -166,8 +166,22 @@ public class PushingResultAction extends Notifier {
     if (!configuration.isSubmitToContainer()) {
       return configuration.getReleaseId() > 0;
     } else {
-      return null != configuration.getContainerJSONObject();
+      JSONObject json  = configuration.getContainerJSONObject();
+      if (null != json) {
+        JSONArray containerPath = json.optJSONArray("containerPath");
+        if (null != containerPath) {
+          int pathSize = containerPath.size();
+          if (0 < pathSize) {
+            JSONObject jsonNode = containerPath.optJSONObject(pathSize - 1);
+            if (null != jsonNode) {
+              Long nodeId = jsonNode.optLong("nodeId", 0L);
+              return 0L != nodeId;
+            }
+          }
+        }
+      }
     }
+    return false;
   }
 
   private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
