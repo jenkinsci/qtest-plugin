@@ -7,7 +7,6 @@ import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.model.PipelineConfiguration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -19,7 +18,6 @@ import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
@@ -27,16 +25,15 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
-import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -53,17 +50,15 @@ import java.util.logging.Logger;
 /**
  * @author anpham
  */
-public class PushingResultAction extends Notifier implements SimpleBuildStep {
+public class PushingResultAction extends Notifier {
   private static final Logger LOG = Logger.getLogger(PushingResultAction.class.getName());
-  private PipelineConfiguration configuration;
+  private Configuration configuration;
 
-
-  @DataBoundConstructor
-  public PushingResultAction(PipelineConfiguration configuration) {
+  public PushingResultAction(Configuration configuration) {
     this.configuration = configuration;
   }
 
-  public PipelineConfiguration getConfiguration() {
+  public Configuration getConfiguration() {
     return configuration;
   }
 
@@ -89,7 +84,7 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
       return true;
     }
     showInfo(logger);
-    if (!validateConfig((Configuration)configuration)) {
+    if (!validateConfig(configuration)) {
       LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
       storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
@@ -128,20 +123,19 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
   }
 
   private void showInfo(PrintStream logger) {
-    Configuration cfg = (Configuration) configuration;
     LoggerUtils.formatInfo(logger, "");
     LoggerUtils.formatHR(logger);
     LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
     LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
     LoggerUtils.formatHR(logger);
-    LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", cfg.getUrl(), cfg.getId());
-    LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", cfg.getProjectName(), cfg.getProjectId());
-    if (!cfg.isSubmitToContainer()) {
-      LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", cfg.getReleaseName(), cfg.getReleaseId());
+    LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", configuration.getUrl(), configuration.getId());
+    LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", configuration.getProjectName(), configuration.getProjectId());
+    if (!configuration.isSubmitToContainer()) {
+      LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", configuration.getReleaseName(), configuration.getReleaseId());
     } else {
       Long nodeId = 0L;
       String nodeType = "N/A";
-      JSONObject json = cfg.getContainerJSONObject();
+      JSONObject json = configuration.getContainerJSONObject();
       if (null != json) {
         JSONArray containerPath = json.optJSONArray("containerPath");
         if (null != containerPath && 0 < containerPath.size()) {
@@ -154,8 +148,8 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
               json.getJSONObject("selectedContainer").getString("name"),
               nodeId, nodeType);
     }
-    if (cfg.getEnvironmentId() > 0) {
-      LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", cfg.getEnvironmentName(), cfg.getEnvironmentId());
+    if (configuration.getEnvironmentId() > 0) {
+      LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
     } else {
       LoggerUtils.formatInfo(logger, "With no environment.");
     }
@@ -172,29 +166,28 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
     if (!configuration.isSubmitToContainer()) {
       return configuration.getReleaseId() > 0;
     } else {
-        return configuration.getContainerId() > 0L;
+      return null != configuration.getContainerJSONObject();
     }
   }
 
   private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
-    Configuration cfg = (Configuration) configuration;
     String currentJenkinsProjectName = build.getProject().getName();
     PrintStream logger = listener.getLogger();
-    if (!cfg.getJenkinsProjectName().equals(currentJenkinsProjectName)) {
+    if (!configuration.getJenkinsProjectName().equals(currentJenkinsProjectName)) {
       LoggerUtils.formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinsProjectName);
-      cfg.setJenkinsProjectName(currentJenkinsProjectName);
+      configuration.setJenkinsProjectName(currentJenkinsProjectName);
     }
     Setting setting = null;
     try {
-      setting = ConfigService.saveConfiguration(cfg);
+      setting = ConfigService.saveConfiguration(configuration);
     } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  Error: %s", e.getMessage());
       e.printStackTrace(logger);
     }
     if (null != setting) {
-      cfg.setId(setting.getId());
-      cfg.setModuleId(setting.getModuleId());
+      configuration.setId(setting.getId());
+      configuration.setModuleId(setting.getModuleId());
     }
     return setting;
   }
@@ -202,14 +195,13 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
   private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
-    Configuration cfg = (Configuration) configuration;
     LoggerUtils.formatHR(logger);
     try {
       automationTestResults = JunitTestResultParser.parse(new ParseRequest()
-        .setBuild(build)
-        .setConfiguration(cfg)
-        .setLauncher(launcher)
-        .setListener(listener));
+              .setBuild(build)
+              .setConfiguration(configuration)
+              .setLauncher(launcher)
+              .setListener(listener));
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
       LoggerUtils.formatError(logger, e.getMessage());
@@ -229,7 +221,6 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
 
   private JunitSubmitterResult submitTestResult(AbstractBuild build, BuildListener listener,
                                                 JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
-    Configuration cfg = (Configuration) configuration;
     PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
     LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
@@ -237,7 +228,7 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
     try {
       result = junitSubmitter.submit(
         new JunitSubmitterRequest()
-          .setConfiguration(cfg)
+          .setConfiguration(configuration)
           .setTestResults(automationTestResults)
           .setBuildNumber(build.getNumber() + "")
           .setBuildPath(build.getUrl())
@@ -263,7 +254,8 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
       LoggerUtils.formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
       LoggerUtils.formatHR(logger);
       if (isSuccess) {
-        LoggerUtils.formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
+        int numberTestLog = 0 != result.getNumberOfTestLog() ? result.getNumberOfTestLog() : automationTestResults.size();
+        LoggerUtils.formatInfo(logger, "   testLogs: %s", numberTestLog);
         LoggerUtils.formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
         LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
       }
@@ -277,8 +269,7 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
 
   private void saveConfiguration(AbstractBuild build, JunitSubmitterResult result, PrintStream logger) {
     //set testSuite id created from qTest
-    Configuration cfg = (Configuration) configuration;
-    cfg.setTestSuiteId(null == result.getTestSuiteId() ? cfg.getTestSuiteId() : result.getTestSuiteId());
+    configuration.setTestSuiteId(null == result.getTestSuiteId() ? configuration.getTestSuiteId() : result.getTestSuiteId());
     try {
       build.getProject().save();
       LoggerUtils.formatInfo(logger, "Save test suite to configuration success.");
@@ -300,17 +291,7 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
     LoggerUtils.formatInfo(logger, "");
   }
 
-  @Override
-  public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-    PrintStream logger = launcher.getListener().getLogger();
-    LoggerUtils.formatInfo(logger, "WELCOME to pipeline");
-    if (null == configuration || !configuration.isValidate()) {
-      LoggerUtils.formatError(logger,"Invalid configuration for pipeline, configuration: " + ((null != configuration) ? configuration.toString() : "null"));
-    }
-
-  }
-
-  @Extension @Symbol("submitJUnitTestResultsToqTest")
+  @Extension
   public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public DescriptorImpl() {
@@ -336,44 +317,6 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
-      if (0 >= configuration.getProjectId()){
-        try {
-          Boolean createTestSuiteEveryBuildDate = false;
-          formData.remove("stapler-class");
-          formData.remove("$class");
-          PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
-          Long containerId = formData.optLong("releaseId", 0L);
-          String containerType = "release";
-          if (pipeConfig.isSubmitToContainer()) {
-            JSONObject json = JSONObject.fromObject(formData.optString("containerSetting", "{}"));
-            JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-            if (selectedContainer.has("dailyCreateTestSuite")) {
-              createTestSuiteEveryBuildDate = selectedContainer.optBoolean("dailyCreateTestSuite");
-            }
-            JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
-            if (0 < containerPath.size()) {
-              JSONObject jsonContainer = containerPath.getJSONObject(containerPath.size() - 1);
-              if (null != jsonContainer) {
-                containerType = jsonContainer.getString("nodeType");
-                containerId = jsonContainer.optLong("nodeId", 0L);
-              }
-            }
-            pipeConfig.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
-          } else {
-            // remove un-needed param
-            pipeConfig.setCreateNewTestSuiteEveryBuild(null);
-          }
-
-          pipeConfig.setContainerId(containerId);
-          pipeConfig.setContainerType(containerType);
-          if (!pipeConfig.isValidate()) {
-            throw new Exception("Invalid configuration for pipeline");
-          }
-          return new PushingResultAction(pipeConfig);
-        } catch (Exception ex) {
-          ex.printStackTrace();
-        }
-      }
       configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
       configuration.setJenkinsProjectName(req.getParameter("name"));
       configuration.setSubmitToContainer(formData.getBoolean("submitToContainer"));
@@ -447,7 +390,19 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
     }
     public FormValidation doCheckFakeContainerName(@QueryParameter String value)
       throws IOException, ServletException {
-
+//      if (!StringUtils.isBlank(value)) {
+//        try {
+//          JSONObject json = JSONObject.fromObject(value);
+//          JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+//          if (selectedContainer.has("name")) {
+//            if (!StringUtils.isBlank(selectedContainer.getString("name"))){
+//              return FormValidation.ok();
+//            }
+//          }
+//        } catch (Exception ex) {
+//          ex.printStackTrace();
+//        }
+//      }
       if (!StringUtils.isBlank(value)) {
         return FormValidation.ok();
       }

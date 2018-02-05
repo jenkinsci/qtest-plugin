@@ -13,62 +13,107 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
                 false, false, false,  false, false);
     }
     @DataBoundConstructor
-    public PipelineConfiguration(String url,
-            String appSecretKey,
-            Long projectId,
-            Long containerId,
+    public PipelineConfiguration(String qtestURL,
+            String apiKey,
+            Long projectID,
+            Long containerID,
             String containerType,
-            Long environmentId,
-            String resultPattern,
+            Long environmentID,
+            String parseTestResultsPattern,
             Boolean overwriteExistingTestSteps,
-            Boolean createNewTestSuiteEveryBuild,
-            Boolean readFromJenkins,
-            Boolean eachMethodAsTestCase,
-            Boolean submitToContainer) {
-        this.url = url;
-        this.appSecretKey = appSecretKey;
-        this.projectId = projectId;
-        this.containerId = containerId;
+            Boolean createNewTestRunsEveryBuildDate,
+            Boolean parseTestResultsFromTestingTools,
+            Boolean createTestCaseForEachJUnitTestClass,
+            Boolean submitToExistingContainer) {
+        this.qtestURL = qtestURL;
+        this.apiKey = apiKey;
+        this.projectID = projectID;
+        this.containerID = containerID;
         this.containerType = containerType;
-        this.environmentId = environmentId;
-        this.resultPattern = resultPattern;
-        this.moduleId = 0L;
+        this.environmentID = environmentID;
+        this.parseTestResultsPattern = parseTestResultsPattern;
+        this.moduleID = 0L;
         this.overwriteExistingTestSteps = overwriteExistingTestSteps;
-        this.createNewTestSuiteEveryBuild = createNewTestSuiteEveryBuild;
-        this.readFromJenkins = readFromJenkins;
-        this.eachMethodAsTestCase = eachMethodAsTestCase;
-        this.submitToContainer = submitToContainer;
-    }
-    public String getUrl() {
-        return url;
+        this.createNewTestRunsEveryBuildDate = createNewTestRunsEveryBuildDate;
+        this.parseTestResultsFromTestingTools = parseTestResultsFromTestingTools;
+        this.createTestCaseForEachJUnitTestClass = createTestCaseForEachJUnitTestClass;
+        this.submitToExistingContainer = submitToExistingContainer;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public boolean isValidate() {
+        boolean ret = StringUtils.isNotEmpty(this.qtestURL)
+                && StringUtils.isNotEmpty(this.apiKey)
+                && this.projectID > 0L
+                && this.containerID > 0L
+                && StringUtils.isNotEmpty(this.containerType);
+        return ret;
     }
 
-    public String getAppSecretKey() {
-        return appSecretKey;
+    @Override
+    public String toString() {
+        return "{" +
+                ", qtestURL='" + qtestURL + '\'' +
+                ", apiKey='" + apiKey + '\'' +
+                ", projectID=" + projectID +
+                ", projectID=" + containerID +
+                ", containerType= " + containerType +
+                ", environmentID= " + environmentID+
+                ", parseTestResultsPattern= " + parseTestResultsPattern +
+                ", moduleID=" + moduleID +
+                ", overwriteExistingTestSteps = " + overwriteExistingTestSteps +
+                ", createNewTestRunsEveryBuildDate = " + createNewTestRunsEveryBuildDate +
+                ", submitToExistingContainer = " + submitToExistingContainer +
+                ", parseTestResultsFromTestingTools = " + parseTestResultsFromTestingTools +
+                ", createTestCaseForEachJUnitTestClass='" + createTestCaseForEachJUnitTestClass + '\'' +
+                '}';
     }
 
-    public void setAppSecretKey(String appSecretKey) {
-        this.appSecretKey = appSecretKey;
+
+    protected String qtestURL;
+    protected String apiKey;
+    protected Long projectID;
+    protected Long containerID;   // id of containerType
+    protected String containerType; // release | test cycle | test suite
+    protected Long environmentID;
+    protected String parseTestResultsPattern;
+
+    protected Long moduleID; // module where test case created
+    protected Boolean overwriteExistingTestSteps;
+    protected Boolean createNewTestRunsEveryBuildDate;
+    protected Boolean parseTestResultsFromTestingTools;
+    protected Boolean createTestCaseForEachJUnitTestClass;
+    protected Boolean submitToExistingContainer;
+
+    public String getQtestURL() {
+        return qtestURL;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    public void setQtestURL(String qtestURL) {
+        this.qtestURL = qtestURL;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public Long getContainerId() {
-        return containerId;
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
-    public void setContainerId(Long containerId) {
-        this.containerId = containerId;
+    public Long getProjectID() {
+        return projectID;
+    }
+
+    public void setProjectID(Long projectID) {
+        this.projectID = projectID;
+    }
+
+    public Long getContainerID() {
+        return containerID;
+    }
+
+    public void setContainerID(Long containerID) {
+        this.containerID = containerID;
     }
 
     public String getContainerType() {
@@ -76,34 +121,39 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     }
 
     public void setContainerType(String containerType) {
-        this.containerType = containerType;
+        if (null != containerType) {
+            this.containerType = containerType.toUpperCase();
+        } else {
+            this.containerType = containerType;
+        }
+
     }
 
-    public Long getEnvironmentId() {
-        return environmentId;
+    public Long getEnvironmentID() {
+        return environmentID;
     }
 
-    public void setEnvironmentId(Long environmentId) {
-        this.environmentId = environmentId;
+    public void setEnvironmentID(Long environmentID) {
+        this.environmentID = environmentID;
     }
 
-    public String getResultPattern() {
-        return resultPattern;
+    public String getParseTestResultsPattern() {
+        return parseTestResultsPattern;
     }
 
-    public void setResultPattern(String resultPattern) {
-        this.resultPattern = resultPattern;
+    public void setParseTestResultsPattern(String parseTestResultsPattern) {
+        this.parseTestResultsPattern = parseTestResultsPattern;
     }
 
-    public Long getModuleId() {
-        return moduleId;
+    public Long getModuleID() {
+        return moduleID;
     }
 
-    public void setModuleId(Long moduleId) {
-        this.moduleId = moduleId;
+    public void setModuleID(Long moduleID) {
+        this.moduleID = moduleID;
     }
 
-    public Boolean isOverwriteExistingTestSteps() {
+    public Boolean getOverwriteExistingTestSteps() {
         return overwriteExistingTestSteps;
     }
 
@@ -111,84 +161,39 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         this.overwriteExistingTestSteps = overwriteExistingTestSteps;
     }
 
-    public Boolean isCreateNewTestSuiteEveryBuild() {
-        return createNewTestSuiteEveryBuild;
+    public Boolean getCreateNewTestRunsEveryBuildDate() {
+        return createNewTestRunsEveryBuildDate;
     }
 
-    public void setCreateNewTestSuiteEveryBuild(Boolean createNewTestSuiteEveryBuild) {
-        this.createNewTestSuiteEveryBuild = createNewTestSuiteEveryBuild;
+    public void setCreateNewTestRunsEveryBuildDate(Boolean createNewTestRunsEveryBuildDate) {
+        this.createNewTestRunsEveryBuildDate = createNewTestRunsEveryBuildDate;
     }
 
-    public Boolean isReadFromJenkins() {
-        return readFromJenkins;
+    public Boolean getParseTestResultsFromTestingTools() {
+        return parseTestResultsFromTestingTools;
     }
 
-    public void setReadFromJenkins(Boolean readFromJenkins) {
-        this.readFromJenkins = readFromJenkins;
+    public void setParseTestResultsFromTestingTools(Boolean parseTestResultsFromTestingTools) {
+        this.parseTestResultsFromTestingTools = parseTestResultsFromTestingTools;
     }
 
-    public Boolean isEachMethodAsTestCase() {
-        return eachMethodAsTestCase;
+    public Boolean getCreateTestCaseForEachJUnitTestClass() {
+        return createTestCaseForEachJUnitTestClass;
     }
 
-    public void setEachMethodAsTestCase(Boolean eachMethodAsTestCase) {
-        this.eachMethodAsTestCase = eachMethodAsTestCase;
+    public void setCreateTestCaseForEachJUnitTestClass(Boolean createTestCaseForEachJUnitTestClass) {
+        this.createTestCaseForEachJUnitTestClass = createTestCaseForEachJUnitTestClass;
     }
 
-    public Boolean isSubmitToContainer() {
-        return submitToContainer;
+    public Boolean getSubmitToExistingContainer() {
+        return submitToExistingContainer;
     }
 
-    public void setSubmitToContainer(boolean submitToContainer) {
-        this.submitToContainer = submitToContainer;
-    }
-
-    public boolean isValidate() {
-        boolean ret = StringUtils.isNotEmpty(this.url)
-                && StringUtils.isNotEmpty(this.appSecretKey)
-                && this.projectId > 0L
-                && this.containerId > 0L
-                && StringUtils.isNotEmpty(this.containerType);
-//        if (!ret)   return ret;
-//        if (submitToContainer) {
-//
-//        }
-        return ret;
-    }
-
-    @Override
-    public String toString() {
-        return "{" +
-                ", url='" + url + '\'' +
-                ", appSecretKey='" + appSecretKey + '\'' +
-                ", projectId=" + projectId +
-                ", containerId=" + containerId +
-                ", containerType=" + containerType +
-                ", environmentId=" + environmentId +
-                ", resultPattern=" + resultPattern +
-                ", moduleId=" + moduleId +
-                ", overwriteExistingTestSteps=" + overwriteExistingTestSteps +
-                ", createNewTestSuiteEveryBuild=" + createNewTestSuiteEveryBuild +
-                ", submitToContainer=" + submitToContainer +
-                ", readFromJenkins=" + readFromJenkins +
-                ", eachMethodAsTestCase='" + eachMethodAsTestCase + '\'' +
-                '}';
+    public void setSubmitToExistingContainer(Boolean submitToExistingContainer) {
+        this.submitToExistingContainer = submitToExistingContainer;
     }
 
 
-    protected String url;
-    protected String appSecretKey;
-    protected Long projectId;
-    protected Long containerId;   // id of containerType
-    protected String containerType; // release | test cycle | test suite
-    protected Long environmentId;
-    protected String resultPattern;
-    protected Long moduleId; // module where test case created
-    protected Boolean overwriteExistingTestSteps;
-    protected Boolean createNewTestSuiteEveryBuild;
-    protected Boolean readFromJenkins;
-    protected Boolean eachMethodAsTestCase;
-    protected Boolean submitToContainer;
 
 
     @Extension

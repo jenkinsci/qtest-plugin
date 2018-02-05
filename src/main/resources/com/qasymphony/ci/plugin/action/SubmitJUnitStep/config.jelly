@@ -1,0 +1,148 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <j:set var="pluginName" value="qtest"/>
+
+  <style type="text/css">
+    @import url(${resURL}/plugin/${pluginName}/css/selectize.default.css);
+    @import url(${resURL}/plugin/${pluginName}/css/icon.css);
+    .qtest-retrieve-data {
+      margin: 0px !important;
+    }
+    td.setting-description {
+      font-size: 0.9em !important;
+    }
+    .container-pid-input {
+      width: 15%;
+    }
+    .checkbox-input {
+      top: 0 !important;
+    }
+    .container-link {
+      margin-left: 10px;
+    }
+  </style>
+
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.min.js"></script>
+
+  <script>
+    var $j = jQuery.noConflict();
+  </script>
+
+  <form>
+    <st:bind var="remoteAction" value="${descriptor}"/>
+
+    <f:entry title="${%label.url}" field="url">
+      <f:textbox name="config.url" value="${instance.configuration.url}"/>
+    </f:entry>
+    <f:entry title="${%label.apiKey}" field="appSecretKey">
+      <f:password name="config.appSecretKey"
+                  value="${instance.configuration.appSecretKey}"/>
+    </f:entry>
+
+    <f:entry>
+      <span class="yui-button yui-push-button apply-button applyButton qtest-retrieve-data">
+        <button id="fetchProjectData">${%label.retrieveData}</button>
+      </span>
+      <span style="display: none;" class="yui-button">
+        <img src="${resURL}/plugin/${pluginName}/images/spinner.gif"/>
+      </span>
+    </f:entry>
+    <f:invisibleEntry>
+      <f:textbox name="config.id" field="id" clazz="hidden"
+                 value="${instance.configuration.id}"/>
+      <f:textbox name="config.projectId" field="projectId" clazz="hidden"
+                 value="${instance.configuration.projectId}"/>
+      <f:textbox name="config.releaseId" field="releaseId" clazz="hidden"
+                 value="${instance.configuration.releaseId}"/>
+      <f:textbox name="config.environmentId" field="environmentId" clazz="hidden"
+                 value="${instance.configuration.environmentId}"/>
+      <f:textbox name="config.projectName" field="projectName" clazz="hidden"
+                 value="${instance.configuration.projectName}"/>
+      <f:textbox name="config.releaseName" field="releaseName" clazz="hidden"
+                 value="${instance.configuration.releaseName}"/>
+      <f:textbox name="config.environmentName" field="environmentName" clazz="hidden"
+                 value="${instance.configuration.environmentName}"/>
+      <f:textbox name="config.containerSetting" field="containerSetting" clazz="hidden"
+                 value="${instance.configuration.containerSetting}" default="{}" />
+      <f:textbox name='config.environmentParentId' field="environmentParentId" clazz="hidden"
+                 value="${instance.configuration.environmentParentId}" />
+    </f:invisibleEntry>
+    <!--**
+      Reason why projectName1, releaseName1, environmentName1 use to bind for selectize
+      instead projectName, releaseName or environmentName**
+       1.jelly binding name from saved configuration to textBox when loaded
+       2.selectize not support duplicate value (project or release maybe have the same name),
+        so valueField of selectize must be id (for project, release) or value (for environment)
+     -->
+    <f:entry title="${%label.selectedProject}" field="projectName">
+      <f:textbox name="config.projectName1" value="${instance.configuration.projectName}"/>
+    </f:entry>
+
+    <f:entry field="optionConfig">
+      <f:radioBlock inline="true" name="config.submitToContainer" checked="${!instance.configuration.submitToContainer}"
+                    title="${%label.releaseOption}" value="false">
+        <f:entry title="${%label.release}" field="releaseName">
+          <f:textbox name="config.releaseName1"
+                     value="${instance.configuration.releaseName}"/>
+          <f:description>
+            <i>${%instruction.testLog}</i>
+          </f:description>
+        </f:entry>
+      </f:radioBlock>
+      <f:radioBlock inline="true" name="config.submitToContainer" checked="${instance.configuration.submitToContainer}"
+                    title="${%label.existingContainerOption}" value="true">
+
+        <f:entry field="containerTypeName" title="${%label.container}">
+          <div id="containerTree"/>
+
+          <f:textbox name="fakeContainerName" field="fakeContainerName" value="${instance.configuration.fakeContainerName}" />
+        </f:entry>
+        <f:entry field="checkedCreateNewTestRuns">
+          <f:checkbox id="createNewTestRun" name="config.createNewTestSuiteEveryBuild" checked="${instance.configuration.createNewTestSuiteEveryBuild}"
+                      class="checkbox-input" value="true"/>
+          <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
+        </f:entry>
+      </f:radioBlock>
+    </f:entry>
+
+    <f:entry title="${%label.environment}" field="environmentName">
+      <f:textbox name="config.environmentName1"
+                 value="${instance.configuration.environmentName}" clazz="qtest-readonly"/>
+      <span class="config.environmentName1" style="display:none">
+        <i>${%env.inactive}</i>
+      </span>
+    </f:entry>
+
+    <f:block>
+      <f:checkbox  id="overwriteExistingTestSteps" name="config.overwriteExistingTestSteps" checked="${instance.configuration.overwriteExistingTestSteps}"
+                      class="checkbox-input" value="true" default="true"/>
+      <label for="overwriteExistingTestSteps">${%label.overwriteExistingTestSteps}</label>
+    </f:block>
+
+      <f:entry field="jenkinsProjectName">
+      <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}"
+                    title="${%label.autoScan}" value="true">
+        <f:description>
+          <i>${%label.resultPatternTitle}</i>
+        </f:description>
+        <f:entry title="${%label.resultPattern}" field="resultPattern">
+          <f:textbox name="config.resultPattern" value="${instance.configuration.resultPattern}"></f:textbox>
+        </f:entry>
+      </f:radioBlock>
+      <f:radioBlock inline="true" name="config.readFromJenkins" checked="${!instance.configuration.readFromJenkins}"
+                    title="${%label.readFromJenkins}" value="false">
+      </f:radioBlock>
+    </f:entry>
+    
+    <f:entry title="${%label.selection_mode}" field="selectionMode">
+      <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.class_mode}" 
+      	checked="${!instance.configuration.eachMethodAsTestCase}" value="false">
+      </f:radioBlock>
+      <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.method_mode}" 
+      	checked="${instance.configuration.eachMethodAsTestCase}" value="true">
+      </f:radioBlock>
+    </f:entry>
+  </form>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/service.js" name="qtestScript" ></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js" name="qtestScript"></script>
+</j:jelly>
