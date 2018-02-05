@@ -17,6 +17,16 @@ public class AutomationTestResultWrapper {
     return parent_module;
   }
 
+  public Boolean skipCreatingAutomationModule;
+
+  public Boolean getSkipCreatingAutomationModule() {
+    return skipCreatingAutomationModule;
+  }
+
+  public void setSkipCreatingAutomationModule(Boolean skipCreatingAutomationModule) {
+    this.skipCreatingAutomationModule = skipCreatingAutomationModule;
+  }
+
   public void setParent_module(Long parent_module) {
     this.parent_module = parent_module;
   }
