@@ -17,35 +17,22 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class Configuration extends PipelineConfiguration implements hudson.model.Describable<PipelineConfiguration> {
   private Long id;
-  //private String url;
+
   /**
    * Refresh token
    */
-  //private String appSecretKey;
-  //private long projectId;
+
   private String projectName;
-  //private long releaseId;
   private String releaseName;
-  //private long environmentId;
   private String environmentName;
   private long testSuiteId;
-  //private long moduleId;
   private String jenkinsServerUrl;
   private String jenkinsProjectName;
-
-  //private boolean submitToContainer;
   private String containerSetting;
-  //private boolean overwriteExistingTestSteps;
-
-
   private long environmentParentId;
   /**
    * Read from testResult action from jenkins
    */
-  //private Boolean readFromJenkins;
-  //private String resultPattern;
-  //private Boolean eachMethodAsTestCase;
-
   public String getContainerSetting() {
     return containerSetting;
   }
@@ -76,22 +63,12 @@ public class Configuration extends PipelineConfiguration implements hudson.model
             readFromJenkins,
             false, // fake data, is set in newInstance
             submitToContainer);
-    //this.url = url;
-    //this.appSecretKey = appSecretKey;
-    //this.projectId = projectId;
     this.projectName = projectName;
-    //this.releaseId = releaseId;
     this.releaseName = releaseName;
-    //this.environmentId = environmentId;
     this.environmentName = environmentName;
     this.testSuiteId = testSuiteId;
-    //this.moduleId = moduleId;
     this.id = id;
-    //this.readFromJenkins = readFromJenkins;
-    //this.resultPattern = resultPattern;
-    //this.submitToContainer = submitToContainer;
     this.containerSetting = containerSetting;
-    //this.overwriteExistingTestSteps = overwriteExistingTestSteps;
     this.environmentParentId = environmentParentId;
   }
 

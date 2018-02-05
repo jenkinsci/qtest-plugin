@@ -310,7 +310,7 @@ public class PushingResultAction extends Notifier implements SimpleBuildStep {
 
   }
 
-  @Extension @Symbol("submitJunitToqTest")
+  @Extension @Symbol("submitJUnitTestResultsToqTest")
   public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public DescriptorImpl() {
