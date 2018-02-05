@@ -14,14 +14,14 @@ import java.util.List;
 public class JunitTestResultParser {
   public static List<AutomationTestResult> parse(ParseRequest request) throws Exception {
     TestResultParser parser;
-    Boolean readFromJenkins = request.getConfiguration().getReadFromJenkins();
+    Boolean readFromJenkins = request.getUtilizeTestResultFromCITool();
     if (Boolean.FALSE.equals(readFromJenkins)) {
       LoggerUtils.formatInfo(request.getListener().getLogger(), "Read test results from jenkins.");
       //read result from testResult action from Jenkins
       parser = new PublishResultParser();
     } else {
       //scan with configured pattern or scan all
-      if (!StringUtils.isBlank(request.getConfiguration().getResultPattern())) {
+      if (!StringUtils.isBlank(request.getParseTestResultPattern())) {
         parser = new PatternScanParser();
       } else {
         parser = new AutoScanParser();

@@ -140,6 +140,7 @@ public class AutomationTestResult {
    * Add testLog and resolve status of testResult
    *
    * @param automationTestStepLog automationTestStepLog
+   * @param isOverwriteExistingTestSteps
    * @return {@link AutomationTestStepLog}
    * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */

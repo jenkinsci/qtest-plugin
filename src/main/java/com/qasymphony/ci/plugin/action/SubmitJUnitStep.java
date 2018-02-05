@@ -6,7 +6,6 @@ import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
-import com.qasymphony.ci.plugin.parse.ParseConfiguration;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
@@ -395,14 +394,16 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             long start = System.currentTimeMillis();
             LoggerUtils.formatHR(logger);
             try {
-                automationTestResults = JunitTestResultParser.parse(new ParseConfiguration()
+                automationTestResults = JunitTestResultParser.parse(new ParseRequest()
                         .setBuild(build)
-                        .setParseTestResultsFromTestingTools(step.getPipeConfiguration().getParseTestResultsFromTestingTools())
-                        .setEachMethodAsTestCase(!step.getPipeConfiguration().getCreateTestCaseForEachJUnitTestClass())
-                        .setParseTestResultsPattern(step.getPipeConfiguration().getParseTestResultsPattern())
-                        .setWorkspace(ws)
+                        .setWorkSpace(ws)
                         .setLauncher(launcher)
-                        .setListener(listener));
+                        .setListener(listener)
+                        .setCreateEachMethodAsTestCase(!step.pipeConfiguration.getCreateTestCaseForEachJUnitTestClass())
+                        .setOverwriteExistingTestSteps(step.pipeConfiguration.getOverwriteExistingTestSteps())
+                        .setUtilizeTestResultFromCITool(step.pipeConfiguration.getParseTestResultsFromTestingTools())
+                        .setParseTestResultPattern(step.pipeConfiguration.getParseTestResultsPattern())
+                );
             } catch (Exception e) {
                 LOG.log(Level.WARNING, e.getMessage());
                 LoggerUtils.formatError(logger, e.getMessage());

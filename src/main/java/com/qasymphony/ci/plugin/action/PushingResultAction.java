@@ -199,9 +199,14 @@ public class PushingResultAction extends Notifier {
     try {
       automationTestResults = JunitTestResultParser.parse(new ParseRequest()
               .setBuild(build)
-              .setConfiguration(configuration)
+              .setWorkSpace(build.getWorkspace())
               .setLauncher(launcher)
-              .setListener(listener));
+              .setListener(listener)
+              .setCreateEachMethodAsTestCase(configuration.getEachMethodAsTestCase())
+              .setOverwriteExistingTestSteps(configuration.isOverwriteExistingTestSteps())
+              .setUtilizeTestResultFromCITool(configuration.getReadFromJenkins())
+              .setParseTestResultPattern(configuration.getResultPattern())
+      );
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
       LoggerUtils.formatError(logger, e.getMessage());
