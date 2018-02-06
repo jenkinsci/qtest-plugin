@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.action;
 
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.OauthProvider;
+import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
@@ -9,8 +10,10 @@ import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
+import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.FilePath;
@@ -336,12 +339,14 @@ public class SubmitJUnitStep extends AbstractStepImpl {
         @Override
         protected Void run() throws Exception {
             PrintStream logger = listener.getLogger();
+//            Result ret = build.getResult();
+//            LoggerUtils.formatInfo(logger, "Build result " + ret.toString());
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
-            if (Result.ABORTED.equals(build.getResult())) {
-                LoggerUtils.formatWarn(logger, "Abort build action.");
-                storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
-                return null;
-            }
+//            if (Result.ABORTED.equals(build.getResult())) {
+//                LoggerUtils.formatWarn(logger, "Abort build action.");
+//                storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+//                return null;
+//            }
             //showInfo(logger);
             if (!step.pipeConfiguration.isValidate()) {
                 LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
@@ -423,9 +428,49 @@ public class SubmitJUnitStep extends AbstractStepImpl {
 
         private JunitSubmitterResult submitTestResult(Run build, TaskListener listener,
                                                       JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
+            PrintStream logger = listener.getLogger();
+            JunitSubmitterResult result = null;
+            LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
+            long start = System.currentTimeMillis();
+            try {
+                result = junitSubmitter.submit(
+                        new JunitSubmitterRequest()
+                                .setqTestURL(step.pipeConfiguration.getQtestURL())
+                                .setTestResults(automationTestResults)
+                                .setBuildNumber(build.getNumber() + "")
+                                .setBuildPath(build.getUrl())
+                                .setListener(listener));
+            } catch (SubmittedException e) {
+                LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
+                LoggerUtils.formatError(logger, "   status code: " + e.getStatus());
+                LoggerUtils.formatError(logger, "   error: " + e.getMessage());
+            } catch (Exception e) {
+                LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
+                LoggerUtils.formatError(logger, "   error: " + e.getMessage());
+            } finally {
+                if (null == result) {
+                    result = new JunitSubmitterResult()
+                            .setTestSuiteId(null)
+                            .setSubmittedStatus(JunitSubmitterResult.STATUS_FAILED)
+                            .setNumberOfTestResult(automationTestResults.size())
+                            .setNumberOfTestLog(0);
+                }
 
-
-            return null;
+                Boolean isSuccess = null != result.getTestSuiteId() && result.getTestSuiteId() > 0;
+                LoggerUtils.formatHR(logger);
+                LoggerUtils.formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
+                LoggerUtils.formatHR(logger);
+                if (isSuccess) {
+                    int numberTestLog = 0 != result.getNumberOfTestLog() ? result.getNumberOfTestLog() : automationTestResults.size();
+                    LoggerUtils.formatInfo(logger, "   testLogs: %s", numberTestLog);
+                    LoggerUtils.formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
+                    LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(step.pipeConfiguration.getQtestURL(), step.pipeConfiguration.getProjectID(), result.getTestSuiteId()));
+                }
+                LoggerUtils.formatInfo(logger, "Time elapsed: %s", LoggerUtils.elapsedTime(start));
+                LoggerUtils.formatInfo(logger, "End submit test results to qTest at: %s", JsonUtils.getCurrentDateString());
+                LoggerUtils.formatInfo(logger, "");
+            }
+            return result;
         }
     }
 

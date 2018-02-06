@@ -35,13 +35,13 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
   private StoreResultService storeResultService = new StoreResultServiceImpl();
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
-    String accessToken = OauthProvider.getAccessToken(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey());
+    String accessToken = OauthProvider.getAccessToken(request.getqTestURL(), request.getApiKey());
     if (StringUtils.isEmpty(accessToken))
       throw new SubmittedException(String.format("Cannot get access token from: %s, API key is: %s",
-        request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey()));
+        request.getqTestURL(), request.getApiKey()));
 
     ResponseEntity responseEntity = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
-      request.getTestResults(), request.getConfiguration(), accessToken);
+      request.getTestResults(), request, accessToken);
     AutomationTestResponse response = null;
     if (responseEntity.getStatusCode() == HttpStatus.SC_CREATED) {
       //receive task response
@@ -72,7 +72,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
     AutomationTestResponse response = null;
     PrintStream logger = request.getListener().getLogger();
-    Map<String, String> headers = OauthProvider.buildHeaders(request.getConfiguration().getUrl(), request.getConfiguration().getAppSecretKey(), null);
+    Map<String, String> headers = OauthProvider.buildHeaders(request.getqTestURL(), request.getApiKey(), null);
     Boolean mustRetry = true;
     String previousState = "";
     while (mustRetry) {
@@ -105,12 +105,12 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     ResponseEntity responseEntity;
     try {
       //get task status
-      responseEntity = AutomationTestService.getTaskStatus(request.getConfiguration(), task.getId(), headers);
+      responseEntity = AutomationTestService.getTaskStatus(request.getqTestURL(), task.getId(), headers);
     } catch (ClientRequestException e) {
       LoggerUtils.formatError(request.getListener().getLogger(), "Cannot get response of taskId: %s, error: %s", task.getId(), e.getMessage());
       throw new SubmittedException(e.getMessage(), -1);
     }
-    LOG.info(String.format("project:%s, status:%s, body:%s", request.getConfiguration().getJenkinsProjectName(),
+    LOG.info(String.format("project:%s, status:%s, body:%s", request.getJenkinsProjectName(),
       null == responseEntity ? -1 : responseEntity.getStatusCode(), null == responseEntity ? "" : responseEntity.getBody()));
 
     if ((null == responseEntity) || (responseEntity.getStatusCode() != HttpStatus.SC_OK)) {
