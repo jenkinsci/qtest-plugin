@@ -433,7 +433,7 @@ function loadToCurrentSelectedContainer(callback) {
             if (firstChild) {
                 $j(firstChild).trigger("click");
                 // wait for sub-items completely loaded
-                var tryCount = 20;
+                var tryCount = 5000;
                 var interval = setInterval(function() {
                     if ($j(htmlNode.parentElement.next()).is(":visible")) {
                         clearInterval(interval);
@@ -449,7 +449,7 @@ function loadToCurrentSelectedContainer(callback) {
                         // could not load sub-items
 
                     }
-                }, 500);
+                }, 1000);
 
             }
         } else {
