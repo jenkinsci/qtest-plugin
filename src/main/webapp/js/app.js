@@ -58,9 +58,10 @@ $j(document).ready(function () {
             var name = (data.qTestInfo.name || "").toLowerCase();
             var versions = (data.qTestInfo.version || "").split(".");
             if (("test-conductor" === name || "${pom.name}" === name) && 3 === versions.length) {
-                // 8.7.3
-                if ((+versions[0] === 8 && +versions[1] > 7)
-                || (+versions[0] === 8 && +versions[1] === 7 && +versions[2] > 3)
+                // 8.9.4
+                if (
+                   (+versions[0] === 8 && +versions[1] > 9)
+                || (+versions[0] === 8 && +versions[1] === 9 && +versions[2] > 4)
                 || (+versions[0] > 8)
                 ) {
                     enabled = true;
