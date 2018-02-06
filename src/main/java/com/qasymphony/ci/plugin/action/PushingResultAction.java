@@ -607,5 +607,14 @@ public class PushingResultAction extends Notifier {
         return res;
       }
     }
+
+    @JavaScriptMethod
+    public JSONObject getQtestVersion(String qTestUrl) {
+      JSONObject res = new JSONObject();
+      //get project from qTest
+      Object version = ConfigService.getQtestVersion(qTestUrl);
+      res.put("version", null == version ? "" : JSONArray.fromObject(version));
+      return res;
+    }
   }
 }
