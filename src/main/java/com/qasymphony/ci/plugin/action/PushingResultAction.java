@@ -609,12 +609,19 @@ public class PushingResultAction extends Notifier {
     }
 
     @JavaScriptMethod
-    public JSONObject getQtestVersion(String qTestUrl) {
+    public JSONObject getQtestInfo(String qTestUrl) {
       JSONObject res = new JSONObject();
       //get project from qTest
-      Object version = ConfigService.getQtestVersion(qTestUrl);
-      res.put("version", null == version ? "" : JSONArray.fromObject(version));
-      return res;
+      try {
+        Object qTestInfo = ConfigService.getQtestInfo(qTestUrl);
+        if (null != qTestInfo) {
+            res.put("qTestInfo", null == qTestInfo ? "" : JSONObject.fromObject(qTestInfo));
+            return res;
+        }
+      } catch (Exception ex) {
+
+      }
+      return null;
     }
   }
 }

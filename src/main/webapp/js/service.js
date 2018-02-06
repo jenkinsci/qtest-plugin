@@ -93,6 +93,13 @@ var qtest = (function ($j) {
             }
         }, this));
     };
+  module.getQtestInfo = function(url, onSuccess) {
+    remoteAction.getQtestInfo(url, $j.proxy(function(t) {
+         if (onSuccess){
+             onSuccess(t.responseObject());
+         }
+    }, this));
+  };
 
   return module;
 }($j));

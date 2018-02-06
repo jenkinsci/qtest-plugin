@@ -67,18 +67,15 @@ public class ConfigService {
     return false;
   }
 
-  public static String getQtestVersion(String url) {
+  public static String getQtestInfo(String url) {
     String versionUrl = String.format("%s%s", url, "/version");
     try {
       ResponseEntity entity = HttpClientUtils.get(versionUrl, null);
-      if (!StringUtils.isEmpty(entity.getBody())) {
-        JsonNode node = JsonUtils.readTree(entity.getBody());
-        return JsonUtils.getText(node, "version");
-      }
+      return entity.getBody();
     } catch (ClientRequestException e) {
       LOG.log(Level.WARNING, "Cannot connect to qTest." + e.getMessage());
     }
-    return "";
+    return null;
   }
 
   /**

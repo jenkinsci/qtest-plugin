@@ -7,6 +7,20 @@ var currentJSONContainer = {
         },
         containerPath: []
     };
+function toggleNewUI(disabled) {
+    var options = $j("input[name*='config.submitToContainer']");
+    if (2 === options.length) {
+        var submitToContainerID = $j(options[1]).attr("id");
+        if (disabled) {
+            $j(options[0]).trigger('click');
+            $j("tr[ref='" + submitToContainerID + "'] :input").attr("disabled", true);
+            $j("#overwriteExistingTestSteps").attr("disabled", true);
+        } else {
+            $j("tr[ref='" + submitToContainerID + "'] :input").removeAttr("disabled");
+            $j("#overwriteExistingTestSteps").attr("disabled", false);
+        }
+    }
+}
 $j(document).ready(function () {
   setTimeout(function () {
     disableTextBox(true);
@@ -37,13 +51,19 @@ $j(document).ready(function () {
     updateSelectedContainer(contentItem);
   });
 
-//  $j("#containerTree").on("dblclick", ".content", function(event) {
-//      var contentItem = event.currentTarget;
-//      if (contentItem) {
-//        var firstChild = contentItem.parentElement.firstElementChild;
-//        $j(firstChild).trigger("click");
-//      }
-//    });
+  $j("input[name='config.url']").on("change", function(event) {
+      qtest.getQtestInfo($j(this).val(), function(data) {
+          if (data && data.qTestInfo.version !== "") {
+            if (data.qTestInfo.version.replace(/\./g, "") <= ("8.7.3").replace(/\./g, "")) {
+                toggleNewUI(true);
+            } else {
+                toggleNewUI(false);
+            }
+          } else {
+            toggleNewUI(true);
+          }
+       });
+    });
 
   $j(document).on("click", "#createNewTestRun", function (event) {
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
