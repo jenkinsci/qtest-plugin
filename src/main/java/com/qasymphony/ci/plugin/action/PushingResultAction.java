@@ -615,7 +615,7 @@ public class PushingResultAction extends Notifier {
       try {
         Object qTestInfo = ConfigService.getQtestInfo(qTestUrl);
         if (null != qTestInfo) {
-            res.put("qTestInfo", null == qTestInfo ? "" : JSONObject.fromObject(qTestInfo));
+            res.put("qTestInfo", JSONObject.fromObject(qTestInfo));
             return res;
         }
       } catch (Exception ex) {
