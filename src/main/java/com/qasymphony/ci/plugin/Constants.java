@@ -39,4 +39,9 @@ public class Constants {
   public static final Integer LIMIT_TXT_FILES = 5;
   public static final String JUNIT_PREFIX = "TEST-*";
   public static final String JUNIT_SUFFIX = "/*.xml";
+
+  /**
+   * Support submit test logs for qTest version from 8.9.4 or less
+   */
+  public static final String OLD_QTEST_VERSION = "8.9.4";
 }

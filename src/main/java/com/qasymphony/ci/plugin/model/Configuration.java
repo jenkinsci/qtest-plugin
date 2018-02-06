@@ -285,7 +285,8 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   /**
    * @return {@link Setting}
    */
-  public Setting toSetting() {
+  public Setting toSetting(Boolean saveOldSetting) {
+
     Setting setting = new Setting()
             .setId(this.id)
             .setJenkinsServer(this.jenkinsServerUrl)
@@ -293,8 +294,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
             .setProjectId(this.projectId)
             .setModuleId(this.moduleId)
             .setEnvironmentId(this.environmentId)
-            .setOverwriteExistingTestSteps(this.overwriteExistingTestSteps)
             .setTestSuiteId(this.testSuiteId);
+
+    if (saveOldSetting == true) { // Save old setting for release option if qTest version < 8.9.4
+      setting.setReleaseId(this.releaseId);
+      return setting;
+    }
+
+    setting.setOverwriteExistingTestSteps(this.overwriteExistingTestSteps);
 
     if (this.submitToContainer) {
       long nodeId = -1;
