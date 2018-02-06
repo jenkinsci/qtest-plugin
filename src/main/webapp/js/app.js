@@ -7,11 +7,11 @@ var currentJSONContainer = {
         },
         containerPath: []
     };
-function toggleNewUI(disabled) {
+function toggleNewUI(enabled) {
     var options = $j("input[name*='config.submitToContainer']");
     if (2 === options.length) {
         var submitToContainerID = $j(options[1]).attr("id");
-        if (disabled) {
+        if (!enabled) {
             $j(options[0]).trigger('click');
             $j("tr[ref='" + submitToContainerID + "'] :input").attr("disabled", true);
             $j("#overwriteExistingTestSteps").attr("disabled", true);
@@ -53,15 +53,21 @@ $j(document).ready(function () {
 
   $j("input[name='config.url']").on("change", function(event) {
       qtest.getQtestInfo($j(this).val(), function(data) {
-          if (data && data.qTestInfo.version !== "") {
-            if (data.qTestInfo.version.replace(/\./g, "") <= ("8.7.3").replace(/\./g, "")) {
-                toggleNewUI(true);
-            } else {
-                toggleNewUI(false);
+          var enabled = false;
+          if (data && data.qTestInfo.version && data.qTestInfo.name) {
+            var name = (data.qTestInfo.name || "").toLowerCase();
+            var versions = (data.qTestInfo.version || "").split(".");
+            if (("test-conductor" === name || "${pom.name}" === name) && 3 === versions.length) {
+                // 8.7.3
+                if ((+versions[0] === 8 && +versions[1] > 7)
+                || (+versions[0] === 8 && +versions[1] === 7 && +versions[2] > 3)
+                || (+versions[0] > 8)
+                ) {
+                    enabled = true;
+                }
             }
-          } else {
-            toggleNewUI(true);
           }
+          toggleNewUI(enabled);
        });
     });
 
