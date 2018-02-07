@@ -56,6 +56,18 @@
       <timezone>7</timezone>
     </developer>
     <developer>
+      <id>tamvo</id>
+      <email>tamvo@qasymphony.com</email>
+      <name>Tam Vo</name>
+      <timezone>7</timezone>
+    </developer>
+    <developer>
+      <id>phuta</id>
+      <email>phuta@qasymphony.com</email>
+      <name>Phu Ta</name>
+      <timezone>7</timezone>
+    </developer>
+    <developer>
       <id>anpham</id>
       <email>anpham@qasymphony.com</email>
       <name>An Pham</name>
