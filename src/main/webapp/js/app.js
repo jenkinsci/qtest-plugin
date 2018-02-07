@@ -30,6 +30,7 @@ $j(document).ready(function () {
     hideNoHelp();
     initContainerJSON();
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j("#createNewTestRun").prop("checked");
+    $j("input[name='config.url']").trigger("change");
   }, 1000);
   $j(document).on("click", ".content", function(event) {
     var htmlPrevNode = document.querySelector("div[qtestid='" + currentSelectedNodeId + "']");
@@ -51,17 +52,17 @@ $j(document).ready(function () {
     updateSelectedContainer(contentItem);
   });
 
-  $j("input[name='config.url']").on("change", function(event) {
+  $j(document).on("change", "input[name='config.url']", function(event) {
       qtest.getQtestInfo($j(this).val(), function(data) {
           var enabled = false;
           if (data && data.qTestInfo.version && data.qTestInfo.name) {
             var name = (data.qTestInfo.name || "").toLowerCase();
             var versions = (data.qTestInfo.version || "").split(".");
             if (("test-conductor" === name || "${pom.name}" === name) && 3 === versions.length) {
-                // 8.9.4
+                // 8.9.3
                 if (
                    (+versions[0] === 8 && +versions[1] > 9)
-                || (+versions[0] === 8 && +versions[1] === 9 && +versions[2] > 4)
+                || (+versions[0] === 8 && +versions[1] === 9 && +versions[2] > 3)
                 || (+versions[0] > 8)
                 ) {
                     enabled = true;
