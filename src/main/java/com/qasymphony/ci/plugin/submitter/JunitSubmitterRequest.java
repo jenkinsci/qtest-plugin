@@ -38,8 +38,9 @@ public class JunitSubmitterRequest {
     return createNewTestRunsEveryBuildDate;
   }
 
-  public void setCreateNewTestRunsEveryBuildDate(Boolean createNewTestRunsEveryBuildDate) {
+  public JunitSubmitterRequest setCreateNewTestRunsEveryBuildDate(Boolean createNewTestRunsEveryBuildDate) {
     this.createNewTestRunsEveryBuildDate = createNewTestRunsEveryBuildDate;
+    return this;
   }
 
   private Boolean createNewTestRunsEveryBuildDate;
@@ -173,15 +174,17 @@ public class JunitSubmitterRequest {
     return environmentID;
   }
 
-  public void setEnvironmentID(Long environmentID) {
+  public JunitSubmitterRequest setEnvironmentID(Long environmentID) {
     this.environmentID = environmentID;
+    return this;
   }
 
   public Long getEnvironmentParentID() {
     return environmentParentID;
   }
 
-  public void setEnvironmentParentID(Long environmentParentID) {
+  public JunitSubmitterRequest setEnvironmentParentID(Long environmentParentID) {
     this.environmentParentID = environmentParentID;
+    return this;
   }
 }

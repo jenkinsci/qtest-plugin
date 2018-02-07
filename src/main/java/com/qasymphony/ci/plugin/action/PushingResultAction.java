@@ -231,13 +231,16 @@ public class PushingResultAction extends Notifier {
     LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
     long start = System.currentTimeMillis();
     try {
-      result = junitSubmitter.submit(
-        new JunitSubmitterRequest()
-          .setConfiguration(configuration)
-          .setTestResults(automationTestResults)
-          .setBuildNumber(build.getNumber() + "")
-          .setBuildPath(build.getUrl())
-          .setListener(listener));
+      JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+      if (null == submitterRequest) {
+        LoggerUtils.formatError(logger, "Could not create JUnitSumitterRequest");
+        return null;
+      }
+      submitterRequest.setTestResults(automationTestResults)
+                      .setBuildNumber(build.getNumber() + "")
+                      .setBuildPath(build.getUrl())
+                      .setListener(listener);
+      result = junitSubmitter.submit(submitterRequest);
     } catch (SubmittedException e) {
       LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
       LoggerUtils.formatError(logger, "   status code: " + e.getStatus());

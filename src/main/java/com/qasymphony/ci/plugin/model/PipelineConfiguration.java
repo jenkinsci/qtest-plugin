@@ -1,5 +1,7 @@
 package com.qasymphony.ci.plugin.model;
 
+import com.qasymphony.ci.plugin.model.qtest.Container;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -193,7 +195,24 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         this.submitToExistingContainer = submitToExistingContainer;
     }
 
+    public JunitSubmitterRequest createJunitSubmitRequest() {
+        JunitSubmitterRequest request = new JunitSubmitterRequest();
+        request.setqTestURL(this.qtestURL)
+                .setApiKey(this.apiKey)
+                .setConfigurationID(null)
+                .setSubmitToExistingContainer(this.submitToExistingContainer)
+                .setContainerID(containerID)
+                .setContainerType(containerType)
+                .setCreateNewTestRunsEveryBuildDate(submitToExistingContainer ? createNewTestRunsEveryBuildDate : null)
+                .setEnvironmentID(this.environmentID)
+                //.setEnvironmentParentID(this.en)
+                //.setJenkinsProjectName(this.jenkinsProjectName)
+                //.setModuleID(this.moduleId)
+                //.setJenkinsServerURL(this.jenkinsServerUrl)
+                .setProjectID(this.projectID);
+        return request;
 
+    }
 
 
     @Extension

@@ -433,13 +433,13 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
             long start = System.currentTimeMillis();
             try {
-                result = junitSubmitter.submit(
-                        new JunitSubmitterRequest()
-                                .setqTestURL(step.pipeConfiguration.getQtestURL())
-                                .setTestResults(automationTestResults)
-                                .setBuildNumber(build.getNumber() + "")
-                                .setBuildPath(build.getUrl())
-                                .setListener(listener));
+                JunitSubmitterRequest request  = step.pipeConfiguration.createJunitSubmitRequest();
+                request.setTestResults(automationTestResults)
+                        .setBuildNumber(build.getNumber() + "")
+                        .setBuildPath(build.getUrl())
+                        .setListener(listener);
+
+                result = junitSubmitter.submit(request);
             } catch (SubmittedException e) {
                 LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
                 LoggerUtils.formatError(logger, "   status code: " + e.getStatus());
