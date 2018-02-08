@@ -21,6 +21,7 @@ import hudson.Launcher;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
@@ -85,6 +86,7 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             Boolean createTestSuiteEveryBuildDate = false;
             formData.remove("stapler-class");
             formData.remove("$class");
+
             PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
             pipeConfig.setQtestURL(formData.optString("url"));
             pipeConfig.setApiKey(formData.optString("appSecretKey"));
@@ -122,7 +124,8 @@ public class SubmitJUnitStep extends AbstractStepImpl {
 //            if (!pipeConfig.isValidate()) {
 //                throw new Exception("Invalid configuration for pipeline");
 //            }
-            return new SubmitJUnitStep(pipeConfig);
+            SubmitJUnitStep step = new SubmitJUnitStep(pipeConfig);
+            return step;
 
 
         }
@@ -338,6 +341,7 @@ public class SubmitJUnitStep extends AbstractStepImpl {
 
         @Override
         protected Void run() throws Exception {
+
             PrintStream logger = listener.getLogger();
 //            Result ret = build.getResult();
 //            LoggerUtils.formatInfo(logger, "Build result " + ret.toString());
@@ -437,6 +441,8 @@ public class SubmitJUnitStep extends AbstractStepImpl {
                 request.setTestResults(automationTestResults)
                         .setBuildNumber(build.getNumber() + "")
                         .setBuildPath(build.getUrl())
+                        .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
+                        .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
                         .setListener(listener);
 
                 result = junitSubmitter.submit(request);
@@ -471,6 +477,11 @@ public class SubmitJUnitStep extends AbstractStepImpl {
                 LoggerUtils.formatInfo(logger, "");
             }
             return result;
+        }
+
+        private boolean loadPipelineConfiguration() {
+            //ConfigService.saveConfiguration()
+            return false;
         }
     }
 

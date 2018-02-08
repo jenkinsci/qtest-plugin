@@ -49,7 +49,7 @@ public class AutomationTestService {
         result.setBuildURL(fullURL);
       }
       Long moduleId = request.getModuleID();
-      if (0 < moduleId) {
+      if (null != moduleId &&  0 < moduleId) {
         wrapper.setParent_module(moduleId);
       }
       url = String.format(AUTO_TEST_LOG_ENDPOINT_V3_1, request.getqTestURL(), request.getProjectID(), 0);
@@ -126,12 +126,9 @@ public class AutomationTestService {
     Date now = new Date();
     SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
     String testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
-
-
-
     Long nodeId = request.getContainerID();
     String nodeType = request.getContainerType();
-    switch (nodeType) {
+    switch (nodeType.toLowerCase()) {
       case "release":
       case "test-cycle":
         if (request.getCreateNewTestRunsEveryBuildDate()) {
