@@ -300,8 +300,15 @@ public class HttpClientUtils {
     ProxyConfiguration proxyConfig = Jenkins.getInstance().proxy;
     if (proxyConfig != null) {
       HttpHost proxy = new HttpHost(proxyConfig.name, proxyConfig.port);
+      String username = proxyConfig.getUserName();
       String password = proxyConfig.getPassword();
-      Credentials credentials = new UsernamePasswordCredentials(proxyConfig.getUserName(), password);
+
+      Credentials credentials;
+      if (username != null && StringUtils.isNotEmpty(username) == true) {
+        credentials = new UsernamePasswordCredentials(username, password);
+      } else  {
+        credentials = new UsernamePasswordCredentials("", "");
+      }
       AuthScope authScope = new AuthScope(proxyConfig.name, proxyConfig.port);
       CredentialsProvider credsProvider = new BasicCredentialsProvider();
       credsProvider.setCredentials(authScope, credentials);
