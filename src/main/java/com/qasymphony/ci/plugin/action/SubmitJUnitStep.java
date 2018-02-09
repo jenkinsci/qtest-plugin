@@ -1,7 +1,10 @@
 package com.qasymphony.ci.plugin.action;
 
+import com.google.common.collect.ImmutableSet;
 import com.qasymphony.ci.plugin.ConfigService;
 import com.qasymphony.ci.plugin.OauthProvider;
+import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
@@ -18,7 +21,7 @@ import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Result;
+import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
@@ -26,17 +29,15 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
-import javax.inject.Inject;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -44,36 +45,40 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SubmitJUnitStep extends AbstractStepImpl {
+public class SubmitJUnitStep extends Step {
     private static final Logger LOG = Logger.getLogger(PushingResultAction.class.getName());
 
     public PipelineConfiguration getPipeConfiguration() {
-        return pipeConfiguration;
+        return pipelineConfiguration;
     }
 
     public void setPipeConfiguration(PipelineConfiguration pipeConfiguration) {
-        this.pipeConfiguration = pipeConfiguration;
+        this.pipelineConfiguration = pipeConfiguration;
     }
 
-    private PipelineConfiguration pipeConfiguration;
+    private PipelineConfiguration pipelineConfiguration;
     @DataBoundConstructor
     public  SubmitJUnitStep(PipelineConfiguration pipeConfiguration){
-        this.pipeConfiguration = pipeConfiguration;
+        this.pipelineConfiguration = pipeConfiguration;
+    }
+
+    @Override
+    public StepExecution start(StepContext stepContext) throws Exception {
+        return new SubmitJUnitStepExecution(this, stepContext);
     }
 
 
     @Extension
-    public static class DescriptorImpl extends AbstractStepDescriptorImpl {
-        public DescriptorImpl() {
-            super(SubmitJUnitStepExecution.class);
-        }
+    public static class DescriptorImpl extends StepDescriptor {
 
         @Override
         public String getFunctionName() {
             return "submitJUnitTestResultsToqTest";
         }
 
-
+        @Override public Set<? extends Class<?>> getRequiredContext() {
+            return ImmutableSet.of(Run.class, FilePath.class, TaskListener.class);
+        }
 
         @Nonnull
         @Override
@@ -81,11 +86,16 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             return "Submit jUnit test result to qTest";
         }
 
+//        @Override public String argumentsToString(Map<String, Object> namedArgs) {
+//            Object name = namedArgs.get("name");
+//            return name instanceof String ? (String) name : null;
+//        }
+
         @Override
         public Step newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
             Boolean createTestSuiteEveryBuildDate = false;
-            formData.remove("stapler-class");
-            formData.remove("$class");
+//            formData.remove("stapler-class");
+//            formData.remove("$class");
 
             PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
             pipeConfig.setQtestURL(formData.optString("url"));
@@ -320,29 +330,44 @@ public class SubmitJUnitStep extends AbstractStepImpl {
         //~javascript methods
     }
 
-    public static class SubmitJUnitStepExecution extends AbstractSynchronousNonBlockingStepExecution<Void> {
+    public static class SubmitJUnitStepExecution extends SynchronousNonBlockingStepExecution<Void> {
         private static final Logger LOG = Logger.getLogger(SubmitJUnitStepExecution.class.getName());
 
-
-        @StepContextParameter
         private transient TaskListener listener;
 
-        @StepContextParameter
         private transient FilePath ws;
 
-        @StepContextParameter
         private transient Run build;
 
-        @StepContextParameter
         private transient Launcher launcher;
 
-        @Inject
-        private transient SubmitJUnitStep step;
+        private transient final SubmitJUnitStep step;
 
+        SubmitJUnitStepExecution(SubmitJUnitStep step, StepContext context) {
+            super(context);
+            this.step = step;
+        }
         @Override
         protected Void run() throws Exception {
 
+            this.build = getContext().get(Run.class);
+            this.ws = getContext().get(FilePath.class);
+            this.listener = getContext().get(TaskListener.class);
+            this.launcher = getContext().get(Launcher.class);
+            JunitSubmitterRequest junitSubmitterRequest = step.pipelineConfiguration.createJunitSubmitRequest();
+            junitSubmitterRequest
+                    .setBuildNumber(build.getNumber() + "")
+                    .setBuildPath(build.getUrl())
+                    .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
+                    .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
+                    .setListener(listener);
+
+            //RunWrapper runWrapper = new RunWrapper (this.build, true);
+
             PrintStream logger = listener.getLogger();
+            //LoggerUtils.formatInfo(logger, "Previous build status 1: " + runWrapper.getResult());
+            //LoggerUtils.formatInfo(logger, "Previous build status 2: " + build.getResult());
+
 //            Result ret = build.getResult();
 //            LoggerUtils.formatInfo(logger, "Build result " + ret.toString());
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
@@ -351,24 +376,18 @@ public class SubmitJUnitStep extends AbstractStepImpl {
 //                storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
 //                return null;
 //            }
-            //showInfo(logger);
-            if (!step.pipeConfiguration.isValidate()) {
+            showInfo(logger);
+            if (!step.pipelineConfiguration.isValidate()) {
                 LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-                storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
                 return null;
             }
 
-            List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
+            List<AutomationTestResult> automationTestResults = readTestResults(junitSubmitterRequest, logger, junitSubmitter);
             if (automationTestResults.isEmpty()) {
                 return null;
             }
-            JunitSubmitterRequest junitSubmitterRequest = step.pipeConfiguration.createJunitSubmitRequest();
-            junitSubmitterRequest.setTestResults(automationTestResults)
-                    .setBuildNumber(build.getNumber() + "")
-                    .setBuildPath(build.getUrl())
-                    .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
-                    .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
-                    .setListener(listener);
+            junitSubmitterRequest.setTestResults(automationTestResults);
 
 
             JunitSubmitterResult result = submitTestResult(junitSubmitterRequest, junitSubmitter, automationTestResults);
@@ -393,23 +412,22 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             LoggerUtils.formatInfo(logger, "");
         }
 
-        private Boolean storeWhenNotSuccess(JunitSubmitter junitSubmitter, Run build, PrintStream logger, String status) {
-//        try {
-//            junitSubmitter.storeSubmittedResult(build.getRe, new JunitSubmitterResult()
-//                    .setNumberOfTestLog(0)
-//                    .setTestSuiteName("")
-//                    .setNumberOfTestResult(0)
-//                    .setTestSuiteId(null)
-//                    .setSubmittedStatus(status));
-//        } catch (StoreResultException e) {
-//            LoggerUtils.formatError(logger, e.getMessage());
-//            e.printStackTrace(logger);
-//        }
-
+        private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, Run build, PrintStream logger, String status) {
+            try {
+                junitSubmitter.storeSubmittedResult(submitterRequest, build, new JunitSubmitterResult()
+                        .setNumberOfTestLog(0)
+                        .setTestSuiteName("")
+                        .setNumberOfTestResult(0)
+                        .setTestSuiteId(null)
+                        .setSubmittedStatus(status));
+            } catch (StoreResultException e) {
+                LoggerUtils.formatError(logger, e.getMessage());
+                e.printStackTrace(logger);
+            }
             return true;
         }
 
-        private List<AutomationTestResult> readTestResults(Run build, Launcher launcher, TaskListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
+        private List<AutomationTestResult> readTestResults(JunitSubmitterRequest submitterRequest, PrintStream logger, JunitSubmitter junitSubmitter) {
             List<AutomationTestResult> automationTestResults;
             long start = System.currentTimeMillis();
             LoggerUtils.formatHR(logger);
@@ -419,10 +437,10 @@ public class SubmitJUnitStep extends AbstractStepImpl {
                         .setWorkSpace(ws)
                         .setLauncher(launcher)
                         .setListener(listener)
-                        .setCreateEachMethodAsTestCase(!step.pipeConfiguration.getCreateTestCaseForEachJUnitTestClass())
-                        .setOverwriteExistingTestSteps(step.pipeConfiguration.getOverwriteExistingTestSteps())
-                        .setUtilizeTestResultFromCITool(step.pipeConfiguration.getParseTestResultsFromTestingTools())
-                        .setParseTestResultPattern(step.pipeConfiguration.getParseTestResultsPattern())
+                        .setCreateEachMethodAsTestCase(!step.pipelineConfiguration.getCreateTestCaseForEachJUnitTestClass())
+                        .setOverwriteExistingTestSteps(step.pipelineConfiguration.getOverwriteExistingTestSteps())
+                        .setUtilizeTestResultFromCITool(step.pipelineConfiguration.getParseTestResultsFromTestingTools())
+                        .setParseTestResultPattern(step.pipelineConfiguration.getParseTestResultsPattern())
                 );
             } catch (Exception e) {
                 LOG.log(Level.WARNING, e.getMessage());
@@ -431,7 +449,7 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             }
             if (automationTestResults.isEmpty()) {
                 LoggerUtils.formatWarn(logger, "No JUnit test result found.");
-                storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
+                storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
                 LoggerUtils.formatHR(logger);
                 return Collections.emptyList();
             }
@@ -473,7 +491,7 @@ public class SubmitJUnitStep extends AbstractStepImpl {
                     int numberTestLog = 0 != result.getNumberOfTestLog() ? result.getNumberOfTestLog() : automationTestResults.size();
                     LoggerUtils.formatInfo(logger, "   testLogs: %s", numberTestLog);
                     LoggerUtils.formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
-                    LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(step.pipeConfiguration.getQtestURL(), step.pipeConfiguration.getProjectID(), result.getTestSuiteId()));
+                    LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(step.pipelineConfiguration.getQtestURL(), step.pipelineConfiguration.getProjectID(), result.getTestSuiteId()));
                 }
                 LoggerUtils.formatInfo(logger, "Time elapsed: %s", LoggerUtils.elapsedTime(start));
                 LoggerUtils.formatInfo(logger, "End submit test results to qTest at: %s", JsonUtils.getCurrentDateString());
@@ -487,6 +505,31 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             //this.build.getUpstreamBuilds
 
             return false;
+        }
+
+        private void showInfo(PrintStream logger) {
+            PipelineConfiguration pipelineConfiguration = this.step.pipelineConfiguration;
+            LoggerUtils.formatInfo(logger, "");
+            LoggerUtils.formatHR(logger);
+            LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
+            LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
+            LoggerUtils.formatHR(logger);
+            LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", pipelineConfiguration.getQtestURL(), "TODO GET CONFIG ID");
+            LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", ws.getBaseName(), pipelineConfiguration.getProjectID());
+            if (!pipelineConfiguration.getSubmitToExistingContainer()) {
+                LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", "TODO GET RELEASE NAME", pipelineConfiguration.getContainerID());
+            } else {
+                LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
+                        "TODO GET CONTAINER",
+                        pipelineConfiguration.getContainerID(), pipelineConfiguration.getContainerType());
+            }
+            Long environmentID = pipelineConfiguration.getEnvironmentID();
+            if (null != environmentID && 0 < environmentID) {
+                LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", "TODO NEED READ ENVIRONMENT NAME", environmentID);
+            } else {
+                LoggerUtils.formatInfo(logger, "With no environment.");
+            }
+            LoggerUtils.formatInfo(logger, "");
         }
     }
 

@@ -127,8 +127,8 @@ public class AutomationTestService {
     SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
     String testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
     Long nodeId = request.getContainerID();
-    String nodeType = request.getContainerType();
-    switch (nodeType.toLowerCase()) {
+    String nodeType = request.getContainerType().toLowerCase();
+    switch (nodeType) {
       case "release":
       case "test-cycle":
         if (request.getCreateNewTestRunsEveryBuildDate()) {
