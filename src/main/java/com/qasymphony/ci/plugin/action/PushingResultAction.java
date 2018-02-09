@@ -77,39 +77,51 @@ public class PushingResultAction extends Notifier {
   public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+    if (null == submitterRequest) {
+      LoggerUtils.formatError(logger, "Could not create JUnitSumitterRequest");
+      return true;
+    }
+    submitterRequest.setBuildNumber(build.getNumber() + "")
+            .setBuildPath(build.getUrl())
+            .setListener(listener);
+
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
     if (Result.ABORTED.equals(build.getResult())) {
       LoggerUtils.formatWarn(logger, "Abort build action.");
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
     showInfo(logger);
     if (!validateConfig(configuration)) {
       LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
     }
     if (null == checkProjectNameChanged(build, listener)) {
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
-    List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
-    if (automationTestResults.isEmpty())
+    List<AutomationTestResult> automationTestResults = readTestResults(submitterRequest, build, launcher, listener, logger, junitSubmitter);
+    if (automationTestResults.isEmpty()) {
       return true;
-    JunitSubmitterResult result = submitTestResult(build, listener, junitSubmitter, automationTestResults);
+    }
+    submitterRequest.setTestResults(automationTestResults);
+
+    JunitSubmitterResult result = submitTestResult(submitterRequest, build, listener, junitSubmitter, automationTestResults);
     if (null == result) {
       //if have no test result, we do not break build flow
       return true;
     }
     saveConfiguration(build, result, logger);
-    storeResult(build, junitSubmitter, result, logger);
+    storeResult(submitterRequest, build, junitSubmitter, result, logger);
     LoggerUtils.formatHR(logger);
     return true;
   }
 
-  private Boolean storeWhenNotSuccess(JunitSubmitter junitSubmitter, AbstractBuild build, PrintStream logger, String status) {
+  private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, PrintStream logger, String status) {
     try {
-      junitSubmitter.storeSubmittedResult(build, new JunitSubmitterResult()
+      junitSubmitter.storeSubmittedResult(submitterRequest, build, new JunitSubmitterResult()
         .setNumberOfTestLog(0)
         .setTestSuiteName("")
         .setNumberOfTestResult(0)
@@ -192,7 +204,7 @@ public class PushingResultAction extends Notifier {
     return setting;
   }
 
-  private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
+  private List<AutomationTestResult> readTestResults(JunitSubmitterRequest submitterRequest, AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
     LoggerUtils.formatHR(logger);
@@ -214,7 +226,7 @@ public class PushingResultAction extends Notifier {
     }
     if (automationTestResults.isEmpty()) {
       LoggerUtils.formatWarn(logger, "No JUnit test result found.");
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
       LoggerUtils.formatHR(logger);
       return Collections.emptyList();
     }
@@ -224,22 +236,13 @@ public class PushingResultAction extends Notifier {
     return automationTestResults;
   }
 
-  private JunitSubmitterResult submitTestResult(AbstractBuild build, BuildListener listener,
+  private JunitSubmitterResult submitTestResult(JunitSubmitterRequest submitterRequest, AbstractBuild build, BuildListener listener,
                                                 JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
     PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
     LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
     long start = System.currentTimeMillis();
     try {
-      JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
-      if (null == submitterRequest) {
-        LoggerUtils.formatError(logger, "Could not create JUnitSumitterRequest");
-        return null;
-      }
-      submitterRequest.setTestResults(automationTestResults)
-                      .setBuildNumber(build.getNumber() + "")
-                      .setBuildPath(build.getUrl())
-                      .setListener(listener);
       result = junitSubmitter.submit(submitterRequest);
     } catch (SubmittedException e) {
       LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
@@ -288,9 +291,9 @@ public class PushingResultAction extends Notifier {
     }
   }
 
-  private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
+  private void storeResult(JunitSubmitterRequest submitterRequest, AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
     try {
-      junitSubmitter.storeSubmittedResult(build, result);
+      junitSubmitter.storeSubmittedResult(submitterRequest, build, result);
       LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
     } catch (Exception e) {
       LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());

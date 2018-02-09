@@ -3,6 +3,7 @@ package com.qasymphony.ci.plugin.submitter;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 
 /**
  * @author trongle
@@ -20,11 +21,12 @@ public interface JunitSubmitter {
   JunitSubmitterResult submit(JunitSubmitterRequest junitSubmitterRequest) throws Exception;
 
   /**
-   * @param build  {@link AbstractBuild}
+   * @param junitSubmitterRequest JunitSubmitterRequest
+   * @param run  {@link Run}
    * @param result {@link JunitSubmitterResult}
    * @return {@link SubmittedResult}
    * @throws StoreResultException StoreResultException
    */
-  SubmittedResult storeSubmittedResult(AbstractBuild build, JunitSubmitterResult result)
+  SubmittedResult storeSubmittedResult(JunitSubmitterRequest junitSubmitterRequest, Run run, JunitSubmitterResult result)
     throws StoreResultException;
 }

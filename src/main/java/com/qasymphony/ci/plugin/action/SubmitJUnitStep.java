@@ -359,28 +359,38 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             }
 
             List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
-            if (automationTestResults.isEmpty())
+            if (automationTestResults.isEmpty()) {
                 return null;
-            JunitSubmitterResult result = submitTestResult(build, listener, junitSubmitter, automationTestResults);
+            }
+            JunitSubmitterRequest junitSubmitterRequest = step.pipeConfiguration.createJunitSubmitRequest();
+            junitSubmitterRequest.setTestResults(automationTestResults)
+                    .setBuildNumber(build.getNumber() + "")
+                    .setBuildPath(build.getUrl())
+                    .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
+                    .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
+                    .setListener(listener);
+
+
+            JunitSubmitterResult result = submitTestResult(junitSubmitterRequest, junitSubmitter, automationTestResults);
             if (null == result) {
                 //if have no test result, we do not break build flow
                 return null;
             }
-            storeResult(build, junitSubmitter, result, logger);
+            storeResult(junitSubmitterRequest, build, junitSubmitter, result, logger);
             LoggerUtils.formatHR(logger);
             return null;
 
         }
 
-        private void storeResult(Run build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
-//        try {
-//            junitSubmitter.storeSubmittedResult(build, result);
-//            LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
-//        } catch (Exception e) {
-//            LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());
-//            e.printStackTrace(logger);
-//        }
-//        LoggerUtils.formatInfo(logger, "");
+        private void storeResult(JunitSubmitterRequest junitSubmitterRequest, Run<?, ?> build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
+            try {
+                junitSubmitter.storeSubmittedResult(junitSubmitterRequest, build, result);
+                LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
+            } catch (Exception e) {
+                LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());
+                e.printStackTrace(logger);
+            }
+            LoggerUtils.formatInfo(logger, "");
         }
 
         private Boolean storeWhenNotSuccess(JunitSubmitter junitSubmitter, Run build, PrintStream logger, String status) {
@@ -395,6 +405,7 @@ public class SubmitJUnitStep extends AbstractStepImpl {
 //            LoggerUtils.formatError(logger, e.getMessage());
 //            e.printStackTrace(logger);
 //        }
+
             return true;
         }
 
@@ -430,21 +441,13 @@ public class SubmitJUnitStep extends AbstractStepImpl {
             return automationTestResults;
         }
 
-        private JunitSubmitterResult submitTestResult(Run build, TaskListener listener,
+        private JunitSubmitterResult submitTestResult(JunitSubmitterRequest request,
                                                       JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
             PrintStream logger = listener.getLogger();
             JunitSubmitterResult result = null;
             LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
             long start = System.currentTimeMillis();
             try {
-                JunitSubmitterRequest request  = step.pipeConfiguration.createJunitSubmitRequest();
-                request.setTestResults(automationTestResults)
-                        .setBuildNumber(build.getNumber() + "")
-                        .setBuildPath(build.getUrl())
-                        .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
-                        .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
-                        .setListener(listener);
-
                 result = junitSubmitter.submit(request);
             } catch (SubmittedException e) {
                 LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
@@ -481,6 +484,8 @@ public class SubmitJUnitStep extends AbstractStepImpl {
 
         private boolean loadPipelineConfiguration() {
             //ConfigService.saveConfiguration()
+            //this.build.getUpstreamBuilds
+
             return false;
         }
     }
