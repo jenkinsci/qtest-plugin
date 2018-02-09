@@ -21,13 +21,14 @@ import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
+import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -362,29 +363,27 @@ public class SubmitJUnitStep extends Step {
                     .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
                     .setListener(listener);
 
-            //RunWrapper runWrapper = new RunWrapper (this.build, true);
-
+            RunWrapper runWrapper = new RunWrapper (this.build, true);
             PrintStream logger = listener.getLogger();
-            //LoggerUtils.formatInfo(logger, "Previous build status 1: " + runWrapper.getResult());
-            //LoggerUtils.formatInfo(logger, "Previous build status 2: " + build.getResult());
-
-//            Result ret = build.getResult();
-//            LoggerUtils.formatInfo(logger, "Build result " + ret.toString());
+            //LoggerUtils.formatInfo(logger, "Previous build status 1: " + runWrapper.getCurrentResult());
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
-//            if (Result.ABORTED.equals(build.getResult())) {
-//                LoggerUtils.formatWarn(logger, "Abort build action.");
-//                storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
-//                return null;
-//            }
+            if (Result.ABORTED.equals(runWrapper.getCurrentResult())) {
+                LoggerUtils.formatWarn(logger, "Abort build action.");
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(),  logger, JunitSubmitterResult.STATUS_CANCELED);
+                return null;
+            }
             showInfo(logger);
             if (!step.pipelineConfiguration.isValidate()) {
                 LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
                 return null;
             }
 
             List<AutomationTestResult> automationTestResults = readTestResults(junitSubmitterRequest, logger, junitSubmitter);
             if (automationTestResults.isEmpty()) {
+                LoggerUtils.formatWarn(logger, "No JUnit test result found.");
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_SKIPPED);
+                LoggerUtils.formatHR(logger);
                 return null;
             }
             junitSubmitterRequest.setTestResults(automationTestResults);
@@ -395,15 +394,15 @@ public class SubmitJUnitStep extends Step {
                 //if have no test result, we do not break build flow
                 return null;
             }
-            storeResult(junitSubmitterRequest, build, junitSubmitter, result, logger);
+            storeResult(junitSubmitterRequest, build, runWrapper.getCurrentResult(),junitSubmitter, result, logger);
             LoggerUtils.formatHR(logger);
             return null;
 
         }
 
-        private void storeResult(JunitSubmitterRequest junitSubmitterRequest, Run<?, ?> build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
+        private void storeResult(JunitSubmitterRequest junitSubmitterRequest, Run<?, ?> build, String buildResult, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
             try {
-                junitSubmitter.storeSubmittedResult(junitSubmitterRequest, build, result);
+                junitSubmitter.storeSubmittedResult(junitSubmitterRequest, build, buildResult, result);
                 LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
             } catch (Exception e) {
                 LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());
@@ -412,9 +411,9 @@ public class SubmitJUnitStep extends Step {
             LoggerUtils.formatInfo(logger, "");
         }
 
-        private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, Run build, PrintStream logger, String status) {
+        private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, Run build, String buildStatus, PrintStream logger, String status) {
             try {
-                junitSubmitter.storeSubmittedResult(submitterRequest, build, new JunitSubmitterResult()
+                junitSubmitter.storeSubmittedResult(submitterRequest, build, buildStatus, new JunitSubmitterResult()
                         .setNumberOfTestLog(0)
                         .setTestSuiteName("")
                         .setNumberOfTestResult(0)
@@ -448,9 +447,6 @@ public class SubmitJUnitStep extends Step {
                 automationTestResults = Collections.emptyList();
             }
             if (automationTestResults.isEmpty()) {
-                LoggerUtils.formatWarn(logger, "No JUnit test result found.");
-                storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
-                LoggerUtils.formatHR(logger);
                 return Collections.emptyList();
             }
             LoggerUtils.formatInfo(logger, "JUnit test result found: %s, time elapsed: %s", automationTestResults.size(), LoggerUtils.elapsedTime(start));
@@ -503,6 +499,9 @@ public class SubmitJUnitStep extends Step {
         private boolean loadPipelineConfiguration() {
             //ConfigService.saveConfiguration()
             //this.build.getUpstreamBuilds
+            // get config from qTest
+            // save config if not saved before
+            // get some info from qTest, EX: container name, environment name, parent environment id, release name, config id, module id
 
             return false;
         }

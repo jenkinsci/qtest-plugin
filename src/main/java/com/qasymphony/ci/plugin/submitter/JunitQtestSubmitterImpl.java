@@ -17,6 +17,7 @@ import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.model.AbstractBuild;
+import hudson.model.Result;
 import hudson.model.Run;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
@@ -120,16 +121,10 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     return new AutomationTestResponse(responseEntity.getBody());
   }
 
-  @Override public SubmittedResult storeSubmittedResult(JunitSubmitterRequest junitSubmitterRequest, Run build, JunitSubmitterResult result)
+  @Override public SubmittedResult storeSubmittedResult(JunitSubmitterRequest junitSubmitterRequest, Run build, String buildResult, JunitSubmitterResult result)
     throws StoreResultException {
     String qTestUrl = junitSubmitterRequest.getqTestURL();
     Long projectId = junitSubmitterRequest.getProjectID();
-    String buildResult = "";
-    if (null != build.getResult()) {
-      buildResult = build.getResult().toString();
-    } else {
-      buildResult = build.getBuildStatusSummary().message;
-    }
     SubmittedResult submitResult = new SubmittedResult()
       .setUrl(qTestUrl)
       .setProjectId(projectId)

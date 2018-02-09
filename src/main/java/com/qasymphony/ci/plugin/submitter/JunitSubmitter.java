@@ -27,6 +27,6 @@ public interface JunitSubmitter {
    * @return {@link SubmittedResult}
    * @throws StoreResultException StoreResultException
    */
-  SubmittedResult storeSubmittedResult(JunitSubmitterRequest junitSubmitterRequest, Run run, JunitSubmitterResult result)
+  SubmittedResult storeSubmittedResult(JunitSubmitterRequest junitSubmitterRequest, Run run, String buildResult, JunitSubmitterResult result)
     throws StoreResultException;
 }

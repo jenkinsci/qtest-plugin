@@ -133,6 +133,12 @@
       <artifactId>workflow-step-api</artifactId>
       <version>2.14</version>
     </dependency>
+      <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-support</artifactId>
+          <version>2.15</version>
+      </dependency>
+
     <!--<dependency>-->
       <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
       <!--<artifactId>workflow-support</artifactId>-->

@@ -87,23 +87,28 @@ public class PushingResultAction extends Notifier {
             .setListener(listener);
 
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
+    String buildResult = build.getResult() + "";
     if (Result.ABORTED.equals(build.getResult())) {
       LoggerUtils.formatWarn(logger, "Abort build action.");
-      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
     showInfo(logger);
     if (!validateConfig(configuration)) {
       LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult,logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
     }
     if (null == checkProjectNameChanged(build, listener)) {
-      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
     List<AutomationTestResult> automationTestResults = readTestResults(submitterRequest, build, launcher, listener, logger, junitSubmitter);
     if (automationTestResults.isEmpty()) {
+      LoggerUtils.formatWarn(logger, "No JUnit test result found.");
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_SKIPPED);
+      LoggerUtils.formatHR(logger);
+
       return true;
     }
     submitterRequest.setTestResults(automationTestResults);
@@ -114,14 +119,14 @@ public class PushingResultAction extends Notifier {
       return true;
     }
     saveConfiguration(build, result, logger);
-    storeResult(submitterRequest, build, junitSubmitter, result, logger);
+    storeResult(submitterRequest, build, buildResult, junitSubmitter, result, logger);
     LoggerUtils.formatHR(logger);
     return true;
   }
 
-  private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, PrintStream logger, String status) {
+  private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, String buildResult, PrintStream logger, String status) {
     try {
-      junitSubmitter.storeSubmittedResult(submitterRequest, build, new JunitSubmitterResult()
+      junitSubmitter.storeSubmittedResult(submitterRequest, build, buildResult, new JunitSubmitterResult()
         .setNumberOfTestLog(0)
         .setTestSuiteName("")
         .setNumberOfTestResult(0)
@@ -225,9 +230,6 @@ public class PushingResultAction extends Notifier {
       automationTestResults = Collections.emptyList();
     }
     if (automationTestResults.isEmpty()) {
-      LoggerUtils.formatWarn(logger, "No JUnit test result found.");
-      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
-      LoggerUtils.formatHR(logger);
       return Collections.emptyList();
     }
     LoggerUtils.formatInfo(logger, "JUnit test result found: %s, time elapsed: %s", automationTestResults.size(), LoggerUtils.elapsedTime(start));
@@ -291,9 +293,9 @@ public class PushingResultAction extends Notifier {
     }
   }
 
-  private void storeResult(JunitSubmitterRequest submitterRequest, AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
+  private void storeResult(JunitSubmitterRequest submitterRequest, AbstractBuild build, String buildResult, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
     try {
-      junitSubmitter.storeSubmittedResult(submitterRequest, build, result);
+      junitSubmitter.storeSubmittedResult(submitterRequest, build, buildResult, result);
       LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
     } catch (Exception e) {
       LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());
