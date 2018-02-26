@@ -183,8 +183,22 @@ public class PushingResultAction extends Notifier {
     if (!configuration.isSubmitToContainer()) {
       return configuration.getReleaseId() > 0;
     } else {
-      return null != configuration.getContainerJSONObject();
+      JSONObject json  = configuration.getContainerJSONObject();
+      if (null != json) {
+        JSONArray containerPath = json.optJSONArray("containerPath");
+        if (null != containerPath) {
+          int pathSize = containerPath.size();
+          if (0 < pathSize) {
+            JSONObject jsonNode = containerPath.optJSONObject(pathSize - 1);
+            if (null != jsonNode) {
+              Long nodeId = jsonNode.optLong("nodeId", 0L);
+              return 0L != nodeId;
+            }
+          }
+        }
+      }
     }
+    return false;
   }
 
   private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
@@ -267,8 +281,7 @@ public class PushingResultAction extends Notifier {
       LoggerUtils.formatInfo(logger, isSuccess ? "SUBMIT SUCCESS" : "SUBMIT FAILED");
       LoggerUtils.formatHR(logger);
       if (isSuccess) {
-        int numberTestLog = 0 != result.getNumberOfTestLog() ? result.getNumberOfTestLog() : automationTestResults.size();
-        LoggerUtils.formatInfo(logger, "   testLogs: %s", numberTestLog);
+        LoggerUtils.formatInfo(logger, "   testLogs: %s", result.getNumberOfTestLog());
         LoggerUtils.formatInfo(logger, "   testSuite: name=%s, id=%s", result.getTestSuiteName(), result.getTestSuiteId());
         LoggerUtils.formatInfo(logger, "   link: %s", ConfigService.formatTestSuiteLink(configuration.getUrl(), configuration.getProjectId(), result.getTestSuiteId()));
       }
@@ -606,6 +619,22 @@ public class PushingResultAction extends Notifier {
         fixedPool.shutdownNow();
         return res;
       }
+    }
+
+    @JavaScriptMethod
+    public JSONObject getQtestInfo(String qTestUrl) {
+      JSONObject res = new JSONObject();
+      //get project from qTest
+      try {
+        Object qTestInfo = ConfigService.getQtestInfo(qTestUrl);
+        if (null != qTestInfo) {
+            res.put("qTestInfo", JSONObject.fromObject(qTestInfo));
+            return res;
+        }
+      } catch (Exception ex) {
+
+      }
+      return null;
     }
   }
 }

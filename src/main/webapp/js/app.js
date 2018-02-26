@@ -7,6 +7,20 @@ var currentJSONContainer = {
         },
         containerPath: []
     };
+function toggleNewUI(enabled) {
+    var options = $j("input[name*='config.submitToContainer']");
+    if (2 === options.length) {
+        var submitToContainerID = $j(options[1]).attr("id");
+        if (!enabled) {
+            $j(options[0]).trigger('click');
+            $j("tr[ref='" + submitToContainerID + "'] :input").attr("disabled", true);
+            $j("#overwriteExistingTestSteps").attr("disabled", true);
+        } else {
+            $j("tr[ref='" + submitToContainerID + "'] :input").removeAttr("disabled");
+            $j("#overwriteExistingTestSteps").attr("disabled", false);
+        }
+    }
+}
 $j(document).ready(function () {
   setTimeout(function () {
     disableTextBox(true);
@@ -16,6 +30,7 @@ $j(document).ready(function () {
     hideNoHelp();
     initContainerJSON();
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j("#createNewTestRun").prop("checked");
+    $j("input[name='config.url']").trigger("change");
   }, 1000);
   $j(document).on("click", ".content", function(event) {
     var htmlPrevNode = document.querySelector("div[qtestid='" + currentSelectedNodeId + "']");
@@ -37,13 +52,26 @@ $j(document).ready(function () {
     updateSelectedContainer(contentItem);
   });
 
-//  $j("#containerTree").on("dblclick", ".content", function(event) {
-//      var contentItem = event.currentTarget;
-//      if (contentItem) {
-//        var firstChild = contentItem.parentElement.firstElementChild;
-//        $j(firstChild).trigger("click");
-//      }
-//    });
+  $j(document).on("change", "input[name='config.url']", function(event) {
+      qtest.getQtestInfo($j(this).val(), function(data) {
+          var enabled = false;
+          if (data && data.qTestInfo.version && data.qTestInfo.name) {
+            var name = (data.qTestInfo.name || "").toLowerCase();
+            var versions = (data.qTestInfo.version || "").split(".");
+            if (("test-conductor" === name || "${pom.name}" === name) && 3 === versions.length) {
+                // 8.9.3
+                if (
+                   (+versions[0] === 8 && +versions[1] > 9)
+                || (+versions[0] === 8 && +versions[1] === 9 && +versions[2] > 3)
+                || (+versions[0] > 8)
+                ) {
+                    enabled = true;
+                }
+            }
+          }
+          toggleNewUI(enabled);
+       });
+    });
    $j(document).on("remove", "#containerTree", function (event) {
     console.log("containerTree removed");
   });
@@ -445,7 +473,7 @@ function loadToCurrentSelectedContainer(callback) {
             if (firstChild) {
                 $j(firstChild).trigger("click");
                 // wait for sub-items completely loaded
-                var tryCount = 1000;
+                var tryCount = 5000;
                 var interval = setInterval(function() {
                     if ($j(htmlNode.parentElement.next()).is(":visible")) {
                         clearInterval(interval);
@@ -460,7 +488,7 @@ function loadToCurrentSelectedContainer(callback) {
                         // check timeout
                         // could not load sub-items
                     }
-                }, 500);
+                }, 1000);
 
             }
         } else {

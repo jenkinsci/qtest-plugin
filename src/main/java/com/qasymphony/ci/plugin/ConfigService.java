@@ -6,10 +6,7 @@ import com.qasymphony.ci.plugin.exception.OAuthException;
 import com.qasymphony.ci.plugin.exception.SaveSettingException;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
-import com.qasymphony.ci.plugin.utils.ClientRequestException;
-import com.qasymphony.ci.plugin.utils.HttpClientUtils;
-import com.qasymphony.ci.plugin.utils.JsonUtils;
-import com.qasymphony.ci.plugin.utils.ResponseEntity;
+import com.qasymphony.ci.plugin.utils.*;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.tasks.Publisher;
@@ -65,6 +62,17 @@ public class ConfigService {
       LOG.log(Level.WARNING, "Cannot connect to qTest." + e.getMessage());
     }
     return false;
+  }
+
+  public static String getQtestInfo(String url) {
+    String versionUrl = String.format("%s%s", url, "/version");
+    try {
+      ResponseEntity entity = HttpClientUtils.get(versionUrl, null);
+      return entity.getBody();
+    } catch (ClientRequestException e) {
+      LOG.log(Level.WARNING, "Cannot connect to qTest." + e.getMessage());
+    }
+    return null;
   }
 
   /**
@@ -271,8 +279,11 @@ public class ConfigService {
     LOG.info("Save configuration to qTest:" + configuration);
     String accessToken = OauthProvider.getAccessToken(configuration.getUrl(), configuration.getAppSecretKey());
     try {
+      Boolean saveOldSetting;
+      saveOldSetting = checkSaveOldConfig(configuration);
+
       //get saved setting from qTest
-      Setting setting = configuration.toSetting();
+      Setting setting = configuration.toSetting(saveOldSetting);
       LOG.info("Save setting to qTest:" + JsonUtils.toJson(setting));
       setting.setServerId(getServerId(configuration.getJenkinsServerUrl()));
       Object savedObject = getConfiguration(setting, configuration.getUrl(), accessToken);
@@ -302,6 +313,26 @@ public class ConfigService {
     } catch (Exception e) {
       throw new SaveSettingException(e.getMessage(), -1);
     }
+  }
+
+  /**
+   * Check whether it should save or not old config
+   *
+   * @return boolean
+   */
+  public static Boolean checkSaveOldConfig(Configuration configuration) {
+    Object qTestInfo = getQtestInfo(configuration.getUrl());
+
+    if (null != qTestInfo) {
+      LOG.info("Get qTest information:" + qTestInfo);
+      JSONObject info =  JSONObject.fromObject(qTestInfo);
+      String version = info.getString("version");
+      Integer isOldQTestVersion = AppUtils.versionCompare(version, Constants.OLD_QTEST_VERSION);
+      if (isOldQTestVersion == -1) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

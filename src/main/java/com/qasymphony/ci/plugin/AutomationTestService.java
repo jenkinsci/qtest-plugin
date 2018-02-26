@@ -36,6 +36,7 @@ public class AutomationTestService {
     AutomationTestResultWrapper wrapper = new AutomationTestResultWrapper();
     wrapper.setBuildNumber(buildNumber);
     wrapper.setBuildPath(buildPath);
+    wrapper.setSkipCreatingAutomationModule(true);
 
     if (request.getSubmitToExistingContainer()) {
       String fullURL = request.getJenkinsServerURL();

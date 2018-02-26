@@ -9,7 +9,7 @@
 
   <groupId>com.qasymphony.ci.jenkins</groupId>
   <artifactId>qtest</artifactId>
-  <version>1.1.11-SNAPSHOT</version>
+  <version>1.2.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
   <description>This plugin collects and reports unit test results to qTest.
@@ -53,6 +53,18 @@
       <id>gunivan</id>
       <email>trongle@qasymphony.com</email>
       <name>Trong Le</name>
+      <timezone>7</timezone>
+    </developer>
+    <developer>
+      <id>tamvo</id>
+      <email>tamvo@qasymphony.com</email>
+      <name>Tam Vo</name>
+      <timezone>7</timezone>
+    </developer>
+    <developer>
+      <id>phuta</id>
+      <email>phuta@qasymphony.com</email>
+      <name>Phu Ta</name>
       <timezone>7</timezone>
     </developer>
     <developer>
