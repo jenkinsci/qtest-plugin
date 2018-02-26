@@ -72,7 +72,19 @@ $j(document).ready(function () {
           toggleNewUI(enabled);
        });
     });
+   $j(document).on("remove", "#containerTree", function (event) {
+    console.log("containerTree removed");
+  });
+  $j("select.setting-input").change(function(event) {
+    $j('html').find('script').filter(function(){
+        try {
+            return $j(this).attr('name') === 'qtestScript'
+        } catch(ex) {
+            return false;
+        }
 
+    }).remove();
+  });
   $j(document).on("click", "#createNewTestRun", function (event) {
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
     document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
@@ -475,7 +487,6 @@ function loadToCurrentSelectedContainer(callback) {
                         }
                         // check timeout
                         // could not load sub-items
-
                     }
                 }, 1000);
 

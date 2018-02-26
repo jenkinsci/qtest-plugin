@@ -2,6 +2,7 @@ package com.qasymphony.ci.plugin.model;
 
 import com.qasymphony.ci.plugin.model.qtest.Container;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -304,33 +305,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     setting.setOverwriteExistingTestSteps(this.overwriteExistingTestSteps);
 
     if (this.submitToContainer) {
-      long nodeId = -1;
-      String nodeType = "";
-      boolean createTestSuiteEveryBuildDate = false;
-      try {
-        JSONObject json = JSONObject.fromObject(this.containerSetting);
-        JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-        if (selectedContainer.has("dailyCreateTestSuite")) {
-          createTestSuiteEveryBuildDate = selectedContainer.getBoolean("dailyCreateTestSuite");
-        }
-
-        JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
-        if (0 < containerPath.size()) {
-          JSONObject jsonContainer = containerPath.getJSONObject(containerPath.size() - 1);
-          if (null != jsonContainer) {
-            nodeType = jsonContainer.getString("nodeType");
-            nodeId = jsonContainer.getLong("nodeId");
-          }
-        }
-      } catch (Exception ex) {
-        ex.printStackTrace();
-      }
-
-      Container container = new Container();
-      container.setId(nodeId);
-      container.setType(nodeType);
-      container.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
-      setting.setContainer(container);
+      setting.setContainer(this.getContainerInfo());
     } else {
       setting.setReleaseId(this.releaseId);
     }
@@ -360,6 +335,66 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
       ex.printStackTrace();
     }
     return null;
+  }
+
+  private Container getContainerInfo() {
+    long nodeId = -1;
+    String nodeType = "";
+    boolean createTestSuiteEveryBuildDate = false;
+    try {
+      JSONObject json = JSONObject.fromObject(this.containerSetting);
+      JSONObject selectedContainer = json.getJSONObject("selectedContainer");
+      if (selectedContainer.has("dailyCreateTestSuite")) {
+        createTestSuiteEveryBuildDate = selectedContainer.getBoolean("dailyCreateTestSuite");
+      }
+
+      JSONArray containerPath = JSONArray.fromObject(json.getString("containerPath"));
+      if (0 < containerPath.size()) {
+        JSONObject jsonContainer = containerPath.getJSONObject(containerPath.size() - 1);
+        if (null != jsonContainer) {
+          nodeType = jsonContainer.getString("nodeType");
+          nodeId = jsonContainer.getLong("nodeId");
+        }
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      return null;
+    }
+
+    Container container = new Container();
+    container.setId(nodeId);
+    container.setType(nodeType);
+    container.setCreateNewTestSuiteEveryBuild(createTestSuiteEveryBuildDate);
+    return container;
+  }
+  public JunitSubmitterRequest createJunitSubmitRequest() {
+    Long containerID = this.releaseId;
+    String containerType = "release";
+    Container container = null;
+    if (submitToContainer) {
+      container = this.getContainerInfo();
+      if (null == container){
+        return null;
+      }
+      containerID = container.getId();
+      containerType = container.getType();
+    }
+    JunitSubmitterRequest request = new JunitSubmitterRequest();
+    request.setqTestURL(this.url)
+            .setApiKey(this.appSecretKey)
+            .setConfigurationID(this.id)
+            .setSubmitToExistingContainer(this.submitToContainer)
+            .setContainerID(containerID)
+            .setContainerType(containerType)
+            .setCreateNewTestRunsEveryBuildDate(null != container ? container.getCreateNewTestSuiteEveryBuild() : null)
+            .setEnvironmentID(this.environmentId)
+            .setEnvironmentParentID(this.environmentParentId)
+            .setJenkinsProjectName(this.jenkinsProjectName)
+            .setModuleID(this.moduleId)
+            .setJenkinsServerURL(this.jenkinsServerUrl)
+            .setProjectID(this.projectId);
+    return request;
+
   }
 
   @Extension

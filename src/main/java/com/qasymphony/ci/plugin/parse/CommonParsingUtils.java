@@ -35,7 +35,7 @@ public class CommonParsingUtils {
 
   public static List<AutomationTestResult> toAutomationTestResults(ParseRequest request, List<TestResult> testResults, Date startTime)
     throws Exception {
-    if (request.getConfiguration().getEachMethodAsTestCase()) {
+    if (request.getCreateEachMethodAsTestCase()) {
       return useTestMethodAsTestCase(request, testResults, startTime);
     } else {
       return useClassNameAsTestCase(request, testResults, startTime);
@@ -72,7 +72,7 @@ public class CommonParsingUtils {
             testLog.setAutomationContent(automationContent);
             testLog.setExecutedStartDate(startDate);
             testLog.setExecutedEndDate(computeEndTime(startDate, caseResult.getDuration()));
-            testLog.addTestStepLog(new AutomationTestStepLog(caseResult), request.getConfiguration());
+            testLog.addTestStepLog(new AutomationTestStepLog(caseResult), request.getOverwriteExistingTestSteps());
 
             if (caseResult.isFailed()) {
               try {
@@ -127,7 +127,7 @@ public class CommonParsingUtils {
             map.put(caseResult.getClassName(), testLog);
           }
 
-          testLog.addTestStepLog(new AutomationTestStepLog(caseResult), request.getConfiguration());
+          testLog.addTestStepLog(new AutomationTestStepLog(caseResult), request.getOverwriteExistingTestSteps());
           if (caseResult.isFailed()) {
             testLog.addAttachment(new AutomationAttachment(caseResult));
           }

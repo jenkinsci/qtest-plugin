@@ -3,6 +3,7 @@ package com.qasymphony.ci.plugin.store;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 /**
  * @author trongle
@@ -13,12 +14,12 @@ public interface StoreResultService {
   /**
    * Store result
    *
-   * @param project project
+   * @param job job
    * @param result  result
    * @return true if save success
    * @throws StoreResultException StoreResultException
    */
-  Boolean store(AbstractProject project, final SubmittedResult result) throws StoreResultException;
+  Boolean store(Job job, final SubmittedResult result) throws StoreResultException;
 
   /**
    * Load all result

@@ -4,6 +4,7 @@ import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestResultWrapper;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
@@ -26,7 +27,7 @@ public class AutomationTestService {
   private static final String AUTO_TEST_LOG_ENDPOINT_V3 = "%s/api/v3/projects/%s/test-runs/%s/auto-test-logs/ci/%s";
   private static final String API_SUBMIT_TASK_STATUS = "%s/api/v3/projects/queue-processing/%s";
 
-  public static ResponseEntity push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, Configuration configuration, String accessToken)
+  public static ResponseEntity push(String buildNumber, String buildPath, List<AutomationTestResult> testResults, JunitSubmitterRequest request, String accessToken)
     throws SubmittedException {
 
     if (testResults.size() <= 0)
@@ -37,8 +38,8 @@ public class AutomationTestService {
     wrapper.setBuildPath(buildPath);
     wrapper.setSkipCreatingAutomationModule(true);
 
-    if (configuration.isSubmitToContainer()) {
-      String fullURL = configuration.getJenkinsServerUrl();
+    if (request.getSubmitToExistingContainer()) {
+      String fullURL = request.getJenkinsServerURL();
       if (!fullURL.endsWith("/")) {
         fullURL += "/";
       }
@@ -48,12 +49,12 @@ public class AutomationTestService {
         result.setBuildNumber(buildNumber);
         result.setBuildURL(fullURL);
       }
-      Long moduleId = configuration.getModuleId();
-      if (0 < moduleId) {
+      Long moduleId = request.getModuleID();
+      if (null != moduleId &&  0 < moduleId) {
         wrapper.setParent_module(moduleId);
       }
-      url = String.format(AUTO_TEST_LOG_ENDPOINT_V3_1, configuration.getUrl(), configuration.getProjectId(), 0);
-      Long testSuiteId = prepareTestSuite(configuration, accessToken);
+      url = String.format(AUTO_TEST_LOG_ENDPOINT_V3_1, request.getqTestURL(), request.getProjectID(), 0);
+      Long testSuiteId = prepareTestSuite(request, accessToken);
       if (-1 == testSuiteId) {
         throw new SubmittedException("Could not find or create test suite to submit test logs", -1);
       }
@@ -64,7 +65,7 @@ public class AutomationTestService {
        * using {@link String#format(Locale, String, Object...)}  instead {@link java.text.MessageFormat#format(String, Object...)}
        * to avoid unexpected formatted link. see: QTE-2798 for more details.
        */
-      url = String.format(AUTO_TEST_LOG_ENDPOINT_V3, configuration.getUrl(), configuration.getProjectId(), 0, configuration.getId());
+      url = String.format(AUTO_TEST_LOG_ENDPOINT_V3, request.getqTestURL(), request.getProjectID(), 0, request.getConfigurationID());
       wrapper.setTestResults(testResults);
     }
 
@@ -79,9 +80,9 @@ public class AutomationTestService {
     return responseEntity;
   }
 
-  public static ResponseEntity getTaskStatus(Configuration configuration, long taskId, Map<String, String> headers)
+  public static ResponseEntity getTaskStatus(String qTestURL, long taskId, Map<String, String> headers)
     throws ClientRequestException {
-    String url = String.format(API_SUBMIT_TASK_STATUS, configuration.getUrl(), taskId);
+    String url = String.format(API_SUBMIT_TASK_STATUS, qTestURL, taskId);
     ResponseEntity responseEntity = null;
     try {
       responseEntity = HttpClientUtils.get(url, headers);
@@ -92,21 +93,21 @@ public class AutomationTestService {
     return responseEntity;
   }
 
-  private static Long createNewTestSuite(Configuration configuration, String accessToken, Long parentId, String parentType, String testSuiteName) {
-    Object createResult = ConfigService.createTestSuite(configuration.getUrl(),
+  private static Long createNewTestSuite(JunitSubmitterRequest request, String accessToken, Long parentId, String parentType, String testSuiteName) {
+    Object createResult = ConfigService.createTestSuite(request.getqTestURL(),
             accessToken,
-            configuration.getProjectId(),
+            request.getProjectID(),
             parentId,
             parentType,
             testSuiteName,
-            configuration.getEnvironmentParentId(),
-            configuration.getEnvironmentId());
+            request.getEnvironmentParentID(),
+            request.getEnvironmentID());
     JSONObject retObj = JSONObject.fromObject(createResult);
-    return retObj.getLong("id");
+    return retObj.optLong("id", -1);
   }
 
-  private static Long findTestSuiteUnderContainerByName(Configuration configuration, String accessToken, Long parentId, String parentType, String testSuiteName) {
-    Object testSuites = ConfigService.getTestSuiteChildren(configuration.getUrl(), accessToken, configuration.getProjectId(), parentId, parentType);
+  private static Long findTestSuiteUnderContainerByName(JunitSubmitterRequest request, String accessToken, Long parentId, String parentType, String testSuiteName) {
+    Object testSuites = ConfigService.getTestSuiteChildren(request.getqTestURL(), accessToken, request.getProjectID(), parentId, parentType);
     JSONArray suites = JSONArray.fromObject(testSuites);
     Long foundTestSuiteId = -1L;
     if (null != suites && 0 < suites.size()) {
@@ -121,47 +122,29 @@ public class AutomationTestService {
     return  foundTestSuiteId;
   }
 
-  private static Long prepareTestSuite(Configuration configuration, String accessToken) {
-//    Long prevTestSuiteId = configuration.getTestSuiteId();
-//    if (0 < prevTestSuiteId) {
-//      return prevTestSuiteId;
-//    }
+  private static Long prepareTestSuite(JunitSubmitterRequest request, String accessToken) {
 
     Date now = new Date();
     SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
-    String testSuiteName = String.format("%s %s", configuration.getJenkinsProjectName(), ft.format(now));
-
-      JSONObject json = configuration.getContainerJSONObject();
-      if (null == json) {
-        return -1L;
-      }
-      JSONArray containerPath = json.optJSONArray("containerPath");
-      if (null == containerPath) {
-        return -1L;
-      }
-      int pathSize = containerPath.size();
-      if (0 < pathSize) {
-        JSONObject jsonNode = containerPath.getJSONObject(pathSize - 1);
-        Long nodeId = jsonNode.getLong("nodeId");
-        String nodeType = jsonNode.getString("nodeType");
-        switch (nodeType) {
-          case "release":
-          case "test-cycle":
-            if (configuration.isCreateNewTestSuiteEveryBuild()) {
-              testSuiteName = String.format("%s %s", configuration.getJenkinsProjectName(), ft.format(now));
-            } else  {
-              testSuiteName = String.format("%s", configuration.getJenkinsProjectName());
-            }
-            Long foundTestSuite = findTestSuiteUnderContainerByName(configuration, accessToken, nodeId, nodeType, testSuiteName);
-            if (-1L != foundTestSuite) {
-              return foundTestSuite;
-            }
-            return createNewTestSuite(configuration, accessToken, nodeId, nodeType, testSuiteName);
-          case "test-suite":
-            return nodeId;
+    String testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
+    Long nodeId = request.getContainerID();
+    String nodeType = request.getContainerType().toLowerCase();
+    switch (nodeType) {
+      case "release":
+      case "test-cycle":
+        if (request.getCreateNewTestRunsEveryBuildDate()) {
+          testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
+        } else  {
+          testSuiteName = String.format("%s", request.getJenkinsProjectName());
         }
-      }
-
+        Long foundTestSuite = findTestSuiteUnderContainerByName(request, accessToken, nodeId, nodeType, testSuiteName);
+        if (-1L != foundTestSuite) {
+          return foundTestSuite;
+        }
+        return createNewTestSuite(request, accessToken, nodeId, nodeType, testSuiteName);
+      case "test-suite":
+        return nodeId;
+    }
     return -1L;
   }
 }
