@@ -3,7 +3,6 @@ package com.qasymphony.ci.plugin;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestResultWrapper;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
@@ -11,8 +10,6 @@ import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.http.client.utils.URIBuilder;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;

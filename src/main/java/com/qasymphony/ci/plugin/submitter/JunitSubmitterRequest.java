@@ -1,8 +1,6 @@
 package com.qasymphony.ci.plugin.submitter;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
-import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 
 import java.util.List;

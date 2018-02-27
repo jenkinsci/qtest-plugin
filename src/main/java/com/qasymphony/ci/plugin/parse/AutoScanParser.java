@@ -4,11 +4,9 @@ import com.qasymphony.ci.plugin.Constants;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
-
 import java.io.File;
 import java.io.PrintStream;
 import java.util.LinkedList;

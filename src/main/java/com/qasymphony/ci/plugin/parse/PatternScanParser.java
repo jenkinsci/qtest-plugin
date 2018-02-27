@@ -1,16 +1,12 @@
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.junit.JUnitParser;
 import hudson.tasks.junit.TestResult;
-
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
