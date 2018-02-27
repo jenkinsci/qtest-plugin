@@ -44,4 +44,9 @@ public class Constants {
    * Support submit test logs for qTest version from 8.9.4 or less
    */
   public static final String OLD_QTEST_VERSION = "8.9.4";
+
+  public static final String PROJECT_NAME = "project_name";
+  public static final String CONTAINER_NAME = "container_name";
+  public static final String CONFIGURATION_ID = "configuration_id";
+  public static final String ENVIRONMENT_NAME = "environment_name";
 }

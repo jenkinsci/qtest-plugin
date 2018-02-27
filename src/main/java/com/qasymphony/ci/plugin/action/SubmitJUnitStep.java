@@ -381,15 +381,15 @@ public class SubmitJUnitStep extends Step {
                         for (int i = 0; i < environmentList.size(); i++) {
                             if(environmentList.getJSONObject(i).optLong("value") == pipelineConfiguration.getEnvironmentID()) {
                                 junitSubmitterRequest.setEnvironmentParentID(environmentJSON.optLong("id"));
-                                jsonObject.put("environment_name", environmentList.getJSONObject(i).optString("label"));
+                                jsonObject.put(Constants.ENVIRONMENT_NAME, environmentList.getJSONObject(i).optString("label"));
                                 break;
                             }
                         }
                     }
                 }
-                jsonObject.put("project_name", projectInfo.optString("name"));
-                jsonObject.put("container_name", containerInfo.optString("name"));
-                jsonObject.put("configuration_id", setting.getId());
+                jsonObject.put(Constants.PROJECT_NAME, projectInfo.optString("name"));
+                jsonObject.put(Constants.CONTAINER_NAME, containerInfo.optString("name"));
+                jsonObject.put(Constants.CONFIGURATION_ID, setting.getId());
 
                 return jsonObject;
             }
@@ -404,18 +404,18 @@ public class SubmitJUnitStep extends Step {
             LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
             LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
             LoggerUtils.formatHR(logger);
-            LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", pipelineConfiguration.getQtestURL(), jsonObject.optString("configuration_id"));
-            LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", jsonObject.optString("project_name"), pipelineConfiguration.getProjectID());
+            LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", pipelineConfiguration.getQtestURL(), jsonObject.optString(Constants.CONFIGURATION_ID));
+            LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", jsonObject.optString(Constants.PROJECT_NAME), pipelineConfiguration.getProjectID());
             if (!pipelineConfiguration.getSubmitToExistingContainer()) {
-                LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", jsonObject.optString("container_name"), pipelineConfiguration.getContainerID());
+                LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", jsonObject.optString(Constants.CONTAINER_NAME), pipelineConfiguration.getContainerID());
             } else {
                 LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
-                        jsonObject.optString("container_name"),
+                        jsonObject.optString(Constants.CONTAINER_NAME),
                         pipelineConfiguration.getContainerID(), pipelineConfiguration.getContainerType());
             }
             Long environmentID = pipelineConfiguration.getEnvironmentID();
             if (null != environmentID && 0 < environmentID) {
-                LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", jsonObject.optString("environment_name"), environmentID);
+                LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", jsonObject.optString(Constants.ENVIRONMENT_NAME), environmentID);
             } else {
                 LoggerUtils.formatInfo(logger, "With no environment.");
             }
