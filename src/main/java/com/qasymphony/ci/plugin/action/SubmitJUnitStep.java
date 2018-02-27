@@ -233,7 +233,7 @@ public class SubmitJUnitStep extends Step {
                 return null;
             }
 
-            List<AutomationTestResult> automationTestResults = readTestResults(junitSubmitterRequest, logger, junitSubmitter);
+            List<AutomationTestResult> automationTestResults = readTestResults(logger);
             if (automationTestResults.isEmpty()) {
                 LoggerUtils.formatWarn(logger, "No JUnit test result found.");
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_SKIPPED);
@@ -280,7 +280,7 @@ public class SubmitJUnitStep extends Step {
             return true;
         }
 
-        private List<AutomationTestResult> readTestResults(JunitSubmitterRequest submitterRequest, PrintStream logger, JunitSubmitter junitSubmitter) {
+        private List<AutomationTestResult> readTestResults(PrintStream logger) {
             List<AutomationTestResult> automationTestResults;
             long start = System.currentTimeMillis();
             LoggerUtils.formatHR(logger);

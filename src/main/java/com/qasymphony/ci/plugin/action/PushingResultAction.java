@@ -97,7 +97,7 @@ public class PushingResultAction extends Notifier {
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
-    List<AutomationTestResult> automationTestResults = readTestResults(submitterRequest, build, launcher, listener, logger, junitSubmitter);
+    List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger);
     if (automationTestResults.isEmpty()) {
       LoggerUtils.formatWarn(logger, "No JUnit test result found.");
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_SKIPPED);
@@ -220,7 +220,7 @@ public class PushingResultAction extends Notifier {
     return setting;
   }
 
-  private List<AutomationTestResult> readTestResults(JunitSubmitterRequest submitterRequest, AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
+  private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger) {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
     LoggerUtils.formatHR(logger);
