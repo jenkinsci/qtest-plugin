@@ -284,6 +284,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   }
 
   /**
+   * @param saveOldSetting create Setting compatible with old version of qTest
    * @return {@link Setting}
    */
   public Setting toSetting(Boolean saveOldSetting) {

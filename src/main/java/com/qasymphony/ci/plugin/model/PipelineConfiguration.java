@@ -1,10 +1,13 @@
 package com.qasymphony.ci.plugin.model;
 
 import com.qasymphony.ci.plugin.model.qtest.Container;
+import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -205,15 +208,52 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
                 .setContainerType(containerType)
                 .setCreateNewTestRunsEveryBuildDate(submitToExistingContainer ? createNewTestRunsEveryBuildDate : null)
                 .setEnvironmentID(this.environmentID)
-                //.setEnvironmentParentID(this.en)
-                //.setJenkinsProjectName(this.jenkinsProjectName)
-                //.setModuleID(this.moduleId)
-                //.setJenkinsServerURL(this.jenkinsServerUrl)
+                //.setEnvironmentParentID(this.en)  // get when build actually run
+                //.setJenkinsProjectName(this.jenkinsProjectName) // get when build actually run
+                //.setModuleID(this.moduleId) //get when build actually run
+                //.setJenkinsServerURL(this.jenkinsServerUrl) // get when build actually run
                 .setProjectID(this.projectID);
         return request;
 
     }
+    /**
+     * @param saveOldSetting work with old qTest version
+     * @param jenkinsServerURL jenskins server url
+     * @param jenkinsProjectName jenkins project name
+     * @return {@link Setting}
+     */
+    public Setting toSetting(Boolean saveOldSetting, String jenkinsServerURL, String jenkinsProjectName) {
 
+        Setting setting = new Setting()
+                .setId(0L /*this.id*/)
+                .setJenkinsServer(jenkinsServerURL /*this.jenkinsServerUrl*/)
+                .setJenkinsProjectName(jenkinsProjectName /*this.jenkinsProjectName*/)
+                .setProjectId(this.projectID)
+                .setModuleId(0L /*this.moduleId*/)
+                .setEnvironmentId(this.environmentID /*this.environmentId*/)
+                .setTestSuiteId(0L /*this.testSuiteId*/);
+
+        if (saveOldSetting == true) { // Save old setting for release option if qTest version < 8.9.4
+            setting.setReleaseId(this.containerID);
+            return setting;
+        }
+
+        setting.setOverwriteExistingTestSteps(this.overwriteExistingTestSteps);
+
+        if (this.submitToExistingContainer) {
+            setting.setContainer(this.getContainerInfo());
+        } else {
+            setting.setReleaseId(this.containerID);
+        }
+        return setting;
+    }
+    private Container getContainerInfo() {
+        Container container = new Container();
+        container.setId(this.containerID);
+        container.setType(this.containerType.toLowerCase());
+        container.setCreateNewTestSuiteEveryBuild(this.createNewTestRunsEveryBuildDate);
+        return container;
+    }
 
     @Extension
     public static class DescriptorImp extends Descriptor<PipelineConfiguration> {

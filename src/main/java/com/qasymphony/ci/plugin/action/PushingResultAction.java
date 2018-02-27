@@ -1,8 +1,6 @@
 package com.qasymphony.ci.plugin.action;
 
-import com.qasymphony.ci.plugin.ConfigService;
-import com.qasymphony.ci.plugin.OauthProvider;
-import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.*;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
@@ -210,7 +208,10 @@ public class PushingResultAction extends Notifier {
     }
     Setting setting = null;
     try {
-      setting = ConfigService.saveConfiguration(configuration);
+      Boolean saveOldSetting;
+      saveOldSetting = ConfigService.compareqTestVersion(configuration.getUrl(), Constants.OLD_QTEST_VERSION);
+      Setting settingFromConfig = configuration.toSetting(saveOldSetting);
+      setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), settingFromConfig);
     } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  Error: %s", e.getMessage());
@@ -356,7 +357,10 @@ public class PushingResultAction extends Notifier {
       if (!StringUtils.isEmpty(configuration.getUrl())) {
         Setting setting = null;
         try {
-          setting = ConfigService.saveConfiguration(configuration);
+          Boolean saveOldSetting;
+          saveOldSetting = ConfigService.compareqTestVersion(configuration.getUrl(), Constants.OLD_QTEST_VERSION);
+          Setting settingFromConfig = configuration.toSetting(saveOldSetting);
+          setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), settingFromConfig);
         } catch (Exception e) {
           LOG.log(Level.WARNING, e.getMessage());
           e.printStackTrace();
@@ -414,21 +418,8 @@ public class PushingResultAction extends Notifier {
       throws IOException, ServletException {
       return FormValidation.ok();
     }
-    public FormValidation doCheckFakeContainerName(@QueryParameter String value)
-      throws IOException, ServletException {
-//      if (!StringUtils.isBlank(value)) {
-//        try {
-//          JSONObject json = JSONObject.fromObject(value);
-//          JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-//          if (selectedContainer.has("name")) {
-//            if (!StringUtils.isBlank(selectedContainer.getString("name"))){
-//              return FormValidation.ok();
-//            }
-//          }
-//        } catch (Exception ex) {
-//          ex.printStackTrace();
-//        }
-//      }
+
+    public FormValidation doCheckFakeContainerName(@QueryParameter String value) {
       if (!StringUtils.isBlank(value)) {
         return FormValidation.ok();
       }
@@ -458,183 +449,19 @@ public class PushingResultAction extends Notifier {
      */
     @JavaScriptMethod
     public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
-      final JSONObject res = new JSONObject();
       final StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
-      String token = null;
-      try {
-        token = OauthProvider.getAccessToken(qTestUrl, apiKey);
-      } catch (Exception e) {
-        LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
-      }
-      final String accessToken = token;
-
-      Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
-      if (null == project) {
-        //if project not found, we return empty data
-        res.put("setting", "");
-        res.put("releases", "");
-        res.put("environments", "");
-        res.put("testCycles", "");
-        res.put("testSuites", "");
-        return res;
-      }
-      final int threadCount = 5;
-      final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-      ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
-      Callable<Object> caGetSetting = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            //get saved setting from qtest
-            Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
-                .setJenkinsProjectName(jenkinsProjectName)
-                .setProjectId(projectId)
-                .setServerId(ConfigService.getServerId(jenkinsServerName)),
-              qTestUrl, accessToken);
-            res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
-            return setting;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetReleases = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object releases = ConfigService.getReleases(qTestUrl, accessToken, projectId);
-            res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
-            return releases;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetTestCycles = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
-            res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
-            return testCycles;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetTestSuites = new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        try {
-            Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
-            res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
-            return testSuites;
-        } finally {
-            countDownLatch.countDown();
-        }
-      }
-      };
-      Callable<Object> caGetEnvs = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object environments = ConfigService.getEnvironments(qTestUrl, accessToken, projectId);
-            res.put("environments", null == environments ? "" : environments);
-            return environments;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      fixedPool.submit(caGetSetting);
-      fixedPool.submit(caGetReleases);
-      fixedPool.submit(caGetEnvs);
-      fixedPool.submit(caGetTestCycles);
-      fixedPool.submit(caGetTestSuites);
-
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        LOG.log(Level.WARNING, e.getMessage());
-      } finally {
-        fixedPool.shutdownNow();
-        return res;
-      }
+      return qTestService.getProjectData(qTestUrl, apiKey, projectId, jenkinsProjectName, jenkinsServerName);
     }
 
     @JavaScriptMethod
     public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
-      final JSONObject res = new JSONObject();
-      String token = null;
-      try {
-        token = OauthProvider.getAccessToken(qTestUrl, apiKey);
-      } catch (Exception e) {
-        LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
-      }
-      final String accessToken = token;
-
-      Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
-      if (null == project) {
-        //if project not found, we return empty data
-        res.put("testCycles", "");
-        res.put("testSuites", "");
-        return res;
-      }
-      final int threadCount = 2;
-      final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-      ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
-      Callable<Object> caGetTestCycles = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, parentId, parentType);
-            res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
-            return testCycles;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetTestSuites = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, parentId, parentType);
-            res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
-            return testSuites;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      fixedPool.submit(caGetTestCycles);
-      fixedPool.submit(caGetTestSuites);
-
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        LOG.log(Level.WARNING, e.getMessage());
-      } finally {
-        fixedPool.shutdownNow();
-        return res;
-      }
+      return qTestService.getContainerChildren(qTestUrl, apiKey, projectId, parentId, parentType);
     }
 
     @JavaScriptMethod
     public JSONObject getQtestInfo(String qTestUrl) {
-      JSONObject res = new JSONObject();
-      //get project from qTest
-      try {
-        Object qTestInfo = ConfigService.getQtestInfo(qTestUrl);
-        if (null != qTestInfo) {
-            res.put("qTestInfo", JSONObject.fromObject(qTestInfo));
-            return res;
-        }
-      } catch (Exception ex) {
-
-      }
-      return null;
+      return qTestService.getQtestInfo(qTestUrl);
     }
   }
 }

@@ -24,6 +24,7 @@ public interface JunitSubmitter {
    * @param junitSubmitterRequest JunitSubmitterRequest
    * @param run  {@link Run}
    * @param result {@link JunitSubmitterResult}
+   * @param  buildResult build result test
    * @return {@link SubmittedResult}
    * @throws StoreResultException StoreResultException
    */

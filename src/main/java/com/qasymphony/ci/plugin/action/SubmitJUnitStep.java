@@ -1,9 +1,7 @@
 package com.qasymphony.ci.plugin.action;
 
 import com.google.common.collect.ImmutableSet;
-import com.qasymphony.ci.plugin.ConfigService;
-import com.qasymphony.ci.plugin.OauthProvider;
-import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.*;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
@@ -38,6 +36,7 @@ import javax.annotation.Nonnull;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -95,8 +94,8 @@ public class SubmitJUnitStep extends Step {
         @Override
         public Step newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
             Boolean createTestSuiteEveryBuildDate = false;
-//            formData.remove("stapler-class");
-//            formData.remove("$class");
+            formData.remove("stapler-class");
+            formData.remove("$class");
 
             PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
             pipeConfig.setQtestURL(formData.optString("url"));
@@ -166,167 +165,20 @@ public class SubmitJUnitStep extends Step {
          */
         @JavaScriptMethod
         public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
-            final JSONObject res = new JSONObject();
+
             final StaplerRequest request = Stapler.getCurrentRequest();
             final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
-            String token = null;
-            try {
-                token = OauthProvider.getAccessToken(qTestUrl, apiKey);
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
-            }
-            final String accessToken = token;
-
-            Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
-            if (null == project) {
-                //if project not found, we return empty data
-                res.put("setting", "");
-                res.put("releases", "");
-                res.put("environments", "");
-                res.put("testCycles", "");
-                res.put("testSuites", "");
-                return res;
-            }
-            final int threadCount = 5;
-            final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-            ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
-            Callable<Object> caGetSetting = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        //get saved setting from qtest
-                        Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
-                                        .setJenkinsProjectName(jenkinsProjectName)
-                                        .setProjectId(projectId)
-                                        .setServerId(ConfigService.getServerId(jenkinsServerName)),
-                                qTestUrl, accessToken);
-                        res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
-                        return setting;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            Callable<Object> caGetReleases = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        Object releases = ConfigService.getReleases(qTestUrl, accessToken, projectId);
-                        res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
-                        return releases;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            Callable<Object> caGetTestCycles = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
-                        res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
-                        return testCycles;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            Callable<Object> caGetTestSuites = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
-                        res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
-                        return testSuites;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            Callable<Object> caGetEnvs = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        Object environments = ConfigService.getEnvironments(qTestUrl, accessToken, projectId);
-                        res.put("environments", null == environments ? "" : environments);
-                        return environments;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            fixedPool.submit(caGetSetting);
-            fixedPool.submit(caGetReleases);
-            fixedPool.submit(caGetEnvs);
-            fixedPool.submit(caGetTestCycles);
-            fixedPool.submit(caGetTestSuites);
-
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                LOG.log(Level.WARNING, e.getMessage());
-            } finally {
-                fixedPool.shutdownNow();
-                return res;
-            }
+            return qTestService.getProjectData(qTestUrl, apiKey, projectId, jenkinsProjectName, jenkinsServerName);
         }
 
         @JavaScriptMethod
         public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
-            final JSONObject res = new JSONObject();
-            String token = null;
-            try {
-                token = OauthProvider.getAccessToken(qTestUrl, apiKey);
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
-            }
-            final String accessToken = token;
+            return qTestService.getContainerChildren(qTestUrl, apiKey, projectId, parentId, parentType);
+        }
 
-            Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
-            if (null == project) {
-                //if project not found, we return empty data
-                res.put("testCycles", "");
-                res.put("testSuites", "");
-                return res;
-            }
-            final int threadCount = 2;
-            final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-            ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
-            Callable<Object> caGetTestCycles = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, parentId, parentType);
-                        res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
-                        return testCycles;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            Callable<Object> caGetTestSuites = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    try {
-                        Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, parentId, parentType);
-                        res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
-                        return testSuites;
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            };
-            fixedPool.submit(caGetTestCycles);
-            fixedPool.submit(caGetTestSuites);
-
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                LOG.log(Level.WARNING, e.getMessage());
-            } finally {
-                fixedPool.shutdownNow();
-                return res;
-            }
+        @JavaScriptMethod
+        public JSONObject getQtestInfo(String qTestUrl) {
+            return qTestService.getQtestInfo(qTestUrl);
         }
         //~javascript methods
     }
@@ -372,7 +224,13 @@ public class SubmitJUnitStep extends Step {
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(),  logger, JunitSubmitterResult.STATUS_CANCELED);
                 return null;
             }
-            showInfo(logger);
+            JSONObject infoObject = this.loadPipelineConfiguration(junitSubmitterRequest, junitSubmitterRequest.getJenkinsProjectName(), junitSubmitterRequest.getJenkinsServerURL());
+            if (null == infoObject) {
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
+                return null;
+            }
+
+            showInfo(logger, infoObject);
             if (!step.pipelineConfiguration.isValidate()) {
                 LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
@@ -496,30 +354,66 @@ public class SubmitJUnitStep extends Step {
             return result;
         }
 
-        private boolean loadPipelineConfiguration() {
+        private JSONObject loadPipelineConfiguration(JunitSubmitterRequest junitSubmitterRequest, String jenkinsProjectName, String jenkinsServerURL) throws Exception {
             //ConfigService.saveConfiguration()
-            //this.build.getUpstreamBuilds
             // get config from qTest
             // save config if not saved before
             // get some info from qTest, EX: container name, environment name, parent environment id, release name, config id, module id
+            PipelineConfiguration pipelineConfiguration = this.step.pipelineConfiguration;
+            Boolean saveOldSetting;
+            saveOldSetting = ConfigService.compareqTestVersion(pipelineConfiguration.getQtestURL(), Constants.OLD_QTEST_VERSION);
+            Setting settingFromConfig = pipelineConfiguration.toSetting(saveOldSetting, jenkinsServerURL, jenkinsProjectName);
 
-            return false;
+            Setting setting = ConfigService.saveConfiguration(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey(), settingFromConfig);
+            if (null != setting) {
+                junitSubmitterRequest.setModuleID(setting.getModuleId());
+                //junitSubmitterRequest.setEnvironmentParentID()
+                String accessToken = OauthProvider.getAccessToken(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey());
+                Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
+                // get project name
+                JSONObject projectInfo = qTestService.getProjectInfo(pipelineConfiguration.getQtestURL(), headers, pipelineConfiguration.getProjectID());
+
+                // get container name
+                JSONObject containerInfo = qTestService.getContainerInfo(pipelineConfiguration.getQtestURL(), headers, pipelineConfiguration.getProjectID(), pipelineConfiguration.getContainerType(), pipelineConfiguration.getContainerID());
+
+                JSONObject jsonObject = new JSONObject();
+                if (pipelineConfiguration.getEnvironmentID() > 0L) {
+                    Object environments = ConfigService.getEnvironments(pipelineConfiguration.getQtestURL(), accessToken, pipelineConfiguration.getProjectID());
+                    JSONObject environmentJSON = JSONObject.fromObject(environments);
+                    JSONArray environmentList = environmentJSON.optJSONArray("allowed_values");
+                    if (null != environmentList) {
+                        for (int i = 0; i < environmentList.size(); i++) {
+                            if(environmentList.getJSONObject(i).optLong("value") == pipelineConfiguration.getEnvironmentID()) {
+                                junitSubmitterRequest.setEnvironmentParentID(environmentJSON.optLong("id"));
+                                break;
+                            }
+                        }
+                    }
+                }
+                jsonObject.put("project_name", projectInfo.optString("name"));
+                jsonObject.put("container_name", containerInfo.optString("name"));
+                jsonObject.put("configuration_id", setting.getId());
+
+                return jsonObject;
+            }
+
+            return null;
         }
 
-        private void showInfo(PrintStream logger) {
+        private void showInfo(PrintStream logger, JSONObject jsonObject) {
             PipelineConfiguration pipelineConfiguration = this.step.pipelineConfiguration;
             LoggerUtils.formatInfo(logger, "");
             LoggerUtils.formatHR(logger);
             LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
             LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
             LoggerUtils.formatHR(logger);
-            LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", pipelineConfiguration.getQtestURL(), "TODO GET CONFIG ID");
-            LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", ws.getBaseName(), pipelineConfiguration.getProjectID());
+            LoggerUtils.formatInfo(logger, "Submit Junit test result to qTest at:%s (cid:%s)", pipelineConfiguration.getQtestURL(), jsonObject.optString("configuration_id"));
+            LoggerUtils.formatInfo(logger, "With project: %s (id=%s).", jsonObject.optString("project_name"), pipelineConfiguration.getProjectID());
             if (!pipelineConfiguration.getSubmitToExistingContainer()) {
-                LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", "TODO GET RELEASE NAME", pipelineConfiguration.getContainerID());
+                LoggerUtils.formatInfo(logger, "With release: %s (id=%s).", jsonObject.optString("container_name"), pipelineConfiguration.getContainerID());
             } else {
                 LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
-                        "TODO GET CONTAINER",
+                        jsonObject.optString("container_name"),
                         pipelineConfiguration.getContainerID(), pipelineConfiguration.getContainerType());
             }
             Long environmentID = pipelineConfiguration.getEnvironmentID();

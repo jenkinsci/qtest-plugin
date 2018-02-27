@@ -196,6 +196,8 @@ function clearProjectData() {
   bindRelease([]);
   bindEnvironment([]);
   $j('#containerTree').empty();
+  $j("input[name='config.environmentId']").val("");
+  $j("input[name='config.environmentName']").val("");
 }
 function bindRelease(releases) {
   qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', releases,
