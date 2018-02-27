@@ -56,7 +56,7 @@ public class MavenJunitParseTests extends TestAbstracts {
         .setLauncher(launcher)
         .setListener(listener)
         .setBuild(build)
-        .setConfiguration(Configuration.newInstance()));
+        .setUtilizeTestResultFromCITool(true));
       } catch (Exception e) {
         e.printStackTrace();
       }
