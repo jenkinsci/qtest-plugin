@@ -381,6 +381,7 @@ public class SubmitJUnitStep extends Step {
                         for (int i = 0; i < environmentList.size(); i++) {
                             if(environmentList.getJSONObject(i).optLong("value") == pipelineConfiguration.getEnvironmentID()) {
                                 junitSubmitterRequest.setEnvironmentParentID(environmentJSON.optLong("id"));
+                                jsonObject.put("environment_name", environmentList.getJSONObject(i).optString("label"));
                                 break;
                             }
                         }
@@ -414,7 +415,7 @@ public class SubmitJUnitStep extends Step {
             }
             Long environmentID = pipelineConfiguration.getEnvironmentID();
             if (null != environmentID && 0 < environmentID) {
-                LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", "TODO NEED READ ENVIRONMENT NAME", environmentID);
+                LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", jsonObject.optString("environment_name"), environmentID);
             } else {
                 LoggerUtils.formatInfo(logger, "With no environment.");
             }
