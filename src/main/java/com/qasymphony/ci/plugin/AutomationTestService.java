@@ -34,7 +34,10 @@ public class AutomationTestService {
     wrapper.setBuildNumber(buildNumber);
     wrapper.setBuildPath(buildPath);
     wrapper.setSkipCreatingAutomationModule(true);
-
+    Long moduleId = request.getModuleID();
+    if (null != moduleId &&  0 < moduleId) {
+      wrapper.setParent_module(moduleId);
+    }
     if (request.getSubmitToExistingContainer()) {
       String fullURL = request.getJenkinsServerURL();
       if (!fullURL.endsWith("/")) {
@@ -46,10 +49,7 @@ public class AutomationTestService {
         result.setBuildNumber(buildNumber);
         result.setBuildURL(fullURL);
       }
-      Long moduleId = request.getModuleID();
-      if (null != moduleId &&  0 < moduleId) {
-        wrapper.setParent_module(moduleId);
-      }
+
       url = String.format(AUTO_TEST_LOG_ENDPOINT_V3_1, request.getqTestURL(), request.getProjectID(), 0);
       Long testSuiteId = prepareTestSuite(request, accessToken);
       if (-1 == testSuiteId) {
@@ -65,6 +65,7 @@ public class AutomationTestService {
       url = String.format(AUTO_TEST_LOG_ENDPOINT_V3, request.getqTestURL(), request.getProjectID(), 0, request.getConfigurationID());
       wrapper.setTestResults(testResults);
     }
+
 
     Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
     ResponseEntity responseEntity = null;

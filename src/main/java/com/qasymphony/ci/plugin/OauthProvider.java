@@ -2,12 +2,10 @@ package com.qasymphony.ci.plugin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qasymphony.ci.plugin.exception.OAuthException;
-import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import org.apache.commons.httpclient.HttpStatus;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;

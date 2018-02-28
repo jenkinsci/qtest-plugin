@@ -363,6 +363,7 @@ public class SubmitJUnitStep extends Step {
             Setting setting = ConfigService.saveConfiguration(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey(), settingFromConfig);
             if (null != setting) {
                 junitSubmitterRequest.setModuleID(setting.getModuleId());
+                junitSubmitterRequest.setConfigurationID(setting.getId());
                 //junitSubmitterRequest.setEnvironmentParentID()
                 String accessToken = OauthProvider.getAccessToken(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey());
                 Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
