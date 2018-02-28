@@ -1,0 +1,43 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout title="Test Result Graph">
+    <st:include it="${it.job}" page="sidepanel.jelly" />
+    <st:bind var="remoteAction" value="${it}"/>
+    <j:set var="pluginName" value="qtest"/>
+    <j:set var="resBase" value="${resURL}/plugin/${pluginName}"/>
+    <l:main-panel>
+      <link href="${resBase}/datatable/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
+      <link href="${resBase}/css/app.css" rel="stylesheet" type="text/css"/>
+      <script type="text/javascript" src="${resBase}/jquery/js/jquery-2.1.4.min.js"></script>
+      <script type="text/javascript" src="${resBase}/datatable/js/jquery.dataTables.min.js"></script>
+      <script>
+        var $j = jQuery.noConflict();
+      </script>
+      <div class="qTest_submittedResultWrapper">
+        <div>
+          <div class="submitted-result-title"><h4>${%result.title}</h4></div>
+          <div class="submitted-result-head">
+            <div>${%result.desc}</div>
+            <ul>
+              <li>${%status.canceled}</li>
+              <li>${%status.failed}</li>
+              <li>${%status.complete}</li>
+              <li>${%status.skipped}</li>
+            </ul>
+          </div>
+        </div>
+      <table id="submittedResult" class="display"  width="99%">
+        <thead>
+          <tr>
+            <th style="text-align: left;" class="pane-header">${%table.header.build.number}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.submit.status}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.qtest.status}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.tests}</th>
+            <th style="text-align: left;" class="pane-header">${%table.header.qtest.logs}</th>
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <script type="text/javascript" src="${resBase}/js/result.js"></script>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -5,6 +5,7 @@ import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.file.FileReader;
+import com.qasymphony.ci.plugin.utils.JobUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
@@ -135,11 +136,16 @@ public class StoreResultServiceImpl implements StoreResultService {
 
   @Override public ReadSubmitLogResult fetchAll(ReadSubmitLogRequest request)
     throws StoreResultException {
-    FilePath resultPath = getResultFolder(request.getProject());
+    FilePath resultPath = JobUtils.isPipelineJob(request.getJob()) == false ? getResultFolder(request.getProject()) : getResultFolder(request.getJob());
     Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     int numOrder = request.getCurrentBuildNumber() / BREAK_FILE_BY;
     //get saved configuration
-    Configuration configuration = ConfigService.getPluginConfiguration(request.getProject());
+    Configuration configuration = null;
+
+    if (JobUtils.isFreeStyleProjectJob(request.getProject()) == true) {
+      configuration = ConfigService.getPluginConfiguration(request.getProject());
+    }
+
     String qTestUrl = configuration == null ? "" : configuration.getUrl();
     Long projectId = configuration == null ? 0L : configuration.getProjectId();
     try {
