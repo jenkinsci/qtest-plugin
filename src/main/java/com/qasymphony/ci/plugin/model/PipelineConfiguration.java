@@ -10,12 +10,13 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfiguration> {
 
     public static PipelineConfiguration newInstance() {
         return new PipelineConfiguration("", "", 0L, 0L, "", 0L, "",
-                false, false, false,  false, false);
+                false, false,  false, false);
     }
     @DataBoundConstructor
     public PipelineConfiguration(String qtestURL,
@@ -26,7 +27,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
             Long environmentID,
             String parseTestResultsPattern,
             Boolean overwriteExistingTestSteps,
-            Boolean createNewTestRunsEveryBuildDate,
             Boolean parseTestResultsFromTestingTools,
             Boolean createTestCaseForEachJUnitTestClass,
             Boolean submitToExistingContainer) {
@@ -39,7 +39,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         this.parseTestResultsPattern = parseTestResultsPattern;
         this.moduleID = 0L;
         this.overwriteExistingTestSteps = overwriteExistingTestSteps;
-        this.createNewTestRunsEveryBuildDate = createNewTestRunsEveryBuildDate;
         this.parseTestResultsFromTestingTools = parseTestResultsFromTestingTools;
         this.createTestCaseForEachJUnitTestClass = createTestCaseForEachJUnitTestClass;
         this.submitToExistingContainer = submitToExistingContainer;
@@ -165,6 +164,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         return createNewTestRunsEveryBuildDate;
     }
 
+    @DataBoundSetter
     public void setCreateNewTestRunsEveryBuildDate(Boolean createNewTestRunsEveryBuildDate) {
         this.createNewTestRunsEveryBuildDate = createNewTestRunsEveryBuildDate;
     }

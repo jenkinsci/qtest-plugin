@@ -130,7 +130,7 @@ public class AutomationTestService {
     switch (nodeType) {
       case "release":
       case "test-cycle":
-        if (request.getCreateNewTestRunsEveryBuildDate()) {
+        if (null != request.getCreateNewTestRunsEveryBuildDate() && true == request.getCreateNewTestRunsEveryBuildDate()) {
           testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
         } else  {
           testSuiteName = String.format("%s", request.getJenkinsProjectName());
