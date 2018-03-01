@@ -93,7 +93,7 @@
                     title="${%label.existingContainerOption}" value="true">
 
         <f:entry field="containerTypeName" title="${%label.container}">
-          <div id="containerTree"/>
+          <div id="containerTree" style="width:541px;"/>
 
           <f:textbox name="fakeContainerName" field="fakeContainerName" value="${instance.configuration.fakeContainerName}" />
         </f:entry>

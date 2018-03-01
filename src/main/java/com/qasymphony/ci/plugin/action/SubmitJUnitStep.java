@@ -220,7 +220,14 @@ public class SubmitJUnitStep extends Step {
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(),  logger, JunitSubmitterResult.STATUS_CANCELED);
                 return null;
             }
-            JSONObject infoObject = this.loadPipelineConfiguration(junitSubmitterRequest, junitSubmitterRequest.getJenkinsProjectName(), junitSubmitterRequest.getJenkinsServerURL());
+            JSONObject infoObject = null;
+            try {
+                infoObject = this.loadPipelineConfiguration(junitSubmitterRequest, junitSubmitterRequest.getJenkinsProjectName(), junitSubmitterRequest.getJenkinsServerURL());
+            } catch (Exception ex) {
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
+                throw new Exception(ex);
+            }
+
             if (null == infoObject) {
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
                 return null;
@@ -241,7 +248,6 @@ public class SubmitJUnitStep extends Step {
                 return null;
             }
             junitSubmitterRequest.setTestResults(automationTestResults);
-
 
             JunitSubmitterResult result = submitTestResult(junitSubmitterRequest, junitSubmitter, automationTestResults);
             if (null == result) {

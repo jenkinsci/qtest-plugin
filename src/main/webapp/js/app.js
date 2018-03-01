@@ -380,8 +380,9 @@ function buildTree(jItem, data, qTestParentId) {
 //            aLink.attr("href", element.web_url)
 //            aLink.text(element.pid);
 //            divMainItem.append(aLink);
-
+            var parentWidth = $j('#containerTree').width();
             var divContent = $j("<div class='content'></div>");
+            divContent.width(parentWidth - 15);
             divContent.attr("title", (element.pid || "").toUpperCase() + " " + element.name)
             divContent.text((element.pid || "").toUpperCase() + " " + element.name);
             divContent.attr("qtestid", element.id);

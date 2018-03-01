@@ -1,5 +1,4 @@
 #containerTree {
-    width: 541px;
     height: 200px;
     border: 1px solid #ccc;
     background: #fff;
@@ -55,7 +54,7 @@ div#containerTree div {
 }
 
 .test-suite-icon {
-    width: 18px;
+    width: 19px;
     height: 15px;
     background: url(../images/glyphicons-qtest.png) -579px -150px;
     margin: 0 1px;
@@ -92,7 +91,6 @@ div#containerTree div.content {
     margin-top: -1px;
     padding: 0px 3px;
     white-space: nowrap;
-    width: 36em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
