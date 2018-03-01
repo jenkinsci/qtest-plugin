@@ -199,10 +199,10 @@ public class SubmitJUnitStep extends Step {
         @Override
         protected Void run() throws Exception {
 
-            this.build = getContext().get(Run.class);
-            this.ws = getContext().get(FilePath.class);
-            this.listener = getContext().get(TaskListener.class);
-            this.launcher = getContext().get(Launcher.class);
+                this.build = getContext().get(Run.class);
+                this.ws = getContext().get(FilePath.class);
+                this.listener = getContext().get(TaskListener.class);
+                this.launcher = getContext().get(Launcher.class);
             JunitSubmitterRequest junitSubmitterRequest = step.pipelineConfiguration.createJunitSubmitRequest();
             junitSubmitterRequest
                     .setBuildNumber(build.getNumber() + "")
@@ -215,7 +215,7 @@ public class SubmitJUnitStep extends Step {
             PrintStream logger = listener.getLogger();
             //LoggerUtils.formatInfo(logger, "Previous build status 1: " + runWrapper.getCurrentResult());
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
-            if (Result.ABORTED.equals(runWrapper.getCurrentResult())) {
+            if (Result.ABORTED.toString().equals(runWrapper.getCurrentResult())) {
                 LoggerUtils.formatWarn(logger, "Abort build action.");
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(),  logger, JunitSubmitterResult.STATUS_CANCELED);
                 return null;
