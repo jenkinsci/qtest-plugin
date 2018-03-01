@@ -126,12 +126,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     }
 
     public void setContainerType(String containerType) {
-        if (null != containerType) {
-            this.containerType = containerType.toUpperCase();
-        } else {
-            this.containerType = containerType;
-        }
-
+        this.containerType = containerType;
     }
 
     public Long getEnvironmentID() {
