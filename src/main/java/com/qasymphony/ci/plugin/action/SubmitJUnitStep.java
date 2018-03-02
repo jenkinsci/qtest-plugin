@@ -25,8 +25,10 @@ import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.*;
-import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -204,32 +206,37 @@ public class SubmitJUnitStep extends Step {
                     .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
                     .setListener(listener);
 
-            RunWrapper runWrapper = new RunWrapper (this.build, true);
+            //RunWrapper runWrapper = new RunWrapper (this.build, true);
             PrintStream logger = listener.getLogger();
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
             String configError = step.pipelineConfiguration.getErrorString();
-            if (null != configError) {
-                LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-                LoggerUtils.formatError(logger, configError);
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
+            FlowExecution flowExecution = ((WorkflowRun) build).getExecution();
+            String currentResult = ((CpsFlowExecution)flowExecution).getResult() + "";
+
+            if (Result.ABORTED.toString().equals(currentResult)) {
+                LoggerUtils.formatWarn(logger, "Abort build action.");
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult,  logger, JunitSubmitterResult.STATUS_CANCELED);
                 return null;
             }
 
-            if (Result.ABORTED.toString().equals(runWrapper.getCurrentResult())) {
-                LoggerUtils.formatWarn(logger, "Abort build action.");
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(),  logger, JunitSubmitterResult.STATUS_CANCELED);
+            if (null != configError) {
+                LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
+                LoggerUtils.formatError(logger, configError);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
                 return null;
             }
+
+
             JSONObject infoObject = null;
             try {
                 infoObject = this.loadPipelineConfiguration(junitSubmitterRequest, junitSubmitterRequest.getJenkinsProjectName(), junitSubmitterRequest.getJenkinsServerURL());
             } catch (Exception ex) {
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
                 throw new Exception(ex);
             }
 
             if (null == infoObject) {
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
                 return null;
             }
 
@@ -238,7 +245,7 @@ public class SubmitJUnitStep extends Step {
             List<AutomationTestResult> automationTestResults = readTestResults(logger);
             if (automationTestResults.isEmpty()) {
                 LoggerUtils.formatWarn(logger, "No JUnit test result found.");
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_SKIPPED);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_SKIPPED);
                 LoggerUtils.formatHR(logger);
                 return null;
             }
@@ -249,7 +256,7 @@ public class SubmitJUnitStep extends Step {
                 //if have no test result, we do not break build flow
                 return null;
             }
-            storeResult(junitSubmitterRequest, build, runWrapper.getCurrentResult(),junitSubmitter, result, logger);
+            storeResult(junitSubmitterRequest, build, currentResult, junitSubmitter, result, logger);
             LoggerUtils.formatHR(logger);
             return null;
 
