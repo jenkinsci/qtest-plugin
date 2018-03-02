@@ -124,12 +124,12 @@ public class AutomationTestService {
 
     Date now = new Date();
     SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
-    String testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
     Long nodeId = request.getContainerID();
     String nodeType = request.getContainerType().toLowerCase();
     switch (nodeType) {
       case "release":
       case "test-cycle":
+        String testSuiteName;
         if (null != request.getCreateNewTestRunsEveryBuildDate() && true == request.getCreateNewTestRunsEveryBuildDate()) {
           testSuiteName = String.format("%s %s", request.getJenkinsProjectName(), ft.format(now));
         } else  {
