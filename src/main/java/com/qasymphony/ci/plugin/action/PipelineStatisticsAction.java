@@ -6,7 +6,6 @@ import com.qasymphony.ci.plugin.store.ReadSubmitLogRequest;
 import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.model.Action;
-import hudson.model.Item;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
@@ -15,9 +14,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import hudson.Extension;
 import hudson.model.Job;
-import jenkins.model.TransientActionFactory;
 
 /**
  * @author tamvo

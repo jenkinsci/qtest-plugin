@@ -6,8 +6,6 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -37,7 +35,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         this.containerType = containerType;
         this.environmentID = environmentID;
         this.parseTestResultsPattern = parseTestResultsPattern;
-        this.moduleID = 0L;
         this.overwriteExistingTestSteps = overwriteExistingTestSteps;
         this.parseTestResultsFromTestingTools = parseTestResultsFromTestingTools;
         this.createTestCaseForEachJUnitTestClass = createTestCaseForEachJUnitTestClass;
@@ -104,7 +101,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
                 ", containerType= " + containerType +
                 ", environmentID= " + environmentID+
                 ", parseTestResultsPattern= " + parseTestResultsPattern +
-                ", moduleID=" + moduleID +
                 ", overwriteExistingTestSteps = " + overwriteExistingTestSteps +
                 ", createNewTestRunsEveryBuildDate = " + createNewTestRunsEveryBuildDate +
                 ", submitToExistingContainer = " + submitToExistingContainer +
@@ -122,7 +118,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     protected Long environmentID;
     protected String parseTestResultsPattern;
 
-    protected Long moduleID; // module where test case created
     protected Boolean overwriteExistingTestSteps;
     protected Boolean createNewTestRunsEveryBuildDate;
     protected Boolean parseTestResultsFromTestingTools;
@@ -183,14 +178,6 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
 
     public void setParseTestResultsPattern(String parseTestResultsPattern) {
         this.parseTestResultsPattern = parseTestResultsPattern;
-    }
-
-    public Long getModuleID() {
-        return moduleID;
-    }
-
-    public void setModuleID(Long moduleID) {
-        this.moduleID = moduleID;
     }
 
     public Boolean getOverwriteExistingTestSteps() {
