@@ -82,10 +82,6 @@ public class SubmitJUnitStep extends Step {
             return "Submit jUnit test result to qTest";
         }
 
-//        @Override public String argumentsToString(Map<String, Object> namedArgs) {
-//            Object name = namedArgs.get("name");
-//            return name instanceof String ? (String) name : null;
-//        }
 
         @Override
         public Step newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
@@ -127,9 +123,7 @@ public class SubmitJUnitStep extends Step {
 
             pipeConfig.setContainerID(containerID);
             pipeConfig.setContainerType(containerType);
-//            if (!pipeConfig.isValidate()) {
-//                throw new Exception("Invalid configuration for pipeline");
-//            }
+
             SubmitJUnitStep step = new SubmitJUnitStep(pipeConfig);
             return step;
 
@@ -198,11 +192,10 @@ public class SubmitJUnitStep extends Step {
         }
         @Override
         protected Void run() throws Exception {
-
-                this.build = getContext().get(Run.class);
-                this.ws = getContext().get(FilePath.class);
-                this.listener = getContext().get(TaskListener.class);
-                this.launcher = getContext().get(Launcher.class);
+            this.build = getContext().get(Run.class);
+            this.ws = getContext().get(FilePath.class);
+            this.listener = getContext().get(TaskListener.class);
+            this.launcher = getContext().get(Launcher.class);
             JunitSubmitterRequest junitSubmitterRequest = step.pipelineConfiguration.createJunitSubmitRequest();
             junitSubmitterRequest
                     .setBuildNumber(build.getNumber() + "")
@@ -213,8 +206,15 @@ public class SubmitJUnitStep extends Step {
 
             RunWrapper runWrapper = new RunWrapper (this.build, true);
             PrintStream logger = listener.getLogger();
-            //LoggerUtils.formatInfo(logger, "Previous build status 1: " + runWrapper.getCurrentResult());
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
+            String configError = step.pipelineConfiguration.getErrorString();
+            if (null != configError) {
+                LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
+                LoggerUtils.formatError(logger, configError);
+                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
+                return null;
+            }
+
             if (Result.ABORTED.toString().equals(runWrapper.getCurrentResult())) {
                 LoggerUtils.formatWarn(logger, "Abort build action.");
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(),  logger, JunitSubmitterResult.STATUS_CANCELED);
@@ -234,11 +234,6 @@ public class SubmitJUnitStep extends Step {
             }
 
             showInfo(logger, infoObject);
-            if (!step.pipelineConfiguration.isValidate()) {
-                LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-                storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, runWrapper.getCurrentResult(), logger, JunitSubmitterResult.STATUS_FAILED);
-                return null;
-            }
 
             List<AutomationTestResult> automationTestResults = readTestResults(logger);
             if (automationTestResults.isEmpty()) {

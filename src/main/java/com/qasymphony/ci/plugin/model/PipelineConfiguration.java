@@ -44,13 +44,54 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         this.submitToExistingContainer = submitToExistingContainer;
     }
 
-    public boolean isValidate() {
-        boolean ret = StringUtils.isNotEmpty(this.qtestURL)
-                && StringUtils.isNotEmpty(this.apiKey)
-                && this.projectID > 0L
-                && this.containerID > 0L
-                && StringUtils.isNotEmpty(this.containerType);
-        return ret;
+    private boolean validLong(Long l) {
+        return null != l && l >= 0L;
+    }
+
+
+    public String getErrorString() {
+        if (StringUtils.isEmpty(this.getQtestURL())) {
+            return ("qtestURL must not be null");
+        }
+        if (StringUtils.isEmpty(this.getApiKey())) {
+            return ("apiKey must not be null");
+        }
+        if (!validLong(this.getProjectID())) {
+            return ("projectID must be null");
+        }
+        if (!validLong(this.getContainerID())) {
+            return ("containerID must be null");
+        }
+        String containerType = this.getContainerType();
+        if (StringUtils.isEmpty(containerType)) {
+            return ("containerType must not be null");
+        } else {
+            containerType = containerType.toLowerCase();
+            if (!(0 == containerType.compareToIgnoreCase("release") ||
+                0 == containerType.compareToIgnoreCase("test-cycle") ||
+                0 == containerType.compareToIgnoreCase("test-suite"))) {
+                return ("containerType must be 'release' or 'test-suite' or 'test-cycle'");
+            }
+        }
+        if (null == this.getSubmitToExistingContainer()) {
+            return ("submitToExistingContainer parameter must not be null");
+        }
+        if (null == this.getCreateTestCaseForEachJUnitTestClass()) {
+            return ("createTestCaseForEachJUnitTestClass parameter must not be null");
+        }
+        if (null == this.getParseTestResultsFromTestingTools()) {
+            return ("parseTestResultsFromTestingTools parameter must not be null");
+        }
+        if (null == this.getParseTestResultsPattern()) {
+            return ("parseTestResultsPattern parameter must not be null");
+        }
+        if (!validLong(this.getEnvironmentID())) {
+            return ("environmentID parameter must not be null");
+        }
+        if (this.getSubmitToExistingContainer() && null == this.getCreateNewTestRunsEveryBuildDate()) {
+            return ("createNewTestRunsEveryBuildDate parameter must not be null");
+        }
+        return null;
     }
 
     @Override
