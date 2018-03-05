@@ -13,8 +13,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfiguration> {
 
     public static PipelineConfiguration newInstance() {
-        return new PipelineConfiguration("", "", 0L, 0L, "", 0L, "",
-                false, false,  false, false);
+        return new PipelineConfiguration("", "", 0L, 0L, "",
+                false, false,  false, false, true, true, true);
     }
     @DataBoundConstructor
     public PipelineConfiguration(String qtestURL,
@@ -22,23 +22,27 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
             Long projectID,
             Long containerID,
             String containerType,
-            Long environmentID,
-            String parseTestResultsPattern,
             Boolean overwriteExistingTestSteps,
             Boolean parseTestResultsFromTestingTools,
             Boolean createTestCaseForEachJUnitTestClass,
-            Boolean submitToExistingContainer) {
+            Boolean submitToExistingContainer,
+            Boolean submitToAReleaseAsSettingFromQtest,
+            Boolean utilizeTestResultsFromCITool,
+            Boolean createTestCaseForEachJUnitTestMethod) {
         this.qtestURL = qtestURL;
         this.apiKey = apiKey;
         this.projectID = projectID;
         this.containerID = containerID;
         this.containerType = containerType;
-        this.environmentID = environmentID;
-        this.parseTestResultsPattern = parseTestResultsPattern;
+        this.environmentID = 0L;
+        this.parseTestResultsPattern = "";
         this.overwriteExistingTestSteps = overwriteExistingTestSteps;
         this.parseTestResultsFromTestingTools = parseTestResultsFromTestingTools;
         this.createTestCaseForEachJUnitTestClass = createTestCaseForEachJUnitTestClass;
         this.submitToExistingContainer = submitToExistingContainer;
+        this.submitToAReleaseAsSettingFromQtest = submitToAReleaseAsSettingFromQtest;
+        this.utilizeTestResultsFromCITool = utilizeTestResultsFromCITool;
+        this.createTestCaseForEachJUnitTestMethod = createTestCaseForEachJUnitTestMethod;
     }
 
     private boolean validLong(Long l) {
@@ -59,32 +63,57 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         if (!validLong(this.getContainerID())) {
             return ("containerID must be null");
         }
-        String containerType = this.getContainerType();
-        if (StringUtils.isEmpty(containerType)) {
-            return ("containerType must not be null");
-        } else {
-            containerType = containerType.toLowerCase();
-            if (!(0 == containerType.compareToIgnoreCase("release") ||
-                0 == containerType.compareToIgnoreCase("test-cycle") ||
-                0 == containerType.compareToIgnoreCase("test-suite"))) {
-                return ("containerType must be 'release' or 'test-suite' or 'test-cycle'");
-            }
+        //
+        if (null == this.getSubmitToAReleaseAsSettingFromQtest()) {
+            return ("submitToAReleaseAsSettingFromqTest must not be null");
         }
+        // ~
         if (null == this.getSubmitToExistingContainer()) {
             return ("submitToExistingContainer parameter must not be null");
         }
+        if (this.getSubmitToAReleaseAsSettingFromQtest() == this.getSubmitToExistingContainer()) {
+            return "submitToAReleaseAsSettingFromqTest and submitToExistingContainer cannot be set to true or false for both parameters";
+        }
+        String containerType = this.getContainerType();
+        if (StringUtils.isEmpty(containerType)) {
+            return ("containerType must not be null or empty");
+        } else {
+            containerType = containerType.toLowerCase();
+            if (this.getSubmitToAReleaseAsSettingFromQtest() && 0 != containerType.compareToIgnoreCase("release")) {
+                return "submitToAReleaseAsSettingFromqTest = true, then containerType must be 'release'";
+            } else {
+                if (!(0 == containerType.compareToIgnoreCase("release") ||
+                    0 == containerType.compareToIgnoreCase("test-cycle") ||
+                    0 == containerType.compareToIgnoreCase("test-suite"))) {
+                    return ("containerType must be 'release' or 'test-suite' or 'test-cycle'");
+                }
+            }
+        }
+
         if (null == this.getCreateTestCaseForEachJUnitTestClass()) {
             return ("createTestCaseForEachJUnitTestClass parameter must not be null");
+        }
+        if (null == this.getCreateTestCaseForEachJUnitTestMethod()) {
+            return ("createTestCaseForEachJUnitTestMethod parameter must not be null");
+        }
+        if (this.getCreateTestCaseForEachJUnitTestClass() == this.getCreateTestCaseForEachJUnitTestMethod()) {
+            return "createTestCaseForEachJUnitTestClass and createTestCaseForEachJUnitTestMethod cannot be set to true or false for both parameters";
         }
         if (null == this.getParseTestResultsFromTestingTools()) {
             return ("parseTestResultsFromTestingTools parameter must not be null");
         }
-        if (null == this.getParseTestResultsPattern()) {
-            return ("parseTestResultsPattern parameter must not be null");
+        if (null == this.getUtilizeTestResultsFromCITool()) {
+            return ("utilizeTestResultsFromCITool parameter must not be null");
         }
-        if (!validLong(this.getEnvironmentID())) {
-            return ("environmentID parameter must not be null");
+        if (this.getParseTestResultsFromTestingTools() == this.getUtilizeTestResultsFromCITool()) {
+            return "parseTestResultsFromTestingTools and utilizeTestResultsFromCITool cannot be set to true or false for both parameters";
         }
+//        if (null == this.getParseTestResultsPattern()) {
+//            return ("parseTestResultsPattern parameter must not be null");
+//        }
+//        if (!validLong(this.getEnvironmentID())) {
+//            return ("environmentID parameter must not be null");
+//        }
         if (this.getSubmitToExistingContainer() && null == this.getCreateNewTestRunsEveryBuildDate()) {
             return ("createNewTestRunsEveryBuildDate parameter must not be null");
         }
@@ -168,6 +197,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         return environmentID;
     }
 
+    @DataBoundSetter
     public void setEnvironmentID(Long environmentID) {
         this.environmentID = environmentID;
     }
@@ -176,6 +206,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         return parseTestResultsPattern;
     }
 
+    @DataBoundSetter
     public void setParseTestResultsPattern(String parseTestResultsPattern) {
         this.parseTestResultsPattern = parseTestResultsPattern;
     }
@@ -277,7 +308,35 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         container.setCreateNewTestSuiteEveryBuild(this.createNewTestRunsEveryBuildDate);
         return container;
     }
+    //
+    Boolean submitToAReleaseAsSettingFromQtest;
+    Boolean utilizeTestResultsFromCITool;
+    Boolean createTestCaseForEachJUnitTestMethod;
 
+    public Boolean getSubmitToAReleaseAsSettingFromQtest() {
+        return submitToAReleaseAsSettingFromQtest;
+    }
+
+    public Boolean getUtilizeTestResultsFromCITool() {
+        return utilizeTestResultsFromCITool;
+    }
+
+    public Boolean getCreateTestCaseForEachJUnitTestMethod() {
+        return createTestCaseForEachJUnitTestMethod;
+    }
+
+    public void setSubmitToAReleaseAsSettingFromQtest(Boolean submitToAReleaseAsSettingFromQtest) {
+        this.submitToAReleaseAsSettingFromQtest = submitToAReleaseAsSettingFromQtest;
+    }
+
+    public void setUtilizeTestResultsFromCITool(Boolean utilizeTestResultsFromCITool) {
+        this.utilizeTestResultsFromCITool = utilizeTestResultsFromCITool;
+    }
+
+    public void setCreateTestCaseForEachJUnitTestMethod(Boolean createTestCaseForEachJUnitTestMethod) {
+        this.createTestCaseForEachJUnitTestMethod = createTestCaseForEachJUnitTestMethod;
+    }
+    // ~
     @Extension
     public static class DescriptorImp extends Descriptor<PipelineConfiguration> {
         public String getDisplayName() {

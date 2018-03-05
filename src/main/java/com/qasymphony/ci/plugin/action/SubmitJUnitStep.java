@@ -95,7 +95,10 @@ public class SubmitJUnitStep extends Step {
             pipeConfig.setQtestURL(formData.optString("url"));
             pipeConfig.setApiKey(formData.optString("appSecretKey"));
             pipeConfig.setProjectID(formData.optLong("projectId"));
-            pipeConfig.setEnvironmentID(formData.optLong("environmentId"));
+            long envId = formData.optLong("environmentId", 0L);
+            if (envId > 0L) {
+                pipeConfig.setEnvironmentID(envId);
+            }
             pipeConfig.setCreateTestCaseForEachJUnitTestClass(!formData.optBoolean("eachMethodAsTestCase"));
             pipeConfig.setOverwriteExistingTestSteps(formData.optBoolean("overwriteExistingTestSteps"));
             pipeConfig.setSubmitToExistingContainer(formData.optBoolean("submitToContainer"));
@@ -125,7 +128,9 @@ public class SubmitJUnitStep extends Step {
 
             pipeConfig.setContainerID(containerID);
             pipeConfig.setContainerType(containerType);
-
+            pipeConfig.setSubmitToAReleaseAsSettingFromQtest(!pipeConfig.getSubmitToExistingContainer());
+            pipeConfig.setUtilizeTestResultsFromCITool(!pipeConfig.getParseTestResultsFromTestingTools());
+            pipeConfig.setCreateTestCaseForEachJUnitTestMethod(!pipeConfig.getCreateTestCaseForEachJUnitTestClass());
             SubmitJUnitStep step = new SubmitJUnitStep(pipeConfig);
             return step;
 

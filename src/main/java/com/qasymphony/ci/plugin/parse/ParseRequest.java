@@ -80,6 +80,8 @@ public class ParseRequest {
     this.build = build;
     if (build instanceof AbstractBuild) {
       isMavenProject = null == build ? false : ((AbstractBuild)build).getProject().getClass().getName().toLowerCase().contains("maven");
+    } else {
+      isMavenProject = false;
     }
     return this;
   }
