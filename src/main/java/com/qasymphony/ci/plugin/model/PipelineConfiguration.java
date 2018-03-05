@@ -108,6 +108,9 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         if (this.getParseTestResultsFromTestingTools() == this.getUtilizeTestResultsFromCITool()) {
             return "parseTestResultsFromTestingTools and utilizeTestResultsFromCITool cannot be set to true or false for both parameters";
         }
+        if (null == this.getOverwriteExistingTestSteps()) {
+            return "overwriteExistingTestSteps parameter must not be null";
+        }
 //        if (null == this.getParseTestResultsPattern()) {
 //            return ("parseTestResultsPattern parameter must not be null");
 //        }
