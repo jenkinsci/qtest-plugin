@@ -52,16 +52,16 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
 
     public String getErrorString() {
         if (StringUtils.isEmpty(this.getQtestURL())) {
-            return ("qtestURL must not be null");
+            return ("qtestURL must not be null or empty");
         }
         if (StringUtils.isEmpty(this.getApiKey())) {
-            return ("apiKey must not be null");
+            return ("apiKey must not be null or empty");
         }
         if (!validLong(this.getProjectID())) {
-            return ("projectID must be null");
+            return ("projectID must not be null or negative");
         }
         if (!validLong(this.getContainerID())) {
-            return ("containerID must be null");
+            return ("containerID must not be null or negative");
         }
         //
         if (null == this.getSubmitToAReleaseAsSettingFromQtest()) {
