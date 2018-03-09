@@ -370,56 +370,37 @@ public class PushingResultAction extends Notifier {
     }
 
     public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
-      throws IOException, ServletException {
-      if (StringUtils.isEmpty(value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-      try {
-        new URL(value);
-        Boolean isQtestUrl = ConfigService.validateQtestUrl(value);
-        return isQtestUrl ? FormValidation.ok() : FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-      } catch (Exception e) {
-        return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-      }
+            throws IOException, ServletException {
+      return ValidationFormService.checkUrl(value, project);
     }
 
     public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @AncestorInPath AbstractProject project)
-      throws IOException, ServletException {
-      if (StringUtils.isEmpty(value) || StringUtils.isEmpty(url))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-      if (!ConfigService.validateApiKey(url, value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkAppSecretKey(value, url, project);
     }
 
     public FormValidation doCheckProjectName(@QueryParameter String value)
-      throws IOException, ServletException {
-      if (StringUtils.isBlank(value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_PROJECT);
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkProjectName(value);
     }
 
     public FormValidation doCheckReleaseName(@QueryParameter String value)
-      throws IOException, ServletException {
-      if (StringUtils.isBlank(value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_RELEASE);
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkReleaseName(value);
     }
 
     public FormValidation doCheckEnvironment(@QueryParameter String value)
-      throws IOException, ServletException {
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkEnvironment(value);
     }
 
     public FormValidation doCheckResultPattern(@QueryParameter String value)
-      throws IOException, ServletException {
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkResultPattern(value);
     }
 
     public FormValidation doCheckFakeContainerName(@QueryParameter String value) {
-      if (!StringUtils.isBlank(value)) {
-        return FormValidation.ok();
-      }
-      return FormValidation.error(ResourceBundle.MSG_INVALID_CONTAINER);
+      return ValidationFormService.checkFakeContainerName(value);
     }
 
     /**

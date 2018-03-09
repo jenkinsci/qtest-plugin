@@ -19,23 +19,27 @@ import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractProject;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.*;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -133,10 +137,43 @@ public class SubmitJUnitStep extends Step {
             pipeConfig.setCreateTestCaseForEachJUnitTestMethod(!pipeConfig.getCreateTestCaseForEachJUnitTestClass());
             SubmitJUnitStep step = new SubmitJUnitStep(pipeConfig);
             return step;
-
-
         }
 
+        // form validation
+        public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
+                throws IOException, ServletException {
+            return ValidationFormService.checkUrl(value, project);
+        }
+
+        public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @AncestorInPath AbstractProject project)
+                throws IOException, ServletException {
+            return ValidationFormService.checkAppSecretKey(value, url, project);
+        }
+
+        public FormValidation doCheckProjectName(@QueryParameter String value)
+                throws IOException, ServletException {
+            return ValidationFormService.checkProjectName(value);
+        }
+
+        public FormValidation doCheckReleaseName(@QueryParameter String value)
+                throws IOException, ServletException {
+            return ValidationFormService.checkReleaseName(value);
+        }
+
+        public FormValidation doCheckEnvironment(@QueryParameter String value)
+                throws IOException, ServletException {
+            return ValidationFormService.checkEnvironment(value);
+        }
+
+        public FormValidation doCheckResultPattern(@QueryParameter String value)
+                throws IOException, ServletException {
+            return ValidationFormService.checkResultPattern(value);
+        }
+
+        public FormValidation doCheckFakeContainerName(@QueryParameter String value) {
+            return ValidationFormService.checkFakeContainerName(value);
+        }
+        //~form validation
         // javascript methods
 
         /**
