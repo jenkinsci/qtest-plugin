@@ -19,12 +19,10 @@ import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -240,20 +238,28 @@ public class SubmitJUnitStep extends Step {
             this.ws = getContext().get(FilePath.class);
             this.listener = getContext().get(TaskListener.class);
             this.launcher = getContext().get(Launcher.class);
+            PrintStream logger = listener.getLogger();
+            JenkinsLocationConfiguration globalConfig = new JenkinsLocationConfiguration();
+            String url = globalConfig.getUrl();
+
+            //LoggerUtils.formatInfo(logger, String.format("Jenkins server URL: %s", url));
+            //LoggerUtils.formatInfo(logger, String.format("Jenkins.getInstance().getRootUrlFromRequest(): %s", Jenkins.getInstance().getRootUrlFromRequest()));
+            //LoggerUtils.formatInfo(logger, String.format("Jenkins.getInstance().getRootUrl(): %s", Jenkins.getInstance().getRootUrl()));
+            //LoggerUtils.formatInfo(logger, String.format("Hudson.getInstance().getRootUrl(): %s", Hudson.getInstance().getRootUrl()));
             JunitSubmitterRequest junitSubmitterRequest = step.pipelineConfiguration.createJunitSubmitRequest();
             junitSubmitterRequest
                     .setBuildNumber(build.getNumber() + "")
                     .setBuildPath(build.getUrl())
                     .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
-                    .setJenkinsServerURL(Jenkins.getInstance().getRootUrl())
+                    .setJenkinsServerURL(StringUtils.isNotEmpty(url) ? url : Jenkins.getInstance().getRootUrl())
                     .setListener(listener);
 
             //RunWrapper runWrapper = new RunWrapper (this.build, true);
-            PrintStream logger = listener.getLogger();
             JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
             String configError = step.pipelineConfiguration.getErrorString();
             FlowExecution flowExecution = ((WorkflowRun) build).getExecution();
             String currentResult = ((CpsFlowExecution)flowExecution).getResult() + "";
+
 
             if (Result.ABORTED.toString().equals(currentResult)) {
                 LoggerUtils.formatWarn(logger, "Abort build action.");
@@ -268,6 +274,7 @@ public class SubmitJUnitStep extends Step {
                 return null;
             }
 
+            LoggerUtils.formatInfo(logger, String.format("Jenkins project name: %s, Jenkins server URL: %s", junitSubmitterRequest.getJenkinsProjectName(), junitSubmitterRequest.getJenkinsServerURL()));
 
             JSONObject infoObject = null;
             try {
