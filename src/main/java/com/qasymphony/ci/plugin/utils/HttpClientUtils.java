@@ -25,14 +25,15 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.net.*;
+import java.util.Iterator;
+import java.util.regex.Pattern;
+import java.util.List;
+
 import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -57,15 +58,15 @@ public class HttpClientUtils {
   private HttpClientUtils() {
   }
 
-  private static HttpClient getClient() throws ClientRequestException {
-    initClient();
+  private static HttpClient getClient(String hostUrl) throws ClientRequestException {
+    initClient(hostUrl);
     return CLIENT;
   }
 
-  private static synchronized void initClient() throws ClientRequestException {
+  private static synchronized void initClient(String hostUrl) throws ClientRequestException {
     if (null == CLIENT) {
       try {
-        CLIENT = getHttpClient();
+        CLIENT = getHttpClient(hostUrl);
       } catch (Exception e) {
         throw new ClientRequestException(e.getMessage());
       }
@@ -268,7 +269,7 @@ public class HttpClientUtils {
   public static ResponseEntity execute(HttpUriRequest request) throws ClientRequestException {
     HttpClient client;
     try {
-      client = getClient();
+      client = getClient(request.getURI().getHost());
     } catch (Exception e) {
       throw new ClientRequestException("Cannot get HttpClient." + e.getMessage(), e);
     }
@@ -296,9 +297,29 @@ public class HttpClientUtils {
     }
   }
 
-  private static void setHttpProxy(HttpClientBuilder httpClientBuilder) {
+  private static Boolean isUrlMatchWithNoProxyHost(String hostUrl, List<Pattern> proxyHostPatterns) {
+    if (hostUrl != null && proxyHostPatterns != null && !proxyHostPatterns.isEmpty()) {
+      Iterator i$ = proxyHostPatterns.iterator();
+
+      while(i$.hasNext()) {
+        Pattern p = (Pattern)i$.next();
+        if (p.matcher(hostUrl).matches()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static void setHttpProxy(HttpClientBuilder httpClientBuilder, String hostUrl) {
     ProxyConfiguration proxyConfig = Jenkins.getInstance().proxy;
+
     if (proxyConfig != null) {
+      List<Pattern> proxyHostPatterns = proxyConfig.getNoProxyHostPatterns();
+
+      if (isUrlMatchWithNoProxyHost(hostUrl, proxyHostPatterns) == true) {
+        return;
+      }
       HttpHost proxy = new HttpHost(proxyConfig.name, proxyConfig.port);
       String username = proxyConfig.getUserName();
       String password = proxyConfig.getPassword();
@@ -316,7 +337,7 @@ public class HttpClientUtils {
     }
   }
 
-  public static HttpClient getHttpClient() throws Exception {
+  public static HttpClient getHttpClient(String hostUrl) throws Exception {
     int timeout;
     try {
       timeout = Integer.parseInt(System.getenv("SOCKET_TIMEOUT"));
@@ -327,7 +348,7 @@ public class HttpClientUtils {
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
             .useSystemProperties();
 
-    setHttpProxy(httpClientBuilder);
+    setHttpProxy(httpClientBuilder, hostUrl);
 
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)

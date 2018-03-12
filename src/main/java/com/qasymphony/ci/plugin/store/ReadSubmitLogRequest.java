@@ -1,6 +1,7 @@
 package com.qasymphony.ci.plugin.store;
 
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 /**
  * @author trongle
@@ -9,6 +10,8 @@ import hudson.model.AbstractProject;
  */
 public class ReadSubmitLogRequest {
   private AbstractProject project;
+  private Job job;
+
   private int start;
   private int size;
 
@@ -18,6 +21,15 @@ public class ReadSubmitLogRequest {
 
   public ReadSubmitLogRequest setProject(AbstractProject project) {
     this.project = project;
+    return this;
+  }
+
+  public Job getJob() {
+    return job;
+  }
+
+  public ReadSubmitLogRequest setJob(Job job) {
+    this.job = job;
     return this;
   }
 

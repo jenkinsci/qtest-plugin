@@ -23,6 +23,7 @@
 
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-2.1.4.min.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.min.js"></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/radioBlockEvent.js"></script>
 
   <script>
     var $j = jQuery.noConflict();
@@ -48,24 +49,26 @@
       </span>
     </f:entry>
     <f:invisibleEntry>
-      <f:textbox name="config.id" field="id" clazz="hidden"
-                 value="${instance.configuration.id}"/>
-      <f:textbox name="config.projectId" field="projectId" clazz="hidden"
-                 value="${instance.configuration.projectId}"/>
-      <f:textbox name="config.releaseId" field="releaseId" clazz="hidden"
-                 value="${instance.configuration.releaseId}"/>
-      <f:textbox name="config.environmentId" field="environmentId" clazz="hidden"
-                 value="${instance.configuration.environmentId}"/>
-      <f:textbox name="config.projectName" field="projectName" clazz="hidden"
-                 value="${instance.configuration.projectName}"/>
-      <f:textbox name="config.releaseName" field="releaseName" clazz="hidden"
-                 value="${instance.configuration.releaseName}"/>
-      <f:textbox name="config.environmentName" field="environmentName" clazz="hidden"
-                 value="${instance.configuration.environmentName}"/>
-      <f:textbox name="config.containerSetting" field="containerSetting" clazz="hidden"
-                 value="${instance.configuration.containerSetting}" default="{}" />
-      <f:textbox name='config.environmentParentId' field="environmentParentId" clazz="hidden"
-                 value="${instance.configuration.environmentParentId}" />
+      <div style="display:none">
+        <f:textbox name="config.id" field="id" clazz="hidden"
+                   value="${instance.configuration.id}"/>
+        <f:textbox name="config.projectId" field="projectId" clazz="hidden"
+                   value="${instance.configuration.projectId}"/>
+        <f:textbox name="config.releaseId" field="releaseId" clazz="hidden"
+                   value="${instance.configuration.releaseId}"/>
+        <f:textbox name="config.environmentId" field="environmentId" clazz="hidden"
+                   value="${instance.configuration.environmentId}"/>
+        <f:textbox name="config.projectName" field="projectName" clazz="hidden"
+                   value="${instance.configuration.projectName}"/>
+        <f:textbox name="config.releaseName" field="releaseName" clazz="hidden"
+                   value="${instance.configuration.releaseName}"/>
+        <f:textbox name="config.environmentName" field="environmentName" clazz="hidden"
+                   value="${instance.configuration.environmentName}"/>
+        <f:textbox name="config.containerSetting" field="containerSetting" clazz="hidden"
+                   value="${instance.configuration.containerSetting}" default="{}" />
+        <f:textbox name='config.environmentParentId' field="environmentParentId" clazz="hidden"
+                   value="${instance.configuration.environmentParentId}" />
+      </div>
     </f:invisibleEntry>
     <!--**
       Reason why projectName1, releaseName1, environmentName1 use to bind for selectize
@@ -93,7 +96,7 @@
                     title="${%label.existingContainerOption}" value="true">
 
         <f:entry field="containerTypeName" title="${%label.container}">
-          <div id="containerTree" style="width:541px;"/>
+          <div id="containerTree" style="width:743px;"/>
 
           <f:textbox name="fakeContainerName" field="fakeContainerName" value="${instance.configuration.fakeContainerName}" />
         </f:entry>

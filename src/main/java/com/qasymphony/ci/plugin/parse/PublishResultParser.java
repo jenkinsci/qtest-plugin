@@ -2,12 +2,11 @@ package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction.ChildReport;
-
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -19,7 +18,7 @@ public class PublishResultParser implements TestResultParser {
 
   @Override
   public List<AutomationTestResult> parse(ParseRequest request) throws Exception {
-    AbstractBuild build = request.getBuild();
+    Run<?,?> build = request.getBuild();
     TestResultAction resultAction = build.getAction(TestResultAction.class);
     List<TestResult> testResults = new ArrayList<>();
     if (resultAction != null) {

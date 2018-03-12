@@ -7,6 +7,7 @@ import com.qasymphony.ci.plugin.model.*;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -58,13 +59,12 @@ public class JunitTestResultParserTests extends TestAbstracts {
             file.setLastModified(current);
           }
         }
-        Configuration configuration = Configuration.newInstance();
-        configuration.setReadFromJenkins(true);
         automationTestResultList = JunitTestResultParser.parse(new ParseRequest()
           .setBuild(build)
           .setListener(listener)
           .setLauncher(launcher)
-          .setConfiguration(configuration));
+          .setUtilizeTestResultFromCITool(true)
+          );
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -121,7 +121,11 @@ public class JunitTestResultParserTests extends TestAbstracts {
       releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false, "{}" ,
             false,
             0);
-    AutomationTestService.push(buildNumber, buildPath, automationTestResultList, configuration, configuration.getAppSecretKey());
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+    submitterRequest.setBuildNumber("1")
+            .setBuildPath(buildPath);
+
+    AutomationTestService.push(buildNumber, buildPath, automationTestResultList, submitterRequest, configuration.getAppSecretKey());
   }
 
   @Test public void testSubmitLog()
@@ -172,7 +176,8 @@ public class JunitTestResultParserTests extends TestAbstracts {
       }
       automationTestResult.setTestLogs(testLogs);
     }
-    AutomationTestService.push(buildNumber, buildPath, results, configuration, configuration.getAppSecretKey());
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+    AutomationTestService.push(buildNumber, buildPath, results, submitterRequest, configuration.getAppSecretKey());
   }
 
   @Test public void testSubmitLogWithAttachment()
@@ -221,7 +226,8 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setTestLogs(testLogs);
       automationTestResult.setAttachments(automationAttachments);
     }
-    AutomationTestService.push(buildNumber, buildPath, results, configuration, configuration.getAppSecretKey());
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+    AutomationTestService.push(buildNumber, buildPath, results, submitterRequest, configuration.getAppSecretKey());
     System.out.println("End submit in: " + LoggerUtils.elapsedTime(start));
   }
 }

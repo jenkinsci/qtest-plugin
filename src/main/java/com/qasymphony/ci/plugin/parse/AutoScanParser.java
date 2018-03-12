@@ -4,10 +4,9 @@ import com.qasymphony.ci.plugin.Constants;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Util;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
-
 import java.io.File;
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -37,10 +36,10 @@ public class AutoScanParser extends PatternScanParser {
     PrintStream logger = request.getListener().getLogger();
     LoggerUtils.formatInfo(logger, "Auto scan JUnit test results files.");
 
-    AbstractBuild build = request.getBuild();
+    Run<?,?> build = request.getBuild();
 
     //otherwise auto scan test result
-    String basedDir = build.getWorkspace().toURI().getPath();
+    String basedDir = request.getWorkSpace().toURI().getPath();
     List<String> resultFolders = CommonParsingUtils.scanJunitTestResultFolder(basedDir);
     LOG.info("Scanning junit test result in dir:" + basedDir + String.format(".Found: %s dirs, %s", resultFolders.size(), resultFolders));
 

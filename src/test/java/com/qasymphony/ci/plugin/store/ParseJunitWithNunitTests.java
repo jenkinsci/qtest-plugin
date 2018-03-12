@@ -1,7 +1,6 @@
 package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -55,7 +54,7 @@ public class ParseJunitWithNunitTests extends TestAbstracts {
         .setBuild(build)
         .setListener(listener)
         .setLauncher(launcher)
-        .setConfiguration(Configuration.newInstance()));
+        );
       } catch (Exception e) {
         e.printStackTrace();
       }

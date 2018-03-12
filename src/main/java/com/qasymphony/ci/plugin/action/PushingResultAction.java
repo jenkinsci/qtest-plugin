@@ -1,8 +1,6 @@
 package com.qasymphony.ci.plugin.action;
 
-import com.qasymphony.ci.plugin.ConfigService;
-import com.qasymphony.ci.plugin.OauthProvider;
-import com.qasymphony.ci.plugin.ResourceBundle;
+import com.qasymphony.ci.plugin.*;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
@@ -40,10 +38,6 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,39 +71,56 @@ public class PushingResultAction extends Notifier {
   public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
     throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+    if (null == submitterRequest) {
+      LoggerUtils.formatError(logger, "Could not create JUnitSumitterRequest");
+      return true;
+    }
+    submitterRequest.setBuildNumber(build.getNumber() + "")
+            .setBuildPath(build.getUrl())
+            .setListener(listener);
+
     JunitSubmitter junitSubmitter = new JunitQtestSubmitterImpl();
+    String buildResult = build.getResult() + "";
     if (Result.ABORTED.equals(build.getResult())) {
       LoggerUtils.formatWarn(logger, "Abort build action.");
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
     showInfo(logger);
     if (!validateConfig(configuration)) {
       LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_FAILED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult,logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
     }
     if (null == checkProjectNameChanged(build, listener)) {
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_CANCELED);
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
-    List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger, junitSubmitter);
-    if (automationTestResults.isEmpty())
+    List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger);
+    if (automationTestResults.isEmpty()) {
+      LoggerUtils.formatWarn(logger, "No JUnit test result found.");
+      storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_SKIPPED);
+      LoggerUtils.formatHR(logger);
+
       return true;
-    JunitSubmitterResult result = submitTestResult(build, listener, junitSubmitter, automationTestResults);
+    }
+    submitterRequest.setTestResults(automationTestResults);
+
+    JunitSubmitterResult result = submitTestResult(submitterRequest, build, listener, junitSubmitter, automationTestResults);
     if (null == result) {
       //if have no test result, we do not break build flow
       return true;
     }
     saveConfiguration(build, result, logger);
-    storeResult(build, junitSubmitter, result, logger);
+    storeResult(submitterRequest, build, buildResult, junitSubmitter, result, logger);
     LoggerUtils.formatHR(logger);
     return true;
   }
 
-  private Boolean storeWhenNotSuccess(JunitSubmitter junitSubmitter, AbstractBuild build, PrintStream logger, String status) {
+  private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, String buildResult, PrintStream logger, String status) {
     try {
-      junitSubmitter.storeSubmittedResult(build, new JunitSubmitterResult()
+      junitSubmitter.storeSubmittedResult(submitterRequest, build, buildResult, new JunitSubmitterResult()
         .setNumberOfTestLog(0)
         .setTestSuiteName("")
         .setNumberOfTestResult(0)
@@ -193,7 +204,10 @@ public class PushingResultAction extends Notifier {
     }
     Setting setting = null;
     try {
-      setting = ConfigService.saveConfiguration(configuration);
+      Boolean saveOldSetting;
+      saveOldSetting = ConfigService.compareqTestVersion(configuration.getUrl(), Constants.OLD_QTEST_VERSION);
+      Setting settingFromConfig = configuration.toSetting(saveOldSetting);
+      setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), settingFromConfig);
     } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  Error: %s", e.getMessage());
@@ -206,25 +220,27 @@ public class PushingResultAction extends Notifier {
     return setting;
   }
 
-  private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, JunitSubmitter junitSubmitter) {
+  private List<AutomationTestResult> readTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger) {
     List<AutomationTestResult> automationTestResults;
     long start = System.currentTimeMillis();
     LoggerUtils.formatHR(logger);
     try {
       automationTestResults = JunitTestResultParser.parse(new ParseRequest()
-        .setBuild(build)
-        .setConfiguration(configuration)
-        .setLauncher(launcher)
-        .setListener(listener));
+              .setBuild(build)
+              .setWorkSpace(build.getWorkspace())
+              .setLauncher(launcher)
+              .setListener(listener)
+              .setCreateEachMethodAsTestCase(configuration.getEachMethodAsTestCase())
+              .setOverwriteExistingTestSteps(configuration.isOverwriteExistingTestSteps())
+              .setUtilizeTestResultFromCITool(configuration.getReadFromJenkins())
+              .setParseTestResultPattern(configuration.getResultPattern())
+      );
     } catch (Exception e) {
       LOG.log(Level.WARNING, e.getMessage());
       LoggerUtils.formatError(logger, e.getMessage());
       automationTestResults = Collections.emptyList();
     }
     if (automationTestResults.isEmpty()) {
-      LoggerUtils.formatWarn(logger, "No JUnit test result found.");
-      storeWhenNotSuccess(junitSubmitter, build, logger, JunitSubmitterResult.STATUS_SKIPPED);
-      LoggerUtils.formatHR(logger);
       return Collections.emptyList();
     }
     LoggerUtils.formatInfo(logger, "JUnit test result found: %s, time elapsed: %s", automationTestResults.size(), LoggerUtils.elapsedTime(start));
@@ -233,20 +249,14 @@ public class PushingResultAction extends Notifier {
     return automationTestResults;
   }
 
-  private JunitSubmitterResult submitTestResult(AbstractBuild build, BuildListener listener,
+  private JunitSubmitterResult submitTestResult(JunitSubmitterRequest submitterRequest, AbstractBuild build, BuildListener listener,
                                                 JunitSubmitter junitSubmitter, List<AutomationTestResult> automationTestResults) {
     PrintStream logger = listener.getLogger();
     JunitSubmitterResult result = null;
     LoggerUtils.formatInfo(logger, "Begin submit test results to qTest at: " + JsonUtils.getCurrentDateString());
     long start = System.currentTimeMillis();
     try {
-      result = junitSubmitter.submit(
-        new JunitSubmitterRequest()
-          .setConfiguration(configuration)
-          .setTestResults(automationTestResults)
-          .setBuildNumber(build.getNumber() + "")
-          .setBuildPath(build.getUrl())
-          .setListener(listener));
+      result = junitSubmitter.submit(submitterRequest);
     } catch (SubmittedException e) {
       LoggerUtils.formatError(logger, "Cannot submit test results to qTest:");
       LoggerUtils.formatError(logger, "   status code: " + e.getStatus());
@@ -293,9 +303,9 @@ public class PushingResultAction extends Notifier {
     }
   }
 
-  private void storeResult(AbstractBuild build, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
+  private void storeResult(JunitSubmitterRequest submitterRequest, AbstractBuild build, String buildResult, JunitSubmitter junitSubmitter, JunitSubmitterResult result, PrintStream logger) {
     try {
-      junitSubmitter.storeSubmittedResult(build, result);
+      junitSubmitter.storeSubmittedResult(submitterRequest, build, buildResult, result);
       LoggerUtils.formatInfo(logger, "Store submission result to workspace success.");
     } catch (Exception e) {
       LoggerUtils.formatError(logger, "Cannot store submission result: " + e.getMessage());
@@ -343,7 +353,10 @@ public class PushingResultAction extends Notifier {
       if (!StringUtils.isEmpty(configuration.getUrl())) {
         Setting setting = null;
         try {
-          setting = ConfigService.saveConfiguration(configuration);
+          Boolean saveOldSetting;
+          saveOldSetting = ConfigService.compareqTestVersion(configuration.getUrl(), Constants.OLD_QTEST_VERSION);
+          Setting settingFromConfig = configuration.toSetting(saveOldSetting);
+          setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), settingFromConfig);
         } catch (Exception e) {
           LOG.log(Level.WARNING, e.getMessage());
           e.printStackTrace();
@@ -357,69 +370,37 @@ public class PushingResultAction extends Notifier {
     }
 
     public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
-      throws IOException, ServletException {
-      if (StringUtils.isEmpty(value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-      try {
-        new URL(value);
-        Boolean isQtestUrl = ConfigService.validateQtestUrl(value);
-        return isQtestUrl ? FormValidation.ok() : FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-      } catch (Exception e) {
-        return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
-      }
+            throws IOException, ServletException {
+      return ValidationFormService.checkUrl(value, project);
     }
 
     public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @AncestorInPath AbstractProject project)
-      throws IOException, ServletException {
-      if (StringUtils.isEmpty(value) || StringUtils.isEmpty(url))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-      if (!ConfigService.validateApiKey(url, value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkAppSecretKey(value, url, project);
     }
 
     public FormValidation doCheckProjectName(@QueryParameter String value)
-      throws IOException, ServletException {
-      if (StringUtils.isBlank(value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_PROJECT);
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkProjectName(value);
     }
 
     public FormValidation doCheckReleaseName(@QueryParameter String value)
-      throws IOException, ServletException {
-      if (StringUtils.isBlank(value))
-        return FormValidation.error(ResourceBundle.MSG_INVALID_RELEASE);
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkReleaseName(value);
     }
 
     public FormValidation doCheckEnvironment(@QueryParameter String value)
-      throws IOException, ServletException {
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkEnvironment(value);
     }
 
     public FormValidation doCheckResultPattern(@QueryParameter String value)
-      throws IOException, ServletException {
-      return FormValidation.ok();
+            throws IOException, ServletException {
+      return ValidationFormService.checkResultPattern(value);
     }
-    public FormValidation doCheckFakeContainerName(@QueryParameter String value)
-      throws IOException, ServletException {
-//      if (!StringUtils.isBlank(value)) {
-//        try {
-//          JSONObject json = JSONObject.fromObject(value);
-//          JSONObject selectedContainer = json.getJSONObject("selectedContainer");
-//          if (selectedContainer.has("name")) {
-//            if (!StringUtils.isBlank(selectedContainer.getString("name"))){
-//              return FormValidation.ok();
-//            }
-//          }
-//        } catch (Exception ex) {
-//          ex.printStackTrace();
-//        }
-//      }
-      if (!StringUtils.isBlank(value)) {
-        return FormValidation.ok();
-      }
-      return FormValidation.error(ResourceBundle.MSG_INVALID_CONTAINER);
+
+    public FormValidation doCheckFakeContainerName(@QueryParameter String value) {
+      return ValidationFormService.checkFakeContainerName(value);
     }
 
     /**
@@ -445,183 +426,19 @@ public class PushingResultAction extends Notifier {
      */
     @JavaScriptMethod
     public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
-      final JSONObject res = new JSONObject();
       final StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
-      String token = null;
-      try {
-        token = OauthProvider.getAccessToken(qTestUrl, apiKey);
-      } catch (Exception e) {
-        LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
-      }
-      final String accessToken = token;
-
-      Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
-      if (null == project) {
-        //if project not found, we return empty data
-        res.put("setting", "");
-        res.put("releases", "");
-        res.put("environments", "");
-        res.put("testCycles", "");
-        res.put("testSuites", "");
-        return res;
-      }
-      final int threadCount = 5;
-      final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-      ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
-      Callable<Object> caGetSetting = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            //get saved setting from qtest
-            Object setting = ConfigService.getConfiguration(new Setting().setJenkinsServer(jenkinsServerName)
-                .setJenkinsProjectName(jenkinsProjectName)
-                .setProjectId(projectId)
-                .setServerId(ConfigService.getServerId(jenkinsServerName)),
-              qTestUrl, accessToken);
-            res.put("setting", null == setting ? "" : JSONObject.fromObject(setting));
-            return setting;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetReleases = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object releases = ConfigService.getReleases(qTestUrl, accessToken, projectId);
-            res.put("releases", null == releases ? "" : JSONArray.fromObject(releases));
-            return releases;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetTestCycles = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
-            res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
-            return testCycles;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetTestSuites = new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        try {
-            Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, (long) 0, "root");
-            res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
-            return testSuites;
-        } finally {
-            countDownLatch.countDown();
-        }
-      }
-      };
-      Callable<Object> caGetEnvs = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object environments = ConfigService.getEnvironments(qTestUrl, accessToken, projectId);
-            res.put("environments", null == environments ? "" : environments);
-            return environments;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      fixedPool.submit(caGetSetting);
-      fixedPool.submit(caGetReleases);
-      fixedPool.submit(caGetEnvs);
-      fixedPool.submit(caGetTestCycles);
-      fixedPool.submit(caGetTestSuites);
-
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        LOG.log(Level.WARNING, e.getMessage());
-      } finally {
-        fixedPool.shutdownNow();
-        return res;
-      }
+      return qTestService.getProjectData(qTestUrl, apiKey, projectId, jenkinsProjectName, jenkinsServerName);
     }
 
     @JavaScriptMethod
     public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
-      final JSONObject res = new JSONObject();
-      String token = null;
-      try {
-        token = OauthProvider.getAccessToken(qTestUrl, apiKey);
-      } catch (Exception e) {
-        LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
-      }
-      final String accessToken = token;
-
-      Object project = ConfigService.getProject(qTestUrl, accessToken, projectId);
-      if (null == project) {
-        //if project not found, we return empty data
-        res.put("testCycles", "");
-        res.put("testSuites", "");
-        return res;
-      }
-      final int threadCount = 2;
-      final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-      ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
-      Callable<Object> caGetTestCycles = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object testCycles = ConfigService.getTestCycleChildren(qTestUrl, accessToken, projectId, parentId, parentType);
-            res.put("testCycles", null == testCycles ? "" : JSONArray.fromObject(testCycles));
-            return testCycles;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      Callable<Object> caGetTestSuites = new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          try {
-            Object testSuites = ConfigService.getTestSuiteChildren(qTestUrl, accessToken, projectId, parentId, parentType);
-            res.put("testSuites", null == testSuites ? "" : JSONArray.fromObject(testSuites));
-            return testSuites;
-          } finally {
-            countDownLatch.countDown();
-          }
-        }
-      };
-      fixedPool.submit(caGetTestCycles);
-      fixedPool.submit(caGetTestSuites);
-
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        LOG.log(Level.WARNING, e.getMessage());
-      } finally {
-        fixedPool.shutdownNow();
-        return res;
-      }
+      return qTestService.getContainerChildren(qTestUrl, apiKey, projectId, parentId, parentType);
     }
 
     @JavaScriptMethod
     public JSONObject getQtestInfo(String qTestUrl) {
-      JSONObject res = new JSONObject();
-      //get project from qTest
-      try {
-        Object qTestInfo = ConfigService.getQtestInfo(qTestUrl);
-        if (null != qTestInfo) {
-            res.put("qTestInfo", JSONObject.fromObject(qTestInfo));
-            return res;
-        }
-      } catch (Exception ex) {
-
-      }
-      return null;
+      return qTestService.getQtestInfo(qTestUrl);
     }
   }
 }

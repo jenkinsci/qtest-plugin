@@ -5,9 +5,11 @@ import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
 import com.qasymphony.ci.plugin.store.file.FileReader;
+import com.qasymphony.ci.plugin.utils.JobUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.remoting.VirtualChannel;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.remoting.RoleChecker;
@@ -43,9 +45,9 @@ public class StoreResultServiceImpl implements StoreResultService {
    */
   private static final String RESULT_FILE_EXT = ".result";
 
-  @Override public Boolean store(AbstractProject project, final SubmittedResult result)
+  @Override public Boolean store(Job job, final SubmittedResult result)
     throws StoreResultException {
-    FilePath resultFolder = getResultFolder(project);
+    FilePath resultFolder = getResultFolder(job);
     try {
       resultFolder.mkdirs();
     } catch (Exception e) {
@@ -134,11 +136,16 @@ public class StoreResultServiceImpl implements StoreResultService {
 
   @Override public ReadSubmitLogResult fetchAll(ReadSubmitLogRequest request)
     throws StoreResultException {
-    FilePath resultPath = getResultFolder(request.getProject());
+    FilePath resultPath = JobUtils.isPipelineJob(request.getJob()) == false ? getResultFolder(request.getProject()) : getResultFolder(request.getJob());
     Map<Integer, SubmittedResult> buildResults = new HashMap<>();
     int numOrder = request.getCurrentBuildNumber() / BREAK_FILE_BY;
     //get saved configuration
-    Configuration configuration = ConfigService.getPluginConfiguration(request.getProject());
+    Configuration configuration = null;
+
+    if (JobUtils.isFreeStyleProjectJob(request.getProject()) == true) {
+      configuration = ConfigService.getPluginConfiguration(request.getProject());
+    }
+
     String qTestUrl = configuration == null ? "" : configuration.getUrl();
     Long projectId = configuration == null ? 0L : configuration.getProjectId();
     try {
@@ -204,8 +211,8 @@ public class StoreResultServiceImpl implements StoreResultService {
     return buildResults;
   }
 
-  private static FilePath getResultFolder(AbstractProject project) {
-    FilePath projectFolder = new FilePath(project.getConfigFile().getFile()).getParent();
+  private static FilePath getResultFolder(Job job) {
+    FilePath projectFolder = new FilePath(job.getConfigFile().getFile()).getParent();
     return new FilePath(projectFolder, RESULT_FOLDER);
   }
 

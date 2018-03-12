@@ -109,7 +109,7 @@ public class ConfigService {
 
     for (int i = 0; i < publishers.size(); i++) {
       if (publishers.get(i) instanceof PushingResultAction) {
-        return ((PushingResultAction) publishers.get(i)).getConfiguration();
+        return (Configuration)(((PushingResultAction) publishers.get(i)).getConfiguration());
       }
     }
     return null;
@@ -251,42 +251,45 @@ public class ConfigService {
   public static Configuration validateConfiguration(Configuration configuration, JSONObject formData) {
     //make id is 0 when name is empty, we get name from selectize field.
     if (StringUtils.isEmpty(formData.getString("environmentName1"))) {
-      configuration.setEnvironmentId(0);
+      configuration.setEnvironmentId(0L);
       configuration.setEnvironmentName("");
     }
     if (StringUtils.isEmpty(formData.getString("projectName1"))) {
-      configuration.setProjectId(0);
+      configuration.setProjectId(0L);
       configuration.setProjectName("");
     }
     if (StringUtils.isEmpty(formData.getString("releaseName1"))) {
-      configuration.setReleaseId(0);
+      configuration.setReleaseId(0L);
       configuration.setReleaseName("");
     }
-    if (configuration.getProjectId() <= 0 || configuration.getReleaseId() <= 0) {
+    if (configuration.getProjectId() <= 0L || configuration.getReleaseId() <= 0L) {
       configuration.setId(0L);
-      configuration.setModuleId(0);
+      configuration.setModuleId(0L);
     }
     return configuration;
   }
 
   /**
-   * @param configuration configuration
+   * @param qTestUrl qTest URL
+   * @param qTestApiKey qtest access token
+   * @param  setting Setting object is built from local configuration
    * @return {@link Setting}
    * @throws Exception Exception
    */
-  public static Setting saveConfiguration(Configuration configuration)
+  public static Setting saveConfiguration(String qTestUrl, String qTestApiKey, Setting setting)
     throws Exception {
-    LOG.info("Save configuration to qTest:" + configuration);
-    String accessToken = OauthProvider.getAccessToken(configuration.getUrl(), configuration.getAppSecretKey());
+    //LOG.info("Saving configuration to qTest:" + setting);
+    String accessToken = OauthProvider.getAccessToken(qTestUrl, qTestApiKey);
     try {
-      Boolean saveOldSetting;
-      saveOldSetting = checkSaveOldConfig(configuration);
+//      Boolean saveOldSetting;
+//      saveOldSetting = compareqTestVersion(qTestUrl, Constants.OLD_QTEST_VERSION);
+//
+//      //get saved setting from qTest
+//      Setting setting = configuration.toSetting(saveOldSetting);
 
-      //get saved setting from qTest
-      Setting setting = configuration.toSetting(saveOldSetting);
       LOG.info("Save setting to qTest:" + JsonUtils.toJson(setting));
-      setting.setServerId(getServerId(configuration.getJenkinsServerUrl()));
-      Object savedObject = getConfiguration(setting, configuration.getUrl(), accessToken);
+      setting.setServerId(getServerId(setting.getJenkinsServer()));
+      Object savedObject = getConfiguration(setting, qTestUrl, accessToken);
       Setting savedSetting = null == savedObject ? null : JsonUtils.fromJson(savedObject.toString(), Setting.class);
 
       //prepare for send request to qTest
@@ -295,10 +298,10 @@ public class ConfigService {
       ResponseEntity responseEntity = null;
 
       if (savedSetting != null && savedSetting.getId() > 0) {
-        String url = String.format("%s/api/v3/projects/%s/ci/%s", configuration.getUrl(), configuration.getProjectId(), savedSetting.getId());
+        String url = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), savedSetting.getId());
         responseEntity = HttpClientUtils.put(url, headers, JsonUtils.toJson(setting));
       } else {
-        String url = String.format("%s/api/v3/projects/%s/ci", configuration.getUrl(), configuration.getProjectId());
+        String url = String.format("%s/api/v3/projects/%s/ci", qTestUrl, setting.getProjectId());
         responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(setting));
       }
 
@@ -317,17 +320,18 @@ public class ConfigService {
 
   /**
    * Check whether it should save or not old config
-   *
+   * @param qTestURL qTest URL
+   * @param qTestVersion version to compare
    * @return boolean
    */
-  public static Boolean checkSaveOldConfig(Configuration configuration) {
-    Object qTestInfo = getQtestInfo(configuration.getUrl());
+  public static Boolean compareqTestVersion(String qTestURL, String qTestVersion) {
+    Object qTestInfo = getQtestInfo(qTestURL);
 
     if (null != qTestInfo) {
       LOG.info("Get qTest information:" + qTestInfo);
       JSONObject info =  JSONObject.fromObject(qTestInfo);
       String version = info.getString("version");
-      Integer isOldQTestVersion = AppUtils.versionCompare(version, Constants.OLD_QTEST_VERSION);
+      Integer isOldQTestVersion = AppUtils.versionCompare(version,qTestVersion);
       if (isOldQTestVersion == -1) {
         return true;
       }

@@ -72,7 +72,19 @@ $j(document).ready(function () {
           toggleNewUI(enabled);
        });
     });
+   $j(document).on("remove", "#containerTree", function (event) {
+    console.log("containerTree removed");
+  });
+  $j("select.setting-input").change(function(event) {
+    $j('html').find('script').filter(function(){
+        try {
+            return $j(this).attr('name') === 'qtestScript'
+        } catch(ex) {
+            return false;
+        }
 
+    }).remove();
+  });
   $j(document).on("click", "#createNewTestRun", function (event) {
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
     document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
@@ -184,6 +196,8 @@ function clearProjectData() {
   bindRelease([]);
   bindEnvironment([]);
   $j('#containerTree').empty();
+  $j("input[name='config.environmentId']").val("");
+  $j("input[name='config.environmentName']").val("");
 }
 function bindRelease(releases) {
   qtest.initSelectize("input[name='config.releaseName1']", 'selectizeRelease', releases,
@@ -366,8 +380,9 @@ function buildTree(jItem, data, qTestParentId) {
 //            aLink.attr("href", element.web_url)
 //            aLink.text(element.pid);
 //            divMainItem.append(aLink);
-
+            var parentWidth = $j('#containerTree').width();
             var divContent = $j("<div class='content'></div>");
+            divContent.width(parentWidth - 15);
             divContent.attr("title", (element.pid || "").toUpperCase() + " " + element.name)
             divContent.text((element.pid || "").toUpperCase() + " " + element.name);
             divContent.attr("qtestid", element.id);
@@ -475,7 +490,6 @@ function loadToCurrentSelectedContainer(callback) {
                         }
                         // check timeout
                         // could not load sub-items
-
                     }
                 }, 1000);
 

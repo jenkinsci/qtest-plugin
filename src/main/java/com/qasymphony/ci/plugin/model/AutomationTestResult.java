@@ -140,12 +140,13 @@ public class AutomationTestResult {
    * Add testLog and resolve status of testResult
    *
    * @param automationTestStepLog automationTestStepLog
+   * @param isOverwriteExistingTestSteps over write existing test step or not
    * @return {@link AutomationTestStepLog}
    * @see "http://javadoc.jenkins-ci.org/hudson/tasks/junit/CaseResult.Status.html"
    */
-  public AutomationTestStepLog addTestStepLog(AutomationTestStepLog automationTestStepLog, Configuration configuration) {
+  public AutomationTestStepLog addTestStepLog(AutomationTestStepLog automationTestStepLog, boolean isOverwriteExistingTestSteps) {
     automationTestStepLog.setOrder(currentOrder++);
-    if (configuration != null && configuration.isOverwriteExistingTestSteps() == true) {
+    if (isOverwriteExistingTestSteps) {
       testLogs.add(automationTestStepLog);
     }
     String status = automationTestStepLog.getStatus();

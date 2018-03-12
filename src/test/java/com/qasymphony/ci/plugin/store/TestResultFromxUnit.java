@@ -8,6 +8,7 @@ import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
+import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -27,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -66,10 +66,17 @@ public class TestResultFromxUnit extends TestAbstracts {
           }
         }
         automationTestResultList = JunitTestResultParser.parse(new ParseRequest()
-          .setBuild(build)
-          .setListener(listener)
-          .setLauncher(launcher)
-          .setConfiguration(configuration));
+                .setUtilizeTestResultFromCITool(true)
+                .setParseTestResultPattern("*.xml")
+                .setBuild(build)
+                .setWorkSpace(build.getWorkspace())
+                .setLauncher(launcher)
+                .setListener(listener)
+                .setCreateEachMethodAsTestCase(true)
+                .setOverwriteExistingTestSteps(false)
+
+
+);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -107,8 +114,9 @@ public class TestResultFromxUnit extends TestAbstracts {
     assertNotNull("Build is: ", build);
     String buildNumber = "1";
     String buildPath = "/jobs/TestResultFromxUnitProject/" + buildNumber;
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
     try {
-      AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, configuration.getAppSecretKey());
+      AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), submitterRequest, configuration.getAppSecretKey());
     } catch (SubmittedException e) {
       e.printStackTrace();
     }
@@ -137,7 +145,7 @@ public class TestResultFromxUnit extends TestAbstracts {
     assertNotNull("Build is: ", build);
 
     Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-//    AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
+    //AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
   }
 
 }

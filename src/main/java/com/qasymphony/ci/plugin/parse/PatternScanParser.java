@@ -1,14 +1,12 @@
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.junit.JUnitParser;
 import hudson.tasks.junit.TestResult;
-
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -29,11 +27,11 @@ public class PatternScanParser implements TestResultParser {
    */
   public List<AutomationTestResult> parse(ParseRequest request, String testResultLocation) throws Exception {
     JUnitParser jUnitParser = new JUnitParser(true);
-    AbstractBuild build = request.getBuild();
+    Run<?,?> build = request.getBuild();
     Launcher launcher = request.getLauncher();
-    BuildListener listener = request.getListener();
+    TaskListener listener = request.getListener();
     List<TestResult> testResults = new ArrayList<>();
-    testResults.add(jUnitParser.parseResult(testResultLocation, build, build.getWorkspace(), launcher, listener));
+    testResults.add(jUnitParser.parseResult(testResultLocation, build, request.getWorkSpace(), launcher, listener));
 
     GregorianCalendar gregorianCalendar = new GregorianCalendar();
     gregorianCalendar.setTimeInMillis(build.getStartTimeInMillis());
@@ -49,11 +47,10 @@ public class PatternScanParser implements TestResultParser {
   @Override
   public List<AutomationTestResult> parse(ParseRequest request)
     throws Exception {
-    Configuration configuration = request.getConfiguration();
-    BuildListener listener = request.getListener();
+    TaskListener listener = request.getListener();
 
-    LoggerUtils.formatInfo(listener.getLogger(), "Scan with test result location: %s", configuration.getResultPattern());
+    LoggerUtils.formatInfo(listener.getLogger(), "Scan with test result location: %s", request.getParseTestResultPattern());
     //if configured with result location pattern
-    return parse(request, configuration.getResultPattern());
+    return parse(request, request.getParseTestResultPattern());
   }
 }
