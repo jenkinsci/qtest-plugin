@@ -64,7 +64,7 @@ public class HttpClientUtils {
   }
 
   private static synchronized void initClient(String hostUrl) throws ClientRequestException {
-    if (null == CLIENT) {
+    if (null == CLIENT && null != hostUrl) {
       try {
         CLIENT = getHttpClient(hostUrl);
       } catch (Exception e) {
