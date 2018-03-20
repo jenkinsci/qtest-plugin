@@ -529,9 +529,8 @@ function initContainerJSON() {
             } else {
                 temp = undefined;
             }
-
         } catch (ex) {
-            error.log(ex);
+            console.error(ex);
         }
         if (temp) {
             currentJSONContainer = temp;
