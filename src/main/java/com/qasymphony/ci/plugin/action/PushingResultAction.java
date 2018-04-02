@@ -23,13 +23,11 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
@@ -38,6 +36,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -341,7 +340,21 @@ public class PushingResultAction extends Notifier {
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws hudson.model.Descriptor.FormException {
       Configuration configuration = req.bindParameters(Configuration.class, "config.");
       configuration.setJenkinsServerUrl(HttpClientUtils.getServerUrl(req));
+
       configuration.setJenkinsProjectName(req.getParameter("name"));
+
+      if (StringUtils.isEmpty(configuration.getJenkinsProjectName())) {
+        if (req != null) {
+          final Ancestor ancestor = req.findAncestor(AbstractItem.class);
+          if (ancestor != null) {
+            final Object o = ancestor.getObject();
+            if (o instanceof AbstractItem) {
+              final AbstractItem parentItem = (AbstractItem) o;
+              configuration.setJenkinsProjectName(parentItem.getName());
+            }
+          }
+        }
+      }
       configuration.setSubmitToContainer(formData.getBoolean("submitToContainer"));
       configuration.setReadFromJenkins(formData.getBoolean("readFromJenkins"));
       configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
