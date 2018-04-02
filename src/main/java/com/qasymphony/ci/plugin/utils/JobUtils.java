@@ -10,11 +10,6 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
  */
 public class JobUtils {
 
-  /**
-   * check jenkin's job is pipeline
-   * @param job
-   * @return
-   */
   public static boolean isPipelineJob(Job job) {
     if (job == null) {
       return false;
