@@ -156,6 +156,17 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     protected Boolean createTestCaseForEachJUnitTestClass;
     protected Boolean submitToExistingContainer;
 
+    public ExternalTool getExternalTool() {
+        return externalTool;
+    }
+
+    @DataBoundSetter
+    public void setExternalTool(ExternalTool externalTool) {
+        this.externalTool = externalTool;
+    }
+
+    protected  ExternalTool externalTool;
+
     public String getQtestURL() {
         return qtestURL;
     }
@@ -339,6 +350,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     public void setCreateTestCaseForEachJUnitTestMethod(Boolean createTestCaseForEachJUnitTestMethod) {
         this.createTestCaseForEachJUnitTestMethod = createTestCaseForEachJUnitTestMethod;
     }
+
     // ~
     @Extension
     public static class DescriptorImp extends Descriptor<PipelineConfiguration> {

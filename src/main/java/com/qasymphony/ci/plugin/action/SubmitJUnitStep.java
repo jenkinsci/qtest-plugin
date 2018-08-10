@@ -6,6 +6,7 @@ import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
+import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -94,6 +95,13 @@ public class SubmitJUnitStep extends Step {
             formData.remove("$class");
 
             PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
+            try {
+                ToscaIntegration toscaIntegration = req.bindJSON(ToscaIntegration.class, formData.optJSONObject("integration"));
+                pipeConfig.setExternalTool(toscaIntegration);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
             pipeConfig.setQtestURL(formData.optString("url"));
             pipeConfig.setApiKey(formData.optString("appSecretKey"));
             pipeConfig.setProjectID(formData.optLong("projectId"));
@@ -170,6 +178,14 @@ public class SubmitJUnitStep extends Step {
 
         public FormValidation doCheckFakeContainerName(@QueryParameter String value) {
             return ValidationFormService.checkFakeContainerName(value);
+        }
+
+        public FormValidation doCheckExternalCommand(@QueryParameter String value) {
+            return ValidationFormService.checkExternalCommand(value);
+        }
+
+        public FormValidation doCheckExternalArguments(@QueryParameter String value) {
+            return ValidationFormService.checkExternalArguments(value);
         }
         //~form validation
         // javascript methods

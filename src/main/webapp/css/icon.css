@@ -107,3 +107,13 @@ div#containerTree div[selected]:hover{
     width: 0px;
     height: 0px;
 }
+.external-tool-config {
+    width: 100%;
+}
+table.external-tool-config input[type="text"] {
+    margin-left: 24px;
+    width: 97%;
+}
+table.external-tool-config div.error {
+    margin-left: 24px;
+}

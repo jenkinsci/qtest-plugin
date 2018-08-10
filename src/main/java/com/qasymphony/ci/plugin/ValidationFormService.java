@@ -62,4 +62,16 @@ public class ValidationFormService {
         }
         return FormValidation.error(ResourceBundle.MSG_INVALID_CONTAINER);
     }
+    public static FormValidation checkExternalCommand(String value) {
+        if (!StringUtils.isBlank(value)) {
+            return FormValidation.ok();
+        }
+        return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_COMMAND);
+    }
+    public static FormValidation checkExternalArguments(String value) {
+        if (!StringUtils.isBlank(value)) {
+            return FormValidation.ok();
+        }
+        return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_ARGUMENTS);
+    }
 }
