@@ -21,6 +21,7 @@ public class ResourceBundle {
   public static final String MSG_INVALID_CONTAINER = get("validation.invalid.container");
   public static final String MSG_INVALID_EXTERNAL_COMMAND = get("validation.invalid.tosca_command");
   public static final String MSG_INVALID_EXTERNAL_ARGUMENTS = get("validation.invalid.tosca_arguments");
+  public static final String MSG_INVALID_EXTERNAL_RESULT_PATH= get("validation.invalid.tosca_result_path");
 
   private ResourceBundle() {
     holder = ResourceBundleHolder.get(this.getClass());

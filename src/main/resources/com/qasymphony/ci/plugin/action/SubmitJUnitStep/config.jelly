@@ -42,6 +42,9 @@
           <f:entry title="${%label.integration_arguments}" field="externalArguments">
             <f:textbox name="arguments" value="${instance.configuration.externalTool.arguments}"/>
           </f:entry>
+          <f:entry title="${%label.integration_result_path}" field="externalResultPath">
+            <f:textbox name="resultPath" value="${instance.configuration.externalTool.resultPath}"/>
+          </f:entry>
         </f:optionalBlock>
       </table>
     </f:block>

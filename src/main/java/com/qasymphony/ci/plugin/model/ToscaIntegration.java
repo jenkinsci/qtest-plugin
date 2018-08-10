@@ -10,8 +10,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> implements ExternalTool {
 
     @DataBoundConstructor
-    public ToscaIntegration(String command, String arguments) {
-
+    public ToscaIntegration(String command, String arguments, String resultPath) {
+        this.resultPath = resultPath;
         this.command = command;
         this.arguments = arguments;
     }
@@ -38,8 +38,19 @@ public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> 
         return StringUtils.isNotEmpty(command) && StringUtils.isNotEmpty(this.arguments);
     }
 
-    private String arguments = null;
-    private String command =null;
+    @Override
+    public String getResultPath() {
+        return resultPath;
+    }
+
+    @Override
+    public void setResultPath(String value) {
+        this.resultPath = value;
+    }
+
+    private String arguments;
+    private String command ;
+    private String resultPath;
 
     @Symbol("executeToscaTests")
     @Extension

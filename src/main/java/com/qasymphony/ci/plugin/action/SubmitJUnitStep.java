@@ -95,10 +95,14 @@ public class SubmitJUnitStep extends Step {
             formData.remove("$class");
 
             PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
+
             try {
-                ToscaIntegration toscaIntegration = req.bindJSON(ToscaIntegration.class, formData.optJSONObject("integration"));
-                pipeConfig.setExternalTool(toscaIntegration);
+                if (formData.containsKey("integration")) {
+                    ToscaIntegration toscaIntegration = req.bindJSON(ToscaIntegration.class, formData.optJSONObject("integration"));
+                    pipeConfig.setExternalTool(toscaIntegration);
+                }
             } catch (Exception ex) {
+                LOG.log(Level.WARNING, ex.getMessage());
                 ex.printStackTrace();
             }
 
@@ -186,6 +190,9 @@ public class SubmitJUnitStep extends Step {
 
         public FormValidation doCheckExternalArguments(@QueryParameter String value) {
             return ValidationFormService.checkExternalArguments(value);
+        }
+        public FormValidation doCheckExternalResultPath(@QueryParameter String value) {
+            return ValidationFormService.checkExternalResultPath(value);
         }
         //~form validation
         // javascript methods

@@ -9,4 +9,6 @@ public interface ExternalTool {
     void setCommand(String command);
     boolean validate() ;
 
+    String getResultPath();
+    void setResultPath(String value);
 }

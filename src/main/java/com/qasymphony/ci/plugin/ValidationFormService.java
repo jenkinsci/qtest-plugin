@@ -74,4 +74,10 @@ public class ValidationFormService {
         }
         return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_ARGUMENTS);
     }
+    public static FormValidation checkExternalResultPath(String value) {
+        if (!StringUtils.isBlank(value)) {
+            return FormValidation.ok();
+        }
+        return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_RESULT_PATH);
+    }
 }
