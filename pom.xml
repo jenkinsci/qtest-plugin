@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.6</version>
+    <version>3.19</version>
     <relativePath />
   </parent>
 
@@ -34,7 +34,7 @@
     <junit.plugin.version>1.24</junit.plugin.version>
     <httpclient.version>4.5.5</httpclient.version>
     <java.level>8</java.level>
-    <jenkins.version>2.114</jenkins.version>
+    <jenkins.version>2.136</jenkins.version>
   </properties>
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
