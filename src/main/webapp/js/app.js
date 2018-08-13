@@ -85,6 +85,9 @@ $j(document).ready(function () {
 
     }).remove();
   });
+  $j("input[name='toscaIntegration']").click(function() {
+    handleChangeToscaIntegrationOption();
+  });
   $j(document).on("click", "#createNewTestRun", function (event) {
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
     document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
@@ -121,6 +124,16 @@ $j(document).ready(function () {
     }
   });
 });
+
+function handleChangeToscaIntegrationOption() {
+    var toscaIntegrationCheckbox = $j("input[name='toscaIntegration']");
+    var resultOptionInputs = $j("#qtest-result-options :input");
+    if (toscaIntegrationCheckbox.is(":checked")) {
+        resultOptionInputs.prop("disabled", true);
+    } else {
+        resultOptionInputs.prop("disabled", false);
+    }
+}
 
 function changeIndicator(jNode, className) {
     jNode.removeClass();
