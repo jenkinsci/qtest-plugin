@@ -156,16 +156,16 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     protected Boolean createTestCaseForEachJUnitTestClass;
     protected Boolean submitToExistingContainer;
 
-    public ExternalTool getExternalTool() {
-        return externalTool;
+    public ExternalTool getExecuteExternalTool() {
+        return executeExternalTool;
     }
 
     @DataBoundSetter
-    public void setExternalTool(ExternalTool externalTool) {
-        this.externalTool = externalTool;
+    public void setExecuteExternalTool(ExternalTool executeExternalTool) {
+        this.executeExternalTool = executeExternalTool;
     }
 
-    protected  ExternalTool externalTool;
+    protected  ExternalTool executeExternalTool;
 
     public String getQtestURL() {
         return qtestURL;

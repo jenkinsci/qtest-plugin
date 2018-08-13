@@ -99,7 +99,7 @@ public class SubmitJUnitStep extends Step {
             try {
                 if (formData.containsKey("integration")) {
                     ToscaIntegration toscaIntegration = req.bindJSON(ToscaIntegration.class, formData.optJSONObject("integration"));
-                    pipeConfig.setExternalTool(toscaIntegration);
+                    pipeConfig.setExecuteExternalTool(toscaIntegration);
                 }
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, ex.getMessage());
