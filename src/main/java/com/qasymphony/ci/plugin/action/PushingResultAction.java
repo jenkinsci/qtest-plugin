@@ -5,6 +5,7 @@ import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -360,6 +361,7 @@ public class PushingResultAction extends Notifier {
       configuration.setEachMethodAsTestCase(formData.getBoolean("eachMethodAsTestCase"));
       configuration.setContainerSetting(formData.getString("containerSetting"));
       configuration.setOverwriteExistingTestSteps(formData.getBoolean("overwriteExistingTestSteps"));
+      configuration.setToscaIntegration(getToscaIntegration(formData.getJSONObject("toscaIntegration")));
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
       //if have url, we try to update configuration to qTest
@@ -380,6 +382,19 @@ public class PushingResultAction extends Notifier {
         }
       }
       return new PushingResultAction(configuration);
+    }
+
+    private ToscaIntegration getToscaIntegration(JSONObject toscaConfigObj) {
+      if (toscaConfigObj == null) {
+        return null;
+      }
+      if (toscaConfigObj.size() == 0) {
+        return null;
+      }
+      String command = toscaConfigObj.getString("command");
+      String arguments = toscaConfigObj.getString("arguments");
+      String resultPath = toscaConfigObj.getString("resultPath");
+      return new ToscaIntegration(command, arguments, resultPath);
     }
 
     public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
