@@ -19,6 +19,12 @@
     .container-link {
       margin-left: 10px;
     }
+    #qtest-result-options {
+      width: 100%;
+    }
+    .block-disabled {
+      opacity: 0.6;
+    }
   </style>
 
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-2.1.4.min.js"></script>
@@ -135,7 +141,8 @@
       <label for="overwriteExistingTestSteps">${%label.overwriteExistingTestSteps}</label>
     </f:block>
 
-    <div id="qtest-result-options">
+    <f:block>
+      <table id="qtest-result-options" class="result-options">
         <f:entry field="jenkinsProjectName">
           <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}"
                         title="${%label.autoScan}" value="true">
@@ -159,7 +166,8 @@
                         checked="${instance.configuration.eachMethodAsTestCase}" value="true">
           </f:radioBlock>
         </f:entry>
-    </div>
+      </table>
+    </f:block>
   </form>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/service.js" name="qtestScript" ></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js" name="qtestScript"></script>
