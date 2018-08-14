@@ -1,10 +1,14 @@
 package com.qasymphony.ci.plugin.utils.process;
 
+import jline.internal.InputStreamReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.*;
-import java.util.concurrent.TimeUnit;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.LineNumberReader;
+import java.io.UnsupportedEncodingException;
 
 import static java.nio.charset.Charset.defaultCharset;
 
@@ -27,7 +31,7 @@ public final class StreamReader implements Runnable {
      * @param encoding the given encoding.
      */
     public StreamReader(InputStream input, IStreamConsumer streamConsumer,
-                         String encoding) {
+                        String encoding) {
         this.streamConsumer = streamConsumer;
         try {
             this.reader = (StringUtils.isEmpty(encoding) ? new LineNumberReader(new InputStreamReader(input))

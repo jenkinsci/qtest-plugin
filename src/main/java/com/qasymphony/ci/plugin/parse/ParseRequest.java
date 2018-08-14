@@ -19,6 +19,17 @@ public class ParseRequest {
   private TaskListener listener;
   private Boolean isMavenProject;
 
+  public boolean isConcatClassName() {
+    return isConcatClassName;
+  }
+
+  public ParseRequest setConcatClassName(boolean concatClassName) {
+    isConcatClassName = concatClassName;
+    return this;
+  }
+
+  // Concat class name to testcase name and automation content
+  private boolean isConcatClassName = true;
   public FilePath getWorkSpace() {
     return workSpace;
   }

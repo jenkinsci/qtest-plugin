@@ -29,4 +29,9 @@ public class JunitTestResultParser {
     }
     return parser.parse(request);
   }
+
+  public static List<AutomationTestResult> parseExternalResult(ParseRequest request) throws Exception {
+    TestResultParser parser = new PatternScanParser();
+    return parser.parse(request);
+  }
 }

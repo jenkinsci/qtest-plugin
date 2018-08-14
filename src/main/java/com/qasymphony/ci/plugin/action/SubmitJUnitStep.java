@@ -2,14 +2,18 @@ package com.qasymphony.ci.plugin.action;
 
 import com.google.common.collect.ImmutableSet;
 import com.qasymphony.ci.plugin.*;
+import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
 import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
+import java.io.File;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
@@ -17,15 +21,19 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
+import com.qasymphony.ci.plugin.utils.StreamWrapper;
+import com.qasymphony.ci.plugin.utils.process.ProcessWrapper;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.tasks.junit.JUnitParser;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -39,10 +47,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -306,16 +311,33 @@ public class SubmitJUnitStep extends Step {
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
                 throw new Exception(ex);
             }
-
             if (null == infoObject) {
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
                 return null;
             }
-
-            showInfo(logger, infoObject);
-
-            List<AutomationTestResult> automationTestResults = readTestResults(logger);
-            if (automationTestResults.isEmpty()) {
+            ExternalTool externalTool = step.pipelineConfiguration.getExecuteExternalTool();
+            showInfo(logger, infoObject, externalTool);
+            List<AutomationTestResult> automationTestResults;
+            if (null != externalTool) {
+                try {
+                    int exitCode = externalTool.execute(logger);
+                    if (0 != exitCode) {
+                        String errorMessage;
+                        errorMessage = String.format("Execute external CI tool exit code [%d]", exitCode);
+                        //LoggerUtils.formatError(logger, errorMessage);
+                        throw new Exception(errorMessage);
+                    }
+                    automationTestResults = readExternalTestResults(logger, externalTool);
+                }catch (Exception ex) {
+                    storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
+                    LOG.log(Level.WARNING, ex.getMessage());
+                    LoggerUtils.formatError(logger, ex.getMessage());
+                    throw  ex;
+                }
+            } else {
+                automationTestResults = readTestResults(logger);
+            }
+            if (null == automationTestResults || automationTestResults.isEmpty()) {
                 LoggerUtils.formatWarn(logger, "No JUnit test result found.");
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_SKIPPED);
                 LoggerUtils.formatHR(logger);
@@ -359,7 +381,41 @@ public class SubmitJUnitStep extends Step {
             }
             return true;
         }
+        private List<AutomationTestResult> readExternalTestResults(PrintStream logger, ExternalTool externalTool) throws Exception{
+            String resultPath = externalTool.getResultPath();
+            if (StringUtils.isEmpty(resultPath)) {
+                throw new Exception("resultPath of external tool is null or empty");
+            }
+            String pattern = "/*.xml";
+            File resultFile = new File(resultPath);
+            try {
+                if (resultFile.isDirectory()) {
+                    pattern = "**/*.xml";
+                    for (File f : resultFile.listFiles()) {
+                        FileUtils.touch(f);
+                    }
+                } else {
+                    FileUtils.touch(resultFile);
+                    pattern = resultFile.getName();
+                    resultPath = resultFile.getParent();
+                }
+            } catch (NullPointerException nulE) {
+                // no worry we do not care it
+            }
 
+            FilePath childWS = ws.child(resultPath);
+            ParseRequest parseRequest = new ParseRequest()
+                    .setBuild(build)
+                    .setWorkSpace(childWS)
+                    .setLauncher(launcher)
+                    .setListener(listener)
+                    .setOverwriteExistingTestSteps(step.pipelineConfiguration.getOverwriteExistingTestSteps())
+                    .setCreateEachMethodAsTestCase(true)
+                    .setConcatClassName(false)
+                    .setParseTestResultPattern(pattern);
+
+            return JunitTestResultParser.parseExternalResult(parseRequest);
+        }
         private List<AutomationTestResult> readTestResults(PrintStream logger) {
             List<AutomationTestResult> automationTestResults;
             long start = System.currentTimeMillis();
@@ -478,9 +534,10 @@ public class SubmitJUnitStep extends Step {
             return null;
         }
 
-        private void showInfo(PrintStream logger, JSONObject jsonObject) {
+        private void showInfo(PrintStream logger, JSONObject jsonObject, ExternalTool externalTool) {
             PipelineConfiguration pipelineConfiguration = this.step.pipelineConfiguration;
             LoggerUtils.formatInfo(logger, "");
+            LoggerUtils.formatInfo(logger, String.format("Jenkins version: %s", Jenkins.VERSION));
             LoggerUtils.formatHR(logger);
             LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
             LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));
@@ -494,6 +551,14 @@ public class SubmitJUnitStep extends Step {
                         jsonObject.optString(Constants.CONTAINER_NAME),
                         pipelineConfiguration.getContainerID(), pipelineConfiguration.getContainerType());
             }
+            LoggerUtils.formatHR(logger);
+            if (null != externalTool) {
+                LoggerUtils.formatInfo(logger, "Integrate with: %s", externalTool.getClass().getCanonicalName());
+                LoggerUtils.formatInfo(logger, "Command: %s", externalTool.getCommand());
+                LoggerUtils.formatInfo(logger, "Argument string: %s", externalTool.getArguments());
+                LoggerUtils.formatInfo(logger, "Result Path: %s", externalTool.getResultPath());
+
+            }
             Long environmentID = pipelineConfiguration.getEnvironmentID();
             if (null != environmentID && 0 < environmentID) {
                 LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", jsonObject.optString(Constants.ENVIRONMENT_NAME), environmentID);
@@ -503,6 +568,5 @@ public class SubmitJUnitStep extends Step {
             LoggerUtils.formatInfo(logger, "");
         }
     }
-
 }
 

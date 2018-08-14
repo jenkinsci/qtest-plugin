@@ -111,6 +111,12 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
         if (null == this.getOverwriteExistingTestSteps()) {
             return "overwriteExistingTestSteps parameter must not be null";
         }
+        if (null != this.executeExternalTool) {
+            String error = this.executeExternalTool.validate();
+            if (null != error) {
+                return error;
+            }
+        }
 //        if (null == this.getParseTestResultsPattern()) {
 //            return ("parseTestResultsPattern parameter must not be null");
 //        }
