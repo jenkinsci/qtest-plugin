@@ -5,6 +5,7 @@ import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
+import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
@@ -17,6 +18,7 @@ import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
@@ -27,11 +29,13 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -87,7 +91,8 @@ public class PushingResultAction extends Notifier {
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
-    showInfo(logger);
+    ExternalTool externalTool = configuration.getToscaIntegration();
+    showInfo(logger, externalTool);
     if (!validateConfig(configuration)) {
       LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult,logger, JunitSubmitterResult.STATUS_FAILED);
@@ -97,7 +102,27 @@ public class PushingResultAction extends Notifier {
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
       return true;
     }
-    List<AutomationTestResult> automationTestResults = readTestResults(build, launcher, listener, logger);
+
+    List<AutomationTestResult> automationTestResults;
+    if (null != externalTool) {
+      try {
+        int exitCode = externalTool.execute(logger);
+        if (0 != exitCode) {
+          String errorMessage;
+          errorMessage = String.format("Executed external CI tool with exit code [%d]", exitCode);
+          throw new Exception(errorMessage);
+        }
+        automationTestResults = readExternalTestResults(build, launcher, listener, logger, externalTool);
+      }catch (Exception ex) {
+        storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_FAILED);
+        LOG.log(Level.WARNING, ex.getMessage());
+        LoggerUtils.formatError(logger, ex.getMessage());
+        return false;
+      }
+    } else {
+      automationTestResults = readTestResults(build, launcher, listener, logger);
+    }
+
     if (automationTestResults.isEmpty()) {
       LoggerUtils.formatWarn(logger, "No JUnit test result found.");
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_SKIPPED);
@@ -118,6 +143,46 @@ public class PushingResultAction extends Notifier {
     return true;
   }
 
+  private List<AutomationTestResult> readExternalTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, ExternalTool externalTool) throws Exception{
+    String resultPath = externalTool.getPathToResults();
+    if (StringUtils.isEmpty(resultPath)) {
+      throw new Exception("resultPath of external tool is null or empty");
+    }
+    String pattern = "/*.xml";
+    File resultFile = new File(resultPath);
+    try {
+      if (resultFile.isDirectory()) {
+        pattern = "**/*.xml";
+        for (File f : resultFile.listFiles()) {
+          FileUtils.touch(f);
+        }
+      } else {
+        FileUtils.touch(resultFile);
+        pattern = resultFile.getName();
+        resultPath = resultFile.getParent();
+      }
+    } catch (NullPointerException nulE) {
+      // no worry we do not care it
+    }
+    FilePath ws = build.getWorkspace();
+    if (ws == null) {
+      LoggerUtils.formatInfo(logger, "Could not find workspace of this build.");
+      return Collections.emptyList();
+    }
+    FilePath childWS = ws.child(resultPath);
+    ParseRequest parseRequest = new ParseRequest()
+            .setBuild(build)
+            .setWorkSpace(childWS)
+            .setLauncher(launcher)
+            .setListener(listener)
+            .setOverwriteExistingTestSteps(configuration.isOverwriteExistingTestSteps())
+            .setCreateEachMethodAsTestCase(true)
+            .setConcatClassName(false)
+            .setParseTestResultPattern(pattern);
+
+    return JunitTestResultParser.parseExternalResult(parseRequest);
+  }
+
   private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, String buildResult, PrintStream logger, String status) {
     try {
       junitSubmitter.storeSubmittedResult(submitterRequest, build, buildResult, new JunitSubmitterResult()
@@ -133,7 +198,7 @@ public class PushingResultAction extends Notifier {
     return true;
   }
 
-  private void showInfo(PrintStream logger) {
+  private void showInfo(PrintStream logger, ExternalTool externalTool) {
     LoggerUtils.formatInfo(logger, "");
     LoggerUtils.formatHR(logger);
     LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
@@ -159,6 +224,14 @@ public class PushingResultAction extends Notifier {
               json.getJSONObject("selectedContainer").getString("name"),
               nodeId, nodeType);
     }
+
+    if (null != externalTool) {
+      LoggerUtils.formatInfo(logger, "Integrate with: %s", externalTool.getClass().getCanonicalName());
+      LoggerUtils.formatInfo(logger, "Command: %s", externalTool.getCommand());
+      LoggerUtils.formatInfo(logger, "Argument string: %s", externalTool.getArguments());
+      LoggerUtils.formatInfo(logger, "Result Path: %s", externalTool.getPathToResults());
+    }
+
     if (configuration.getEnvironmentId() > 0) {
       LoggerUtils.formatInfo(logger, "With environment: %s (id=%s).", configuration.getEnvironmentName(), configuration.getEnvironmentId());
     } else {

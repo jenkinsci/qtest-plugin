@@ -86,7 +86,7 @@ $j(document).ready(function () {
 
     }).remove();
   });
-  $j("input[name='toscaIntegration']").click(function() {
+  $j(document).on("click", "input[name='toscaIntegration']", function (event) {
     handleChangeToscaIntegrationOption();
   });
   $j(document).on("click", "#createNewTestRun", function (event) {
