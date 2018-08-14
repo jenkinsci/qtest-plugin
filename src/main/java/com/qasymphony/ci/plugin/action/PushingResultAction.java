@@ -431,6 +431,18 @@ public class PushingResultAction extends Notifier {
       return ValidationFormService.checkFakeContainerName(value);
     }
 
+    public FormValidation doCheckToscaCommand(@QueryParameter String value) {
+      return ValidationFormService.checkExternalCommand(value);
+    }
+
+    public FormValidation doCheckToscaArguments(@QueryParameter String value) {
+      return ValidationFormService.checkExternalArguments(value);
+    }
+
+    public FormValidation doCheckToscaResultPath(@QueryParameter String value) {
+      return ValidationFormService.checkExternalResultPath(value);
+    }
+
     /**
      * @param qTestUrl qtest url
      * @param apiKey   api key
