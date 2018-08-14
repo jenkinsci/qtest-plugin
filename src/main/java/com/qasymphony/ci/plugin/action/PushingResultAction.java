@@ -440,7 +440,7 @@ public class PushingResultAction extends Notifier {
     }
 
     public FormValidation doCheckToscaResultPath(@QueryParameter String value) {
-      return ValidationFormService.checkExternalResultPath(value);
+      return ValidationFormService.checkExternalPathToResults(value);
     }
 
     /**

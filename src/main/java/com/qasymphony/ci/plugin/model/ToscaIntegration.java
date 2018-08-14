@@ -1,6 +1,5 @@
 package com.qasymphony.ci.plugin.model;
 
-import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.utils.StreamWrapper;
 import com.qasymphony.ci.plugin.utils.process.ProcessWrapper;
 import hudson.Extension;
@@ -44,13 +43,13 @@ public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> 
     @Override
     public String validate() {
         if (StringUtils.isEmpty(this.command)) {
-            return ResourceBundle.MSG_INVALID_EXTERNAL_COMMAND;
+            return "command property cannot be null or empty";
         }
         if (StringUtils.isEmpty(this.arguments)) {
-            return ResourceBundle.MSG_INVALID_EXTERNAL_ARGUMENTS;
+            return "arguments property cannot be null or empty";
         }
         if (StringUtils.isEmpty(this.pathToResults)) {
-            return ResourceBundle.MSG_INVALID_EXTERNAL_RESULT_PATH;
+            return "pathToResults property cannot be null or empty";
         }
         return null;
     }
