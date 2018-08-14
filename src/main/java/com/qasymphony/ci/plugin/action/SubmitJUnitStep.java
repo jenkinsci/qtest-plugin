@@ -10,7 +10,6 @@ import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
 import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
-import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import java.io.File;
@@ -21,13 +20,10 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterResult;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
-import com.qasymphony.ci.plugin.utils.StreamWrapper;
-import com.qasymphony.ci.plugin.utils.process.ProcessWrapper;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
-import hudson.tasks.junit.JUnitParser;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
@@ -382,7 +378,7 @@ public class SubmitJUnitStep extends Step {
             return true;
         }
         private List<AutomationTestResult> readExternalTestResults(PrintStream logger, ExternalTool externalTool) throws Exception{
-            String resultPath = externalTool.getResultPath();
+            String resultPath = externalTool.getPathToResults();
             if (StringUtils.isEmpty(resultPath)) {
                 throw new Exception("resultPath of external tool is null or empty");
             }
@@ -556,8 +552,7 @@ public class SubmitJUnitStep extends Step {
                 LoggerUtils.formatInfo(logger, "Integrate with: %s", externalTool.getClass().getCanonicalName());
                 LoggerUtils.formatInfo(logger, "Command: %s", externalTool.getCommand());
                 LoggerUtils.formatInfo(logger, "Argument string: %s", externalTool.getArguments());
-                LoggerUtils.formatInfo(logger, "Result Path: %s", externalTool.getResultPath());
-
+                LoggerUtils.formatInfo(logger, "Result Path: %s", externalTool.getPathToResults());
             }
             Long environmentID = pipelineConfiguration.getEnvironmentID();
             if (null != environmentID && 0 < environmentID) {

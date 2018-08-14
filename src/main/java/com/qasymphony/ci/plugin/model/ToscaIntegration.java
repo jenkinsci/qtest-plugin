@@ -16,8 +16,8 @@ import java.io.PrintStream;
 public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> implements ExternalTool {
 
     @DataBoundConstructor
-    public ToscaIntegration(String command, String arguments, String resultPath) {
-        this.resultPath = resultPath;
+    public ToscaIntegration(String command, String arguments, String pathToResults) {
+        this.pathToResults = pathToResults;
         this.command = command;
         this.arguments = arguments;
     }
@@ -49,20 +49,20 @@ public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> 
         if (StringUtils.isEmpty(this.arguments)) {
             return ResourceBundle.MSG_INVALID_EXTERNAL_ARGUMENTS;
         }
-        if (StringUtils.isEmpty(this.resultPath)) {
+        if (StringUtils.isEmpty(this.pathToResults)) {
             return ResourceBundle.MSG_INVALID_EXTERNAL_RESULT_PATH;
         }
         return null;
     }
 
     @Override
-    public String getResultPath() {
-        return resultPath;
+    public String getPathToResults() {
+        return pathToResults;
     }
 
     @Override
-    public void setResultPath(String value) {
-        this.resultPath = value;
+    public void setPathToResults(String value) {
+        this.pathToResults = value;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> 
 
     private String arguments;
     private String command ;
-    private String resultPath;
+    private String pathToResults;
 
     @Symbol("executeToscaTests")
     @Extension

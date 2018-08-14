@@ -13,8 +13,8 @@ public interface ExternalTool {
     void setArguments(String arguments);
 
 
-    String getResultPath();
-    void setResultPath(String value);
+    String getPathToResults();
+    void setPathToResults(String value);
 
     int execute(Object... params) throws Exception;
 }
