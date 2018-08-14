@@ -14,6 +14,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author anpham
  */
 public class Configuration extends AbstractDescribableImpl<Configuration> {
+  private ToscaIntegration toscaIntegration;
   private Long id;
   private String url;
   /**
@@ -90,6 +91,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
   public Configuration setId(Long id) {
     this.id = id;
     return this;
+  }
+
+  public ToscaIntegration getToscaIntegration() {
+    return toscaIntegration;
+  }
+
+  public void setToscaIntegration(ToscaIntegration toscaIntegration) {
+    this.toscaIntegration = toscaIntegration;
   }
 
   public String getUrl() {
