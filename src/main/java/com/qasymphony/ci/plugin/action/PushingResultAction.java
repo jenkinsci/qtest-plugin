@@ -393,8 +393,8 @@ public class PushingResultAction extends Notifier {
       }
       String command = toscaConfigObj.getString("command");
       String arguments = toscaConfigObj.getString("arguments");
-      String resultPath = toscaConfigObj.getString("resultPath");
-      return new ToscaIntegration(command, arguments, resultPath);
+      String pathToResults = toscaConfigObj.getString("pathToResults");
+      return new ToscaIntegration(command, arguments, pathToResults);
     }
 
     public FormValidation doCheckUrl(@QueryParameter String value, @AncestorInPath AbstractProject project)
@@ -439,7 +439,7 @@ public class PushingResultAction extends Notifier {
       return ValidationFormService.checkExternalArguments(value);
     }
 
-    public FormValidation doCheckToscaResultPath(@QueryParameter String value) {
+    public FormValidation doCheckToscaPathToResults(@QueryParameter String value) {
       return ValidationFormService.checkExternalPathToResults(value);
     }
 

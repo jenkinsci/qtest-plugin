@@ -46,8 +46,8 @@
           <f:entry title="${%label.tosca_integration_arguments}" field="toscaArguments">
             <f:textbox name="arguments" value="${instance.configuration.toscaIntegration.arguments}"/>
           </f:entry>
-          <f:entry title="${%label.tosca_integration_result_path}" field="toscaResultPath">
-            <f:textbox name="resultPath" value="${instance.configuration.toscaIntegration.resultPath}"/>
+          <f:entry title="${%label.tosca_integration_result_path}" field="toscaPathToResults">
+            <f:textbox name="pathToResults" value="${instance.configuration.toscaIntegration.pathToResults}"/>
           </f:entry>
         </f:optionalBlock>
       </table>
