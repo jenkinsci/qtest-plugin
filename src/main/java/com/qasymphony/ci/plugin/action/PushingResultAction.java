@@ -151,15 +151,17 @@ public class PushingResultAction extends Notifier {
     String pattern = "/*.xml";
     File resultFile = new File(resultPath);
     try {
-      if (resultFile.isDirectory()) {
-        pattern = "**/*.xml";
-        for (File f : resultFile.listFiles()) {
-          FileUtils.touch(f);
+      if (resultFile.exists()) {
+        if (resultFile.isDirectory()) {
+          pattern = "**/*.xml";
+          for (File f : resultFile.listFiles()) {
+            FileUtils.touch(f);
+          }
+        } else if (resultFile.isFile()){
+          FileUtils.touch(resultFile);
+          pattern = resultFile.getName();
+          resultPath = resultFile.getParent();
         }
-      } else {
-        FileUtils.touch(resultFile);
-        pattern = resultFile.getName();
-        resultPath = resultFile.getParent();
       }
     } catch (NullPointerException nulE) {
       // no worry we do not care it
