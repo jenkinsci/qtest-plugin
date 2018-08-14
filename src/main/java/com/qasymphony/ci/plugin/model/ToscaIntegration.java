@@ -1,6 +1,5 @@
 package com.qasymphony.ci.plugin.model;
 
-import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.utils.StreamWrapper;
 import com.qasymphony.ci.plugin.utils.process.ProcessWrapper;
 import hudson.Extension;

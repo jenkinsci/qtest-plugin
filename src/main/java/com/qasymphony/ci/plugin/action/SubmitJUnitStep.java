@@ -192,8 +192,8 @@ public class SubmitJUnitStep extends Step {
         public FormValidation doCheckExternalArguments(@QueryParameter String value) {
             return ValidationFormService.checkExternalArguments(value);
         }
-        public FormValidation doCheckExternalResultPath(@QueryParameter String value) {
-            return ValidationFormService.checkExternalResultPath(value);
+        public FormValidation doCheckExternalPathToResults(@QueryParameter String value) {
+            return ValidationFormService.checkExternalPathToResults(value);
         }
         //~form validation
         // javascript methods
