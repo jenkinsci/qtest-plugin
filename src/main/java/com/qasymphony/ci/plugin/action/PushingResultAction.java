@@ -8,8 +8,10 @@ import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
+import com.qasymphony.ci.plugin.parse.ToscaTestResultParser;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
@@ -145,27 +147,7 @@ public class PushingResultAction extends Notifier {
 
   private List<AutomationTestResult> readExternalTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, ExternalTool externalTool) throws Exception{
     String pathToResults = externalTool.getPathToResults();
-    if (StringUtils.isEmpty(pathToResults)) {
-      throw new Exception("pathToResults of external tool is null or empty");
-    }
-    String pattern = "/*.xml";
-    File resultFile = new File(pathToResults);
-    try {
-      if (resultFile.exists()) {
-        if (resultFile.isDirectory()) {
-          pattern = "**/*.xml";
-          for (File f : resultFile.listFiles()) {
-            FileUtils.touch(f);
-          }
-        } else if (resultFile.isFile()){
-          FileUtils.touch(resultFile);
-          pattern = resultFile.getName();
-          pathToResults = resultFile.getParent();
-        }
-      }
-    } catch (NullPointerException nulE) {
-      // no worry we do not care it
-    }
+    String pattern = CommonParsingUtils.getResultFilesPattern(pathToResults);
     FilePath ws = build.getWorkspace();
     if (ws == null) {
       LoggerUtils.formatInfo(logger, "Could not find workspace of this build.");
@@ -180,9 +162,11 @@ public class PushingResultAction extends Notifier {
             .setOverwriteExistingTestSteps(configuration.isOverwriteExistingTestSteps())
             .setCreateEachMethodAsTestCase(true)
             .setConcatClassName(false)
+            .setToscaIntegration(externalTool)
             .setParseTestResultPattern(pattern);
 
-    return JunitTestResultParser.parseExternalResult(parseRequest);
+
+    return ToscaTestResultParser.parse(parseRequest);
   }
 
   private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, String buildResult, PrintStream logger, String status) {

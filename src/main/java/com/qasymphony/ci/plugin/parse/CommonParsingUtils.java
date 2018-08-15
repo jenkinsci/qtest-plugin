@@ -10,6 +10,7 @@ import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
@@ -229,6 +230,51 @@ public class CommonParsingUtils {
       }
     }
     return resultFolders;
+  }
+
+  /**
+   * Scan all result files with pattern
+   *
+   * @param basedDir basedDir
+   * @return a list of folder
+   */
+  public static List<String> scanTestResultFile(String basedDir, String pattern) {
+    DirectoryScanner scanner = new DirectoryScanner();
+    scanner.setIncludes(new String[]{pattern});
+    scanner.setBasedir(basedDir);
+    scanner.setCaseSensitive(false);
+    scanner.scan();
+    String[] files = scanner.getIncludedFiles();
+    List<String> resultFolders = new ArrayList<>();
+    for (String file : files) {
+      resultFolders.add(file);
+    }
+    return resultFolders;
+  }
+
+  public static String getResultFilesPattern(String pathToResults) throws Exception {
+    if (StringUtils.isEmpty(pathToResults)) {
+      throw new Exception("Path to results is empty");
+    }
+    String pattern = "/*.xml";
+    File resultFile = new File(pathToResults);
+    try {
+      if (resultFile.exists()) {
+        if (resultFile.isDirectory()) {
+          pattern = "**/*.xml";
+          for (File f : resultFile.listFiles()) {
+            FileUtils.touch(f);
+          }
+        } else if (resultFile.isFile()){
+          FileUtils.touch(resultFile);
+          pattern = resultFile.getName();
+          pathToResults = resultFile.getParent();
+        }
+      }
+    } catch (NullPointerException nulE) {
+      // no worry we do not care it
+    }
+    return pattern;
   }
 
   /**
