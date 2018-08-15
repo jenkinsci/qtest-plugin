@@ -144,12 +144,12 @@ public class PushingResultAction extends Notifier {
   }
 
   private List<AutomationTestResult> readExternalTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, ExternalTool externalTool) throws Exception{
-    String resultPath = externalTool.getPathToResults();
-    if (StringUtils.isEmpty(resultPath)) {
-      throw new Exception("resultPath of external tool is null or empty");
+    String pathToResults = externalTool.getPathToResults();
+    if (StringUtils.isEmpty(pathToResults)) {
+      throw new Exception("pathToResults of external tool is null or empty");
     }
     String pattern = "/*.xml";
-    File resultFile = new File(resultPath);
+    File resultFile = new File(pathToResults);
     try {
       if (resultFile.exists()) {
         if (resultFile.isDirectory()) {
@@ -160,7 +160,7 @@ public class PushingResultAction extends Notifier {
         } else if (resultFile.isFile()){
           FileUtils.touch(resultFile);
           pattern = resultFile.getName();
-          resultPath = resultFile.getParent();
+          pathToResults = resultFile.getParent();
         }
       }
     } catch (NullPointerException nulE) {
@@ -171,7 +171,7 @@ public class PushingResultAction extends Notifier {
       LoggerUtils.formatInfo(logger, "Could not find workspace of this build.");
       return Collections.emptyList();
     }
-    FilePath childWS = ws.child(resultPath);
+    FilePath childWS = ws.child(pathToResults);
     ParseRequest parseRequest = new ParseRequest()
             .setBuild(build)
             .setWorkSpace(childWS)
@@ -202,6 +202,7 @@ public class PushingResultAction extends Notifier {
 
   private void showInfo(PrintStream logger, ExternalTool externalTool) {
     LoggerUtils.formatInfo(logger, "");
+    LoggerUtils.formatInfo(logger, String.format("Jenkins version: %s", Jenkins.VERSION));
     LoggerUtils.formatHR(logger);
     LoggerUtils.formatInfo(logger, ResourceBundle.DISPLAY_NAME);
     LoggerUtils.formatInfo(logger, String.format("Build Version: %s", ConfigService.getBuildVersion()));

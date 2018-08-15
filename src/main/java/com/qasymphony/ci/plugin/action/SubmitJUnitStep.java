@@ -98,8 +98,9 @@ public class SubmitJUnitStep extends Step {
             PipelineConfiguration pipeConfig =  req.bindJSON(PipelineConfiguration.class, formData);
 
             try {
-                if (formData.containsKey("integration")) {
-                    ToscaIntegration toscaIntegration = req.bindJSON(ToscaIntegration.class, formData.optJSONObject("integration"));
+                final String toscaIntegrationKey = "toscaIntegration";
+                if (formData.containsKey(toscaIntegrationKey)) {
+                    ToscaIntegration toscaIntegration = req.bindJSON(ToscaIntegration.class, formData.optJSONObject(toscaIntegrationKey));
                     pipeConfig.setExecuteExternalTool(toscaIntegration);
                 }
             } catch (Exception ex) {
@@ -378,12 +379,12 @@ public class SubmitJUnitStep extends Step {
             return true;
         }
         private List<AutomationTestResult> readExternalTestResults(PrintStream logger, ExternalTool externalTool) throws Exception{
-            String resultPath = externalTool.getPathToResults();
-            if (StringUtils.isEmpty(resultPath)) {
-                throw new Exception("resultPath of external tool is null or empty");
+            String pathToResults = externalTool.getPathToResults();
+            if (StringUtils.isEmpty(pathToResults)) {
+                throw new Exception("pathToResults of external tool is null or empty");
             }
             String pattern = "/*.xml";
-            File resultFile = new File(resultPath);
+            File resultFile = new File(pathToResults);
             try {
                 if (resultFile.exists()) {
                     if (resultFile.isDirectory()) {
@@ -394,14 +395,14 @@ public class SubmitJUnitStep extends Step {
                     } else if (resultFile.isFile()){
                         FileUtils.touch(resultFile);
                         pattern = resultFile.getName();
-                        resultPath = resultFile.getParent();
+                        pathToResults = resultFile.getParent();
                     }
                 }
             } catch (NullPointerException nulE) {
                 // no worry we do not care it
             }
 
-            FilePath childWS = ws.child(resultPath);
+            FilePath childWS = ws.child(pathToResults);
             ParseRequest parseRequest = new ParseRequest()
                     .setBuild(build)
                     .setWorkSpace(childWS)

@@ -21,6 +21,12 @@
     .container-link {
       margin-left: 10px;
     }
+    #qtest-result-options {
+      width: 100%;
+    }
+    .block-disabled {
+      opacity: 0.4;
+    }
   </style>
 
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-2.1.4.min.js"></script>
@@ -35,7 +41,7 @@
     <st:bind var="remoteAction" value="${descriptor}"/>
     <f:block>
       <table class="external-tool-config">
-        <f:optionalBlock name="integration" title="${%label.integration}">
+        <f:optionalBlock name="toscaIntegration" title="${%label.integration}">
           <f:entry title="${%label.integration_command}" field="externalCommand">
             <f:textbox name="command" value="${instance.configuration.externalTool.command}"/>
           </f:entry>
@@ -122,26 +128,29 @@
       <f:checkbox id="overwriteExistingTestSteps" name="config.overwriteExistingTestSteps" checked="${instance.configuration.overwriteExistingTestSteps}" class="checkbox-input" value="true" default="true"/>
       <label for="overwriteExistingTestSteps">${%label.overwriteExistingTestSteps}</label>
     </f:block>
-
-    <f:entry field="jenkinsProjectName">
-      <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}" title="${%label.autoScan}" value="true">
-        <f:description>
-          <i>${%label.resultPatternTitle}</i>
-        </f:description>
-        <f:entry title="${%label.resultPattern}" field="resultPattern">
-          <f:textbox name="config.resultPattern" value="${instance.configuration.resultPattern}"></f:textbox>
+    <f:block>
+      <table id="qtest-result-options" class="result-options">
+        <f:entry field="jenkinsProjectName">
+          <f:radioBlock inline="true" name="config.readFromJenkins" checked="${instance.configuration.readFromJenkins}" title="${%label.autoScan}" value="true">
+            <f:description>
+              <i>${%label.resultPatternTitle}</i>
+            </f:description>
+            <f:entry title="${%label.resultPattern}" field="resultPattern">
+              <f:textbox name="config.resultPattern" value="${instance.configuration.resultPattern}"></f:textbox>
+            </f:entry>
+          </f:radioBlock>
+          <f:radioBlock inline="true" name="config.readFromJenkins" checked="${!instance.configuration.readFromJenkins}" title="${%label.readFromJenkins}" value="false">
+          </f:radioBlock>
         </f:entry>
-      </f:radioBlock>
-      <f:radioBlock inline="true" name="config.readFromJenkins" checked="${!instance.configuration.readFromJenkins}" title="${%label.readFromJenkins}" value="false">
-      </f:radioBlock>
-    </f:entry>
 
-    <f:entry title="${%label.selection_mode}" field="selectionMode">
-      <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.class_mode}" checked="${!instance.configuration.eachMethodAsTestCase}" value="false">
-      </f:radioBlock>
-      <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.method_mode}" checked="${instance.configuration.eachMethodAsTestCase}" value="true">
-      </f:radioBlock>
-    </f:entry>
+        <f:entry title="${%label.selection_mode}" field="selectionMode">
+          <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.class_mode}" checked="${!instance.configuration.eachMethodAsTestCase}" value="false">
+          </f:radioBlock>
+          <f:radioBlock inline="true" name="config.eachMethodAsTestCase" title="${%label.method_mode}" checked="${instance.configuration.eachMethodAsTestCase}" value="true">
+          </f:radioBlock>
+        </f:entry>
+      </table>
+    </f:block>
   </form>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/service.js" name="qtestScript"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js" name="qtestScript"></script>
