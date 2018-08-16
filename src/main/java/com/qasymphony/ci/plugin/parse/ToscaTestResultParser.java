@@ -52,6 +52,9 @@ public class ToscaTestResultParser {
       Document doc = XMLFileUtils.readXMLFile(file);
       doc.getDocumentElement().normalize();
       NodeList testCaseNodes = doc.getElementsByTagName("executionEntry");
+      if (testCaseNodes.getLength() <= 0) {
+        throw new Exception("Tosca parser cannot find test cases");
+      }
       for (int i = 0; i < testCaseNodes.getLength(); i++) {
         Node testCaseNode = testCaseNodes.item(i);
         AutomationTestResult testLog = buildTestCaseLog(testCaseNode, request.getOverwriteExistingTestSteps(), currentTestLogOrder++, logger);

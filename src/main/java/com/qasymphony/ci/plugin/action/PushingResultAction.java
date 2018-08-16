@@ -163,10 +163,15 @@ public class PushingResultAction extends Notifier {
             .setCreateEachMethodAsTestCase(true)
             .setConcatClassName(false)
             .setToscaIntegration(externalTool)
+            .setUtilizeTestResultFromCITool(true)
             .setParseTestResultPattern(pattern);
 
-
-    return ToscaTestResultParser.parse(parseRequest);
+    try {
+      return ToscaTestResultParser.parse(parseRequest);
+    } catch (Exception e) {
+      LoggerUtils.formatInfo(logger, "Parsing Tosca test results by using Junit parser");
+      return  JunitTestResultParser.parse(parseRequest);
+    }
   }
 
   private Boolean storeWhenNotSuccess(JunitSubmitterRequest submitterRequest, JunitSubmitter junitSubmitter, AbstractBuild build, String buildResult, PrintStream logger, String status) {
