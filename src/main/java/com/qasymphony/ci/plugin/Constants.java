@@ -49,4 +49,14 @@ public class Constants {
   public static final String CONTAINER_NAME = "container_name";
   public static final String CONFIGURATION_ID = "configuration_id";
   public static final String ENVIRONMENT_NAME = "environment_name";
+
+  public static final class TestResultStatus {
+    public static final String PASS = "PASS";
+    public static final String FAIL = "FAIL";
+    public static final String SKIP = "SKIP";
+    public static final String PASSED = "PASSED";
+    public static final String FAILED = "FAILED";
+    public static final String SKIPPED = "SKIPPED";
+    public static final String ERROR = "ERROR";
+  }
 }

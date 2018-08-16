@@ -148,7 +148,7 @@ public class CommonParsingUtils {
    *
    * @param map automationTestResultMap
    */
-  private static Map<String, AutomationTestResult> processAttachment(Map<String, AutomationTestResult> map)
+  public static Map<String, AutomationTestResult> processAttachment(Map<String, AutomationTestResult> map)
     throws Exception {
 
     Iterator<String> keys = map.keySet().iterator();

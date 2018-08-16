@@ -1,16 +1,12 @@
 package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.Constants;
+import com.qasymphony.ci.plugin.model.AutomationAttachment;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
 import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.XMLFileUtils;
-import hudson.Util;
-import hudson.model.Run;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.types.FileSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,8 +14,8 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.LinkedList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -48,7 +44,8 @@ public class ToscaTestResultParser {
     String pathToResults = toscaIntegrationConfig.getPathToResults();
     String pattern =CommonParsingUtils.getResultFilesPattern(pathToResults);
     List<String> resultFiles = CommonParsingUtils.scanTestResultFile(pathToResults, pattern);
-
+    Map<String, AutomationTestResult> map = new HashMap<>();
+    int currentTestLogOrder = 1;
     for (String resultFile : resultFiles) {
       LOG.info("Parsing result file: " + resultFile);
       File file = new File(pathToResults, resultFile);
@@ -57,35 +54,105 @@ public class ToscaTestResultParser {
       NodeList testCaseNodes = doc.getElementsByTagName("executionEntry");
       for (int i = 0; i < testCaseNodes.getLength(); i++) {
         Node testCaseNode = testCaseNodes.item(i);
-        // make sure it's element node.
-        if (testCaseNode.getNodeType() == Node.ELEMENT_NODE) {
-          Element testCaseElement = (Element) testCaseNode;
-          String testCaseName = testCaseElement.getElementsByTagName("name").item(0).getTextContent();
-          String startTime = testCaseElement.getElementsByTagName("startTime").item(0).getTextContent();
-          String endTime = testCaseElement.getElementsByTagName("endTime").item(0).getTextContent();
-          LOG.info("Getting test case info: " + testCaseName);
-          NodeList testStepNodes = testCaseElement.getElementsByTagName("testStepLog");
-          for (int j = 0; j < testStepNodes.getLength(); j++) {
-            Node testStepNode = testStepNodes.item(j);
-            if (testStepNode.getNodeType() == Node.ELEMENT_NODE) {
-              Element testStepElement = (Element) testStepNode;
-              String testStepName = testStepElement.getElementsByTagName("name").item(0).getTextContent();
-              LOG.info("Getting test steps info: " + testStepName);
-              String testStepStatus = testStepElement.getElementsByTagName("result").item(0).getTextContent();
-            }
-          }
+        AutomationTestResult testLog = buildTestCaseLog(testCaseNode, request.getOverwriteExistingTestSteps(), currentTestLogOrder++, logger);
+        String testCaseName = testLog.getName();
+        if (!map.containsKey(testCaseName)) {
+          map.put(testCaseName, testLog);
         }
       }
     }
-
-//    Run<?,?> build = request.getBuild();
-
-//    //otherwise auto scan test result
-//    String basedDir = request.getWorkSpace().toURI().getPath();
-//    List<String> resultFolders = CommonParsingUtils.scanJunitTestResultFolder(basedDir);
-//    LOG.info("Scanning junit test result in dir:" + basedDir + String.format(".Found: %s dirs, %s", resultFolders.size(), resultFolders));
-    List<AutomationTestResult> result = new LinkedList<>();
-    return result;
+    map = CommonParsingUtils.processAttachment(map);
+    return new ArrayList<>(map.values());
   }
 
+  private static AutomationTestResult buildTestCaseLog(Node testCaseNode, boolean overwriteExistingTestSteps, int currentTestLogOrder, PrintStream logger) {
+    AutomationTestResult testLog = null;
+    // make sure it's element node.
+    if (testCaseNode.getNodeType() == Node.ELEMENT_NODE) {
+      Element testCaseElement = (Element) testCaseNode;
+      String testCaseName = testCaseElement.getElementsByTagName("name").item(0).getTextContent();
+      String startTime = testCaseElement.getElementsByTagName("startTime").item(0).getTextContent();
+      String endTime = testCaseElement.getElementsByTagName("endTime").item(0).getTextContent();
+      Date startDate;
+      Date endDate;
+      try {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSXXX");
+        startDate = dateFormat.parse(startTime);
+        endDate = dateFormat.parse(endTime);
+      } catch (Exception e) {
+        startDate = new Date();
+        endDate = new Date();
+      }
+      LoggerUtils.formatInfo(logger, "Getting test case info: " + testCaseName);
+      NodeList testStepNodes = testCaseElement.getElementsByTagName("testStepLog");
+
+      int totalFailedTestSteps = 0;
+      int totalSkippedTestSteps = 0;
+      int totalTestSteps = 0;
+
+      int currentTestStepOrder = 0;
+      List<AutomationTestStepLog> testStepLogs = new ArrayList<>();
+      List<AutomationAttachment> attachments = new ArrayList<>();
+      for (int j = 0; j < testStepNodes.getLength(); j++) {
+        Node testStepNode = testStepNodes.item(j);
+        Element testStepElement = (Element) testStepNode;
+        if (testStepNode.getNodeType() == Node.ELEMENT_NODE) {
+          AutomationTestStepLog testStepLog = buildTestStepLog(testStepElement, currentTestStepOrder++);
+          totalTestSteps += 1;
+          String testStepStatus = testStepLog.getStatus();
+          if (Constants.TestResultStatus.FAILED.equalsIgnoreCase(testStepStatus) ||
+                  Constants.TestResultStatus.FAIL.equalsIgnoreCase(testStepStatus) ||
+                  Constants.TestResultStatus.ERROR.equalsIgnoreCase(testStepStatus)) {
+            totalFailedTestSteps += 1;
+            AutomationAttachment attachment = buildAttachments(testStepElement, testStepLog.getExpectedResult());
+            attachments.add(attachment);
+          }
+
+          if (Constants.TestResultStatus.SKIP.equalsIgnoreCase(testStepStatus) ||
+                  Constants.TestResultStatus.SKIPPED.equalsIgnoreCase(testStepStatus)) {
+            totalSkippedTestSteps += 1;
+          }
+
+          if (overwriteExistingTestSteps) {
+            testStepLogs.add(testStepLog);
+          }
+        }
+      }
+        testLog = new AutomationTestResult();
+        testLog.setOrder(currentTestLogOrder);
+        testLog.setAutomationContent(testCaseName);
+        testLog.setExecutedStartDate(startDate);
+        testLog.setExecutedEndDate(endDate);
+        testLog.setTestLogs(testStepLogs);
+        testLog.setAttachments(attachments);
+        testLog.setStatus(Constants.TestResultStatus.PASS);
+        if (totalFailedTestSteps >= 1) {
+          testLog.setStatus(Constants.TestResultStatus.FAIL);
+        } else if (totalSkippedTestSteps == totalTestSteps) {
+          testLog.setStatus(Constants.TestResultStatus.SKIP);
+        }
+    }
+    return testLog;
+  }
+
+  private static AutomationTestStepLog buildTestStepLog(Element testStepElement, int testStepOrder) {
+    String testStepName = testStepElement.getElementsByTagName("name").item(0).getTextContent();
+    LOG.info("Getting test steps info: " + testStepName);
+    String testStepStatus = testStepElement.getElementsByTagName("result").item(0).getTextContent();
+    AutomationTestStepLog testStepsLog = new AutomationTestStepLog();
+    testStepsLog.setStatus(testStepStatus.toUpperCase());
+    testStepsLog.setExpectedResult(testStepName);
+    testStepsLog.setDescription(testStepName);
+    testStepsLog.setOrder(testStepOrder);
+    return testStepsLog;
+  }
+
+  private static AutomationAttachment buildAttachments(Element testStepElement, String testStepName) {
+    String testStepErrorMessage = testStepElement.getElementsByTagName("detail").item(0).getTextContent();
+    AutomationAttachment attachment =  new AutomationAttachment();
+    attachment.setName(testStepName.concat(Constants.Extension.TEXT_FILE));
+    attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
+    attachment.setData(testStepErrorMessage);
+    return attachment;
+  }
 }
