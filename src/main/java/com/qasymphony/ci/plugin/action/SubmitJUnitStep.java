@@ -394,6 +394,7 @@ public class SubmitJUnitStep extends Step {
                     .setCreateEachMethodAsTestCase(true)
                     .setConcatClassName(false)
                     .setUtilizeTestResultFromCITool(true)
+                    .setToscaIntegration(externalTool)
                     .setParseTestResultPattern(pattern);
 
             try {
