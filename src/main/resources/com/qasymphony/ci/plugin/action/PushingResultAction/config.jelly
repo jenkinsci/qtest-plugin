@@ -38,19 +38,17 @@
     <st:bind var="remoteAction" value="${descriptor}"/>
 
     <f:block>
-      <table class="external-tool-config">
-        <f:optionalBlock name="toscaIntegration" title="${%label.tosca_integration}" checked="${instance.configuration.toscaIntegration != null}">
-          <f:entry title="${%label.tosca_integration_command}" field="toscaCommand">
-            <f:textbox name="command" value="${instance.configuration.toscaIntegration.command}"/>
-          </f:entry>
-          <f:entry title="${%label.tosca_integration_arguments}" field="toscaArguments">
-            <f:textbox name="arguments" value="${instance.configuration.toscaIntegration.arguments}"/>
-          </f:entry>
-          <f:entry title="${%label.tosca_integration_result_path}" field="toscaPathToResults">
-            <f:textbox name="pathToResults" value="${instance.configuration.toscaIntegration.pathToResults}"/>
-          </f:entry>
-        </f:optionalBlock>
-      </table>
+      <f:optionalBlock name="toscaIntegration" title="${%label.tosca_integration}" checked="${instance.configuration.toscaIntegration != null}">
+        <f:entry title="${%label.tosca_integration_command}" field="toscaCommand">
+          <f:textbox name="command" value="${instance.configuration.toscaIntegration.command}"/>
+        </f:entry>
+        <f:entry title="${%label.tosca_integration_arguments}" field="toscaArguments">
+          <f:textbox name="arguments" value="${instance.configuration.toscaIntegration.arguments}"/>
+        </f:entry>
+        <f:entry title="${%label.tosca_integration_result_path}" field="toscaPathToResults">
+          <f:textbox name="pathToResults" value="${instance.configuration.toscaIntegration.pathToResults}"/>
+        </f:entry>
+      </f:optionalBlock>
     </f:block>
 
     <f:entry title="${%label.url}" field="url">

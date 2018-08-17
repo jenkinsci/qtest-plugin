@@ -10,9 +10,12 @@ import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.model.PipelineConfiguration;
 import com.qasymphony.ci.plugin.model.ToscaIntegration;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
+import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import java.io.File;
+
+import com.qasymphony.ci.plugin.parse.ToscaTestResultParser;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
@@ -379,28 +382,7 @@ public class SubmitJUnitStep extends Step {
         }
         private List<AutomationTestResult> readExternalTestResults(PrintStream logger, ExternalTool externalTool) throws Exception{
             String pathToResults = externalTool.getPathToResults();
-            if (StringUtils.isEmpty(pathToResults)) {
-                throw new Exception("pathToResults of external tool is null or empty");
-            }
-            String pattern = "/*.xml";
-            File resultFile = new File(pathToResults);
-            try {
-                if (resultFile.exists()) {
-                    if (resultFile.isDirectory()) {
-                        pattern = "**/*.xml";
-                        for (File f : resultFile.listFiles()) {
-                            FileUtils.touch(f);
-                        }
-                    } else if (resultFile.isFile()){
-                        FileUtils.touch(resultFile);
-                        pattern = resultFile.getName();
-                        pathToResults = resultFile.getParent();
-                    }
-                }
-            } catch (NullPointerException nulE) {
-                // no worry we do not care it
-            }
-
+            String pattern = CommonParsingUtils.getResultFilesPattern(pathToResults);
             FilePath childWS = ws.child(pathToResults);
             ParseRequest parseRequest = new ParseRequest()
                     .setBuild(build)
@@ -410,9 +392,16 @@ public class SubmitJUnitStep extends Step {
                     .setOverwriteExistingTestSteps(step.pipelineConfiguration.getOverwriteExistingTestSteps())
                     .setCreateEachMethodAsTestCase(true)
                     .setConcatClassName(false)
+                    .setUtilizeTestResultFromCITool(true)
+                    .setToscaIntegration(externalTool)
                     .setParseTestResultPattern(pattern);
 
-            return JunitTestResultParser.parseExternalResult(parseRequest);
+            try {
+                return ToscaTestResultParser.parse(parseRequest);
+            } catch (Exception e) {
+                LoggerUtils.formatInfo(logger, "Parsing Tosca test results by using Junit parser");
+                return  JunitTestResultParser.parse(parseRequest);
+            }
         }
         private List<AutomationTestResult> readTestResults(PrintStream logger) {
             List<AutomationTestResult> automationTestResults;
