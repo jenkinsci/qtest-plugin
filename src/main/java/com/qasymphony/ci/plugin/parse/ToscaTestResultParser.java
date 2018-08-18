@@ -7,6 +7,7 @@ import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
 import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.XMLFileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -152,6 +153,9 @@ public class ToscaTestResultParser {
 
   private static AutomationAttachment buildAttachments(Element testStepElement, String testStepName) {
     String testStepErrorMessage = testStepElement.getElementsByTagName("detail").item(0).getTextContent();
+    if (StringUtils.isEmpty(testStepErrorMessage)) {
+      testStepErrorMessage = testStepElement.getElementsByTagName("description").item(0).getTextContent();
+    }
     AutomationAttachment attachment =  new AutomationAttachment();
     attachment.setName(testStepName.concat(Constants.Extension.TEXT_FILE));
     attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
