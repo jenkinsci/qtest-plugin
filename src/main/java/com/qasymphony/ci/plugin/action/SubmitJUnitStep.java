@@ -297,9 +297,8 @@ public class SubmitJUnitStep extends Step {
 
             if (null != configError) {
                 LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
-                LoggerUtils.formatError(logger, configError);
                 storeWhenNotSuccess(junitSubmitterRequest, junitSubmitter, build, currentResult, logger, JunitSubmitterResult.STATUS_FAILED);
-                return null;
+                throw new Exception(configError);
             }
 
             LoggerUtils.formatInfo(logger, String.format("Jenkins project name: %s, Jenkins server URL: %s", junitSubmitterRequest.getJenkinsProjectName(), junitSubmitterRequest.getJenkinsServerURL()));
