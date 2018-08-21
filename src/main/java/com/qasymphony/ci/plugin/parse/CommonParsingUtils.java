@@ -3,6 +3,7 @@ package com.qasymphony.ci.plugin.parse;
 import com.qasymphony.ci.plugin.model.AutomationAttachment;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
+import com.qasymphony.ci.plugin.model.Glob;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import hudson.Util;
@@ -252,10 +253,11 @@ public class CommonParsingUtils {
     return resultFolders;
   }
 
-  public static String getResultFilesPattern(String pathToResults) throws Exception {
+  public static Glob getBaseDirAndPattern(String pathToResults) throws Exception {
     if (StringUtils.isEmpty(pathToResults)) {
       throw new Exception("Path to results is empty");
     }
+    String baseDir = pathToResults;
     String pattern = "/*.xml";
     File resultFile = new File(pathToResults);
     try {
@@ -268,13 +270,13 @@ public class CommonParsingUtils {
         } else if (resultFile.isFile()){
           FileUtils.touch(resultFile);
           pattern = resultFile.getName();
-          pathToResults = resultFile.getParent();
+          baseDir = resultFile.getParent();
         }
       }
     } catch (NullPointerException nulE) {
       // no worry we do not care it
     }
-    return pattern;
+    return new Glob(baseDir, pattern);
   }
 
   /**

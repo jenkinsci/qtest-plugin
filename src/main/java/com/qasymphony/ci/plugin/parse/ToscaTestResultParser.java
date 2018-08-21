@@ -38,18 +38,15 @@ public class ToscaTestResultParser {
   public static List<AutomationTestResult> parse(ParseRequest request) throws Exception {
     PrintStream logger = request.getListener().getLogger();
     LoggerUtils.formatInfo(logger, "Scan Tosca test results files and parse the results step.");
-    ExternalTool toscaIntegrationConfig = request.getToscaIntegration();
-    if ( toscaIntegrationConfig == null) {
-      throw new Exception("Tosca integration config doesn't exist. Ignore this step");
-    }
-    String pathToResults = toscaIntegrationConfig.getPathToResults();
-    String pattern =CommonParsingUtils.getResultFilesPattern(pathToResults);
-    List<String> resultFiles = CommonParsingUtils.scanTestResultFile(pathToResults, pattern);
+
+    String basedDir = request.getWorkSpace().toURI().getPath();
+    String pattern = request.getParseTestResultPattern();
+    List<String> resultFiles = CommonParsingUtils.scanTestResultFile(basedDir, pattern);
     Map<String, AutomationTestResult> map = new HashMap<>();
     int currentTestLogOrder = 1;
     for (String resultFile : resultFiles) {
       LOG.info("Parsing result file: " + resultFile);
-      File file = new File(pathToResults, resultFile);
+      File file = new File(basedDir, resultFile);
       Document doc = XMLFileUtils.readXMLFile(file);
       doc.getDocumentElement().normalize();
       NodeList testCaseNodes = doc.getElementsByTagName("executionEntry");

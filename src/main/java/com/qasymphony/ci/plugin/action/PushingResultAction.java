@@ -3,10 +3,7 @@ package com.qasymphony.ci.plugin.action;
 import com.qasymphony.ci.plugin.*;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
-import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.Configuration;
-import com.qasymphony.ci.plugin.model.ExternalTool;
-import com.qasymphony.ci.plugin.model.ToscaIntegration;
+import com.qasymphony.ci.plugin.model.*;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
@@ -31,19 +28,15 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -147,13 +140,13 @@ public class PushingResultAction extends Notifier {
 
   private List<AutomationTestResult> readExternalTestResults(AbstractBuild build, Launcher launcher, BuildListener listener, PrintStream logger, ExternalTool externalTool) throws Exception{
     String pathToResults = externalTool.getPathToResults();
-    String pattern = CommonParsingUtils.getResultFilesPattern(pathToResults);
+    Glob glob = CommonParsingUtils.getBaseDirAndPattern(pathToResults);
     FilePath ws = build.getWorkspace();
     if (ws == null) {
       LoggerUtils.formatInfo(logger, "Could not find workspace of this build.");
       return Collections.emptyList();
     }
-    FilePath childWS = ws.child(pathToResults);
+    FilePath childWS = ws.child(glob.getBaseDir());
     ParseRequest parseRequest = new ParseRequest()
             .setBuild(build)
             .setWorkSpace(childWS)
@@ -162,9 +155,8 @@ public class PushingResultAction extends Notifier {
             .setOverwriteExistingTestSteps(configuration.isOverwriteExistingTestSteps())
             .setCreateEachMethodAsTestCase(true)
             .setConcatClassName(false)
-            .setToscaIntegration(externalTool)
             .setUtilizeTestResultFromCITool(true)
-            .setParseTestResultPattern(pattern);
+            .setParseTestResultPattern(glob.getPattern());
 
     try {
       return ToscaTestResultParser.parse(parseRequest);

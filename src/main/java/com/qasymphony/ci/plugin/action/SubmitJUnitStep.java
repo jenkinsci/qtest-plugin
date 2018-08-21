@@ -5,15 +5,11 @@ import com.qasymphony.ci.plugin.*;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
-import com.qasymphony.ci.plugin.model.AutomationTestResult;
-import com.qasymphony.ci.plugin.model.ExternalTool;
-import com.qasymphony.ci.plugin.model.PipelineConfiguration;
-import com.qasymphony.ci.plugin.model.ToscaIntegration;
+import com.qasymphony.ci.plugin.model.*;
 import com.qasymphony.ci.plugin.model.qtest.Setting;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
-import java.io.File;
 
 import com.qasymphony.ci.plugin.parse.ToscaTestResultParser;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
@@ -32,7 +28,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -45,7 +40,6 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -382,8 +376,8 @@ public class SubmitJUnitStep extends Step {
         }
         private List<AutomationTestResult> readExternalTestResults(PrintStream logger, ExternalTool externalTool) throws Exception{
             String pathToResults = externalTool.getPathToResults();
-            String pattern = CommonParsingUtils.getResultFilesPattern(pathToResults);
-            FilePath childWS = ws.child(pathToResults);
+            Glob glob = CommonParsingUtils.getBaseDirAndPattern(pathToResults);
+            FilePath childWS = ws.child(glob.getBaseDir());
             ParseRequest parseRequest = new ParseRequest()
                     .setBuild(build)
                     .setWorkSpace(childWS)
@@ -393,8 +387,7 @@ public class SubmitJUnitStep extends Step {
                     .setCreateEachMethodAsTestCase(true)
                     .setConcatClassName(false)
                     .setUtilizeTestResultFromCITool(true)
-                    .setToscaIntegration(externalTool)
-                    .setParseTestResultPattern(pattern);
+                    .setParseTestResultPattern(glob.getPattern());
 
             try {
                 return ToscaTestResultParser.parse(parseRequest);

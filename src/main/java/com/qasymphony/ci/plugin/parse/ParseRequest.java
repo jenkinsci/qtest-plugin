@@ -1,6 +1,5 @@
 package com.qasymphony.ci.plugin.parse;
 
-import com.qasymphony.ci.plugin.model.ExternalTool;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -83,16 +82,6 @@ public class ParseRequest {
   private Boolean createEachMethodAsTestCase;
   private Boolean utilizeTestResultFromCITool;
   private String parseTestResultPattern;
-  private ExternalTool toscaIntegration;
-
-  public ExternalTool getToscaIntegration() {
-    return toscaIntegration;
-  }
-
-  public ParseRequest setToscaIntegration(ExternalTool toscaIntegration) {
-    this.toscaIntegration = toscaIntegration;
-    return this;
-  }
 
   public Run<?, ?> getBuild() {
     return build;
