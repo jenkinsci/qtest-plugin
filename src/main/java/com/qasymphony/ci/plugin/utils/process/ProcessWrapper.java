@@ -13,7 +13,7 @@ public class ProcessWrapper {
     private StreamReader processOutputStream;
     public boolean createProcess(File workingDir, String command, String arguments, String encoding, IStreamConsumer outStreamConsumer, IStreamConsumer errorStreamConsumer) throws Exception {
         StringBuilder commandBuilder = new StringBuilder();
-        commandBuilder.append(command);
+        commandBuilder.append("\"").append(command).append("\"");
         if (StringUtils.isNotEmpty(arguments)) {
             commandBuilder.append(" ");
             commandBuilder.append(arguments);
