@@ -92,6 +92,14 @@ public class PushingResultAction extends Notifier {
       LoggerUtils.formatWarn(logger, "Invalid configuration to qTest, reject submit test results.");
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult,logger, JunitSubmitterResult.STATUS_FAILED);
       return true;
+    } else {
+      if (null != externalTool) {
+        String errorString = externalTool.validate();
+        if (StringUtils.isNotEmpty(errorString)) {
+          LoggerUtils.formatError(logger, errorString);
+          return false;
+        }
+      }
     }
     if (null == checkProjectNameChanged(build, listener)) {
       storeWhenNotSuccess(submitterRequest, junitSubmitter, build, buildResult, logger, JunitSubmitterResult.STATUS_CANCELED);
