@@ -1,4 +1,3 @@
 # jenkin-qtest-plugin
-Submit JUnit test result to qTest.
 
-See [document](https://wiki.jenkins-ci.org/display/JENKINS/qTest+for+Jenkins+by+QASymphony)
+Refer to this [wiki page](https://wiki.jenkins.io/display/JENKINS/qTest+for+Jenkins+by+Tricentis) for detail information about this plugin
