@@ -3,6 +3,7 @@ package com.qasymphony.ci.plugin.utils;
 import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -26,7 +27,10 @@ import org.apache.http.protocol.HttpContext;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.net.*;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.List;
 
@@ -54,6 +58,7 @@ public class HttpClientUtils {
   public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
   private static final Integer DEFAULT_SOCKET_TIMEOUT = 60;//seconds
   private static HttpClient CLIENT;
+  private static final Logger LOG = Logger.getLogger(HttpClientUtils.class.getName());
 
   private HttpClientUtils() {
   }
@@ -313,11 +318,12 @@ public class HttpClientUtils {
 
   private static void setHttpProxy(HttpClientBuilder httpClientBuilder, String hostUrl) {
     ProxyConfiguration proxyConfig = Jenkins.getInstance().proxy;
-
+    LOG.log(Level.INFO, "-- Proxy info: " +  ReflectionToStringBuilder.toString(proxyConfig));
     if (proxyConfig != null) {
       List<Pattern> proxyHostPatterns = proxyConfig.getNoProxyHostPatterns();
-
-      if (isUrlMatchWithNoProxyHost(hostUrl, proxyHostPatterns) == true) {
+      LOG.log(Level.INFO, "-- No proxy host info: " + Arrays.toString(proxyHostPatterns.toArray()));
+      if (isUrlMatchWithNoProxyHost(hostUrl, proxyHostPatterns)) {
+        LOG.log(Level.INFO, "-- No proxy host has url: " + hostUrl);
         return;
       }
       HttpHost proxy = new HttpHost(proxyConfig.name, proxyConfig.port);
@@ -333,6 +339,7 @@ public class HttpClientUtils {
       AuthScope authScope = new AuthScope(proxyConfig.name, proxyConfig.port);
       CredentialsProvider credsProvider = new BasicCredentialsProvider();
       credsProvider.setCredentials(authScope, credentials);
+      httpClientBuilder.useSystemProperties();
       httpClientBuilder.setProxy(proxy).setDefaultCredentialsProvider(credsProvider).build();
     }
   }
@@ -345,8 +352,7 @@ public class HttpClientUtils {
       timeout = DEFAULT_SOCKET_TIMEOUT;
     }
 
-    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
-            .useSystemProperties();
+    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 
     setHttpProxy(httpClientBuilder, hostUrl);
 
