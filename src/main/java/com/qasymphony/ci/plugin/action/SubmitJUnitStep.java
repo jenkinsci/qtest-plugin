@@ -272,7 +272,7 @@ public class SubmitJUnitStep extends Step {
             junitSubmitterRequest
                     .setBuildNumber(build.getNumber() + "")
                     .setBuildPath(build.getUrl())
-                    .setJenkinsProjectName(ws.getBaseName()/*build.getParent().getDisplayName()*/)
+                    .setJenkinsProjectName(ws.getName()/*build.getParent().getDisplayName()*/)
                     .setJenkinsServerURL(StringUtils.isNotEmpty(url) ? url : Jenkins.getInstance().getRootUrl())
                     .setListener(listener);
 
