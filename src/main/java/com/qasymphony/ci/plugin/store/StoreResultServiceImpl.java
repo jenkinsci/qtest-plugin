@@ -153,7 +153,7 @@ public class StoreResultServiceImpl implements StoreResultService {
         FilePath resultFile = getResultFile(resultPath, numOrder);
         buildResults.putAll(readResult(resultFile, qTestUrl, projectId));
       } else {
-        for (int i = 0; i < numOrder; i++) {
+        for (int i = 0; i <= numOrder; i++) {
           FilePath resultFile = getResultFile(resultPath, i);
           buildResults.putAll(readResult(resultFile, qTestUrl, projectId));
         }
