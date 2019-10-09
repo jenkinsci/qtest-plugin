@@ -30,7 +30,7 @@
 
   <properties>
     <findbugs.skip>true</findbugs.skip>
-    <jackson.version>2.9.5</jackson.version>
+    <jackson.version>2.9.8</jackson.version>
     <junit.plugin.version>1.24</junit.plugin.version>
     <httpclient.version>4.5.5</httpclient.version>
     <java.level>8</java.level>
