@@ -20,10 +20,11 @@ public class Constants {
 
   public static final String CI_TYPE = "jenkins";
   /**
-   * Retry interval for get task status in 1 second
+   * Retry interval for get task status in 3 second
    */
-  public static final Integer RETRY_INTERVAL = 2000;
-
+  public static final Integer RETRY_INTERVAL = 3000;
+  // Stop retrying get task status in 1 hour
+  public static final Integer MAX_RETRY_TIMEOUT = 3600000;
   /**
    * State list which marked as submission have been finished
    */
