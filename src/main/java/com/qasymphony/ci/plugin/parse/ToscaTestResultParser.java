@@ -4,10 +4,8 @@ import com.qasymphony.ci.plugin.Constants;
 import com.qasymphony.ci.plugin.model.AutomationAttachment;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
-import com.qasymphony.ci.plugin.model.ExternalTool;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.XMLFileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -105,8 +103,6 @@ public class ToscaTestResultParser {
                   Constants.TestResultStatus.FAIL.equalsIgnoreCase(testStepStatus) ||
                   Constants.TestResultStatus.ERROR.equalsIgnoreCase(testStepStatus)) {
             totalFailedTestSteps += 1;
-            AutomationAttachment attachment = buildAttachments(testStepElement, testStepLog.getExpectedResult());
-            attachments.add(attachment);
           }
 
           if (Constants.TestResultStatus.SKIP.equalsIgnoreCase(testStepStatus) ||
@@ -119,19 +115,22 @@ public class ToscaTestResultParser {
           }
         }
       }
-        testLog = new AutomationTestResult();
-        testLog.setOrder(currentTestLogOrder);
-        testLog.setAutomationContent(testCaseName);
-        testLog.setExecutedStartDate(startDate);
-        testLog.setExecutedEndDate(endDate);
-        testLog.setTestLogs(testStepLogs);
-        testLog.setAttachments(attachments);
-        testLog.setStatus(Constants.TestResultStatus.PASS);
-        if (totalFailedTestSteps >= 1) {
-          testLog.setStatus(Constants.TestResultStatus.FAIL);
-        } else if (totalSkippedTestSteps == totalTestSteps) {
-          testLog.setStatus(Constants.TestResultStatus.SKIP);
-        }
+      AutomationAttachment attachment = buildAttachments(testCaseElement, testCaseName);
+      attachments.add(attachment);
+
+      testLog = new AutomationTestResult();
+      testLog.setOrder(currentTestLogOrder);
+      testLog.setAutomationContent(testCaseName);
+      testLog.setExecutedStartDate(startDate);
+      testLog.setExecutedEndDate(endDate);
+      testLog.setTestLogs(testStepLogs);
+      testLog.setAttachments(attachments);
+      testLog.setStatus(Constants.TestResultStatus.PASS);
+      if (totalFailedTestSteps >= 1) {
+        testLog.setStatus(Constants.TestResultStatus.FAIL);
+      } else if (totalSkippedTestSteps == totalTestSteps) {
+        testLog.setStatus(Constants.TestResultStatus.SKIP);
+      }
     }
     return testLog;
   }
@@ -148,15 +147,13 @@ public class ToscaTestResultParser {
     return testStepsLog;
   }
 
-  private static AutomationAttachment buildAttachments(Element testStepElement, String testStepName) {
-    String testStepErrorMessage = testStepElement.getElementsByTagName("detail").item(0).getTextContent();
-    if (StringUtils.isEmpty(testStepErrorMessage)) {
-      testStepErrorMessage = testStepElement.getElementsByTagName("description").item(0).getTextContent();
-    }
+  private static AutomationAttachment buildAttachments(Element testCaseElement, String testCaseName) {
+    Element testCaseLogElement = (Element) testCaseElement.getElementsByTagName("testCaseLog").item(0);
+    String testCaseLog = testCaseLogElement.getElementsByTagName("aggregatedDescription").item(0).getTextContent();
     AutomationAttachment attachment =  new AutomationAttachment();
-    attachment.setName(testStepName.concat(Constants.Extension.TEXT_FILE));
+    attachment.setName(testCaseName.concat(Constants.Extension.TEXT_FILE));
     attachment.setContentType(Constants.CONTENT_TYPE_TEXT);
-    attachment.setData(testStepErrorMessage);
+    attachment.setData(testCaseLog);
     return attachment;
   }
 }
