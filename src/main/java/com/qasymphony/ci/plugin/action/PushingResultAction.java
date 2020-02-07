@@ -170,7 +170,7 @@ public class PushingResultAction extends Notifier {
     try {
       return ToscaTestResultParser.parse(parseRequest);
     } catch (Exception e) {
-      LoggerUtils.formatInfo(logger, "Parsing Tosca test results by using Junit parser");
+      LoggerUtils.formatInfo(logger, "Parsing Tosca test results by using Tosca Junit parser");
       return ToscaJunitTestResultParser.parse(parseRequest);
     }
   }

@@ -27,6 +27,11 @@ import org.apache.commons.lang.StringUtils;
  * @version 1.0
  * @since 6/2/2020 1:15 PM ngocminhchu $
  */
+
+/**
+ * A failed Tosca Junit log:
+ - Failed DN should fail&#xD;&#xA;+ Passed  Create JSON Resource CHANGED&#xD;&#xA;&#xD;&#xA;+ Passed  Fill JSON Resource with numbers&#xD;&#xA;+ Passed   RootObject&#xD;&#xA;&#xD;&#xA;- Failed  Verify the numbers&#xD;&#xA;- Failed   RootObject&#xD;&#xA;&#xD;&#xA;
+ */
 public class ToscaJunitTestResultParser {
   private static final Logger LOG = Logger.getLogger(ToscaTestResultParser.class.getName());
 
