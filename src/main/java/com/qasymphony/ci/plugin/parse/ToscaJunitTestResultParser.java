@@ -29,8 +29,8 @@ import org.apache.commons.lang.StringUtils;
  */
 
 /**
- * A failed Tosca Junit log:
- - Failed DN should fail&#xD;&#xA;+ Passed  Create JSON Resource CHANGED&#xD;&#xA;&#xD;&#xA;+ Passed  Fill JSON Resource with numbers&#xD;&#xA;+ Passed   RootObject&#xD;&#xA;&#xD;&#xA;- Failed  Verify the numbers&#xD;&#xA;- Failed   RootObject&#xD;&#xA;&#xD;&#xA;
+ * A sample of failed Tosca Junit log:
+ * - Failed DN should fail\r\n;+ Passed  Create JSON Resource CHANGED\r\n\r\n+ Passed  Fill JSON Resource with numbers\r\n+ Passed   RootObject\r\n\r\n- Failed  Verify the numbers\r\n- Failed   RootObject\r\n\r\n
  */
 public class ToscaJunitTestResultParser {
   private static final Logger LOG = Logger.getLogger(ToscaTestResultParser.class.getName());
