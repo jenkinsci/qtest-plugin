@@ -140,8 +140,6 @@ public class ToscaJunitTestResultParser {
       String line = i == 0 ? logBlocks.get(i).split("\r\n")[1].trim() : logBlocks.get(i).split("\r\n")[0].trim();
       List<String> tokens = Arrays.asList(line.split(" "));
       AutomationTestStepLog testStepsLog = new AutomationTestStepLog();
-      String stepDescription = new String();
-      String expectedResult = new String();
 
       if (tokens.get(0).equals("+")) {
         testStepsLog.setStatus(Constants.TestResultStatus.PASS);
@@ -153,11 +151,15 @@ public class ToscaJunitTestResultParser {
         return result;
       }
 
-      stepDescription = buildTestStepDescription(line, tokens, testStepsLog.getStatus());
-      expectedResult = buildTestStepExpectedResult(tokens, testStepsLog.getStatus());
+      String stepName = buildTestStepName(tokens, testStepsLog.getStatus());
+      String actualResult = buildTestStepActualResult(line, tokens, testStepsLog.getStatus());
 
-      testStepsLog.setDescription(stepDescription);
-      testStepsLog.setExpectedResult(expectedResult);
+      testStepsLog.setDescription(stepName);
+      testStepsLog.setExpectedResult(stepName);
+
+      if (!actualResult.isEmpty()) {
+        testStepsLog.setActualResult(actualResult);
+      }
       testStepsLog.setOrder(i);
 
       result.add(testStepsLog);
@@ -165,36 +167,19 @@ public class ToscaJunitTestResultParser {
     return result;
   }
 
-  private static String buildTestStepDescription(String line, List<String> tokens, String status) {
-    // get the description if exist
+  private static String buildTestStepActualResult(String line, List<String> tokens, String status) {
     final String startIndicator = "{LogInfo=\'";
+    String actualResult = new String();
     int startIndex = line.indexOf(startIndicator);
     if( startIndex > -1) {
       String fullLogInfoStr = line.substring(startIndex, line.length());
       String removedLeadingStr = fullLogInfoStr.replace(startIndicator, "");
-      return removedLeadingStr.replace("\'}", "");
+      actualResult = removedLeadingStr.replace("\'}", "");
     }
-
-    // get the test step name instead
-    int startTokenIndex = 1;
-    if (status == Constants.TestResultStatus.PASS || status == Constants.TestResultStatus.FAIL) {
-      startTokenIndex = 2;
-    }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < tokens.size(); i++) {
-      if (i < startTokenIndex || tokens.get(i).isEmpty()) {
-        continue;
-      }
-      sb.append(tokens.get(i));
-      // if not the last item
-      if (i != tokens.size() - 1) {
-        sb.append(" ");
-      }
-    }
-    return sb.toString();
+    return actualResult;
   }
 
-  private static String buildTestStepExpectedResult(List<String> tokens, String status) {
+  private static String buildTestStepName(List<String> tokens, String status) {
     final String stopIndicator = "{LogInfo=\'";
     int startTokenIndex = 1;
     if (status == Constants.TestResultStatus.PASS || status == Constants.TestResultStatus.FAIL) {
