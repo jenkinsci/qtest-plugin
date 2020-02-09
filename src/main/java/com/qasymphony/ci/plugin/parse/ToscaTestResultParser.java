@@ -54,6 +54,9 @@ public class ToscaTestResultParser {
       for (int i = 0; i < testCaseNodes.getLength(); i++) {
         Node testCaseNode = testCaseNodes.item(i);
         AutomationTestResult testLog = buildTestCaseLog(testCaseNode, request.getOverwriteExistingTestSteps(), currentTestLogOrder++, logger);
+        if(testLog == null) {
+          continue;
+        }
         String testCaseName = testLog.getName();
         if (!map.containsKey(testCaseName)) {
           map.put(testCaseName, testLog);
@@ -65,10 +68,14 @@ public class ToscaTestResultParser {
   }
 
   private static AutomationTestResult buildTestCaseLog(Node testCaseNode, boolean overwriteExistingTestSteps, int currentTestLogOrder, PrintStream logger) {
-    AutomationTestResult testLog = null;
+    AutomationTestResult testLog = new AutomationTestResult();
     // make sure it's element node.
     if (testCaseNode.getNodeType() == Node.ELEMENT_NODE) {
       Element testCaseElement = (Element) testCaseNode;
+      // ignore test case if it doesnt have log
+      if (testCaseElement.getElementsByTagName("testCaseLog").getLength() == 0) {
+        return null;
+      }
       String testCaseName = testCaseElement.getElementsByTagName("name").item(0).getTextContent();
       String startTime = testCaseElement.getElementsByTagName("startTime").item(0).getTextContent();
       String endTime = testCaseElement.getElementsByTagName("endTime").item(0).getTextContent();
@@ -118,7 +125,6 @@ public class ToscaTestResultParser {
       AutomationAttachment attachment = buildAttachments(testCaseElement, testCaseName);
       attachments.add(attachment);
 
-      testLog = new AutomationTestResult();
       testLog.setOrder(currentTestLogOrder);
       testLog.setAutomationContent(testCaseName);
       testLog.setExecutedStartDate(startDate);

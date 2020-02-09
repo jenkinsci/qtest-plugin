@@ -77,7 +77,7 @@ public class ToscaJunitTestResultParser {
   }
 
   private static AutomationTestResult buildTestCaseLog(Node testCaseNode, boolean overwriteExistingTestSteps, int currentTestLogOrder, PrintStream logger) {
-    AutomationTestResult testLog = null;
+    AutomationTestResult testLog = new AutomationTestResult();
     // make sure it's element node.
     if (testCaseNode.getNodeType() == Node.ELEMENT_NODE) {
       Element testCaseElement = (Element) testCaseNode;
@@ -103,12 +103,16 @@ public class ToscaJunitTestResultParser {
       LoggerUtils.formatInfo(logger, "Getting test case info: " + testCaseName);
 
       String testStepsLogString = testCaseElement.getAttribute("log").trim();
+      // ignore test case if it doesnt have log
       if (testStepsLogString.isEmpty()) {
         return null;
       }
-      testLog = new AutomationTestResult();
-      List<AutomationTestStepLog> testStepLogs = buildTestStepLogs(testStepsLogString);
+      List<AutomationTestStepLog> testStepLogs = new ArrayList<>();
       List<AutomationAttachment> attachments = new ArrayList<>();
+
+      if (overwriteExistingTestSteps) {
+        testStepLogs = buildTestStepLogs(testStepsLogString);
+      }
 
       AutomationAttachment attachment = buildAttachments(testStepsLogString, testCaseName);
       attachments.add(attachment);
@@ -137,17 +141,23 @@ public class ToscaJunitTestResultParser {
       List<String> tokens = Arrays.asList(line.split(" "));
       AutomationTestStepLog testStepsLog = new AutomationTestStepLog();
       String stepDescription = new String();
-      if (tokens.get(0).equals("+") || tokens.get(0).equals("-")) {
-        testStepsLog.setStatus(tokens.get(1));
-        stepDescription = buildTestStepName(tokens,2);
+      String expectedResult = new String();
+
+      if (tokens.get(0).equals("+")) {
+        testStepsLog.setStatus(Constants.TestResultStatus.PASS);
+      } else if (tokens.get(0).equals("-")) {
+        testStepsLog.setStatus(Constants.TestResultStatus.FAIL);
       } else if (Constants.TestResultStatus.ERROR.equalsIgnoreCase(tokens.get(0))) {
-        testStepsLog.setStatus("ERROR");
-        stepDescription = buildTestStepName(tokens,1);
+        testStepsLog.setStatus(Constants.TestResultStatus.ERROR);
       } else {
         return result;
       }
-      testStepsLog.setExpectedResult(stepDescription);
+
+      stepDescription = buildTestStepDescription(line, tokens, testStepsLog.getStatus());
+      expectedResult = buildTestStepExpectedResult(tokens, testStepsLog.getStatus());
+
       testStepsLog.setDescription(stepDescription);
+      testStepsLog.setExpectedResult(expectedResult);
       testStepsLog.setOrder(i);
 
       result.add(testStepsLog);
@@ -155,11 +165,50 @@ public class ToscaJunitTestResultParser {
     return result;
   }
 
-  private static String buildTestStepName(List<String> tokens, int fromIndex) {
+  private static String buildTestStepDescription(String line, List<String> tokens, String status) {
+    // get the description if exist
+    final String startIndicator = "{LogInfo=\'";
+    int startIndex = line.indexOf(startIndicator);
+    if( startIndex > -1) {
+      String fullLogInfoStr = line.substring(startIndex, line.length());
+      String removedLeadingStr = fullLogInfoStr.replace(startIndicator, "");
+      return removedLeadingStr.replace("\'}", "");
+    }
+
+    // get the test step name instead
+    int startTokenIndex = 1;
+    if (status == Constants.TestResultStatus.PASS || status == Constants.TestResultStatus.FAIL) {
+      startTokenIndex = 2;
+    }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < tokens.size(); i++) {
-      if (i < fromIndex) {
+      if (i < startTokenIndex || tokens.get(i).isEmpty()) {
         continue;
+      }
+      sb.append(tokens.get(i));
+      // if not the last item
+      if (i != tokens.size() - 1) {
+        sb.append(" ");
+      }
+    }
+    return sb.toString();
+  }
+
+  private static String buildTestStepExpectedResult(List<String> tokens, String status) {
+    final String stopIndicator = "{LogInfo=\'";
+    int startTokenIndex = 1;
+    if (status == Constants.TestResultStatus.PASS || status == Constants.TestResultStatus.FAIL) {
+      startTokenIndex = 2;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < tokens.size(); i++) {
+      if (i < startTokenIndex || tokens.get(i).isEmpty()) {
+        continue;
+      }
+      // remove the LogInfo part
+      if (tokens.get(i).indexOf(stopIndicator) > -1) {
+        return sb.toString().trim();
       }
       sb.append(tokens.get(i));
       // if not the last item
