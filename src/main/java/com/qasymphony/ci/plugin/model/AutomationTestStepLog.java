@@ -11,6 +11,8 @@ public class AutomationTestStepLog {
   private String description;
   @JsonProperty("expected_result")
   private String expectedResult;
+  @JsonProperty("actual_result")
+  private String actualResult;
   private Integer order;
   private String status;
 
@@ -44,6 +46,14 @@ public class AutomationTestStepLog {
 
   public void setExpectedResult(String expectedResult) {
     this.expectedResult = expectedResult;
+  }
+
+  public String getActualResult() {
+    return actualResult;
+  }
+
+  public void setActualResult(String actualResult) {
+    this.actualResult = actualResult;
   }
 
   public Integer getOrder() {
