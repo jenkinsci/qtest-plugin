@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
  * - Failed DN should fail\r\n;+ Passed  Create JSON Resource CHANGED\r\n\r\n+ Passed  Fill JSON Resource with numbers\r\n+ Passed   RootObject\r\n\r\n- Failed  Verify the numbers\r\n- Failed   RootObject\r\n\r\n
  */
 public class ToscaJunitTestResultParser {
-  private static final Logger LOG = Logger.getLogger(ToscaTestResultParser.class.getName());
+  private static final Logger LOG = Logger.getLogger(ToscaJunitTestResultParser.class.getName());
 
   /**
    * @param request request
