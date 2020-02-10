@@ -12,6 +12,7 @@ import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 
 import com.qasymphony.ci.plugin.parse.ToscaTestResultParser;
+import com.qasymphony.ci.plugin.parse.ToscaJunitTestResultParser;
 import com.qasymphony.ci.plugin.submitter.JunitQtestSubmitterImpl;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitter;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
@@ -392,8 +393,8 @@ public class SubmitJUnitStep extends Step {
             try {
                 return ToscaTestResultParser.parse(parseRequest);
             } catch (Exception e) {
-                LoggerUtils.formatInfo(logger, "Parsing Tosca test results by using Junit parser");
-                return  JunitTestResultParser.parse(parseRequest);
+                LoggerUtils.formatInfo(logger, "Parsing Tosca test results by using Tosca Junit parser");
+                return ToscaJunitTestResultParser.parse(parseRequest);
             }
         }
         private List<AutomationTestResult> readTestResults(PrintStream logger) {

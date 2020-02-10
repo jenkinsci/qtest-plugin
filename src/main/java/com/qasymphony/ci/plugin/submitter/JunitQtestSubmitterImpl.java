@@ -74,6 +74,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     Map<String, String> headers = OauthProvider.buildHeaders(request.getqTestURL(), request.getApiKey(), null);
     Boolean mustRetry = true;
     String previousState = "";
+    Integer requestTime = 0;
     while (mustRetry) {
       response = getTaskResponse(request, task, headers);
       if (null == response) {
@@ -92,7 +93,13 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
           mustRetry = false;
         } else {
           //sleep in interval to get status of task
-          Thread.sleep(Constants.RETRY_INTERVAL);
+          if (requestTime < Constants.MAX_RETRY_TIMEOUT) {
+            Thread.sleep(Constants.RETRY_INTERVAL);
+            requestTime += Constants.RETRY_INTERVAL;
+          } else {
+            LoggerUtils.formatError(logger, "%s: Submission timeout. Can not get submit log response.", JsonUtils.getCurrentDateString());
+            return null;
+          }
         }
       }
     }
