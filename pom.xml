@@ -15,7 +15,7 @@
   <description>This plugin collects and reports unit test results to qTest.
     It supports any testing frameworks which are capable of generating JUnit XML format test reports.
   </description>
-  <url>https://wiki.jenkins.io/display/JENKINS/qTest+for+Jenkins+by+Tricentis</url>
+  <url>https://github.com/jenkinsci/qtest-plugin</url>
 
   <licenses>
     <license>
