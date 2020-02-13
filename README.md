@@ -1,14 +1,9 @@
 # qTest Jenkins Plugin
 
-qTest by Tricentis now integrates with Jenkins, helping make your
+qTest by Tricentis now integrates seamlessly with Jenkins, helping make your
 Continuous Integration process more efficient. Click
 [**here**](https://support.qasymphony.com/hc/en-us/articles/115002955466-Jenkins-and-Bamboo-Integration)
 to access the qTest Integration with Jenkins user guide.  
-
-qTest by
-[T](http://www.QASymphony.com)[ricentis](https://www.tricentis.com/) now
-integrates seamlessly with Jenkins, helping make your Continuous
-Integration process more efficient.
 
 When creating builds in Jenkins, your JUnit test results can be sent
 directly to your [qTest Test Case
@@ -56,74 +51,6 @@ Major features include:
 founded in 2007 and headquartered in Vienna, Austria. It provides
 software testing and software quality assurance solutions.
 
-# Changelog
+# Release Notes:
 
-#### 1.4.5 (Feb 04, 2020)
-
--   [qTest Jenkins Plugin 1.4.5 Release Notes - Feb 04, 2020](https://support.qasymphony.com/hc/en-us/articles/360000353403#0-qtest-jenkins-plugin-142-june-24-2018)
-
-#### 1.4.4 (Aug 09, 2019)
-
--   [qTest Jenkins Plugin 1.4.4 Release Notes - Aug 09,
-    2019](https://support.qasymphony.com/hc/en-us/articles/360000353403#0-qtest-jenkins-plugin-144-august-09-2019)
-
-#### 1.4.2 (Jun 25, 2019)
-
--   [qTest Jenkins Plugin 1.4.2 Release Notes - Jun 25,
-    2019](https://support.qasymphony.com/hc/en-us/articles/360000353403#0-qtest-jenkins-plugin-142-june-25-2019)
-
-#### 1.4 (Aug 24, 2018)
-
--   [qTest Jenkins Plugin 1.4 Release Notes - Aug 24,
-    2018](https://support.qasymphony.com/hc/en-us/articles/360000353403#0-qtest-jenkins-plugin-14-august-24-2018)
-
-#### 1.3.1 (Apr 06, 2018)
-
--   [qTest Jenkins Plugin 1.3.1 Release Notes - Apr 06,
-    2018](https://support.qasymphony.com/hc/en-us/articles/360000353403-Jenkins-Plugin-1-3-0-Release-Notes-Mar-12-2018#0-qtest-jenkins-plugin-131-april-06-2018)
-
-#### 1.3.0 (Mar 12, 2018)
-
--   [qTest Jenkins Plugin 1.3.0 Release Notes - Mar 12,
-    2018](https://support.qasymphony.com/hc/en-us/articles/360000353403-Jenkins-Plugin-1-3-0-Release-Notes-Mar-12-2018#2-qtest-jenkins-plugin-130-mar-12-2018)
-
-#### 1.2.1 (Feb 08, 2018)
-
--   [qTest Jenkins Plugin 1.2.1 Release Notes - Feb 08,
-    2018](https://support.qasymphony.com/hc/en-us/articles/360000042326)
-
-#### 1.1.8 (Aug 30 2016)
-
--   Release with qTest 7.10.\*
-
-#### 1.1.7 (Aug 24 2016)
-
--   Release with qTest 7.10.2
-
-#### 1.1.6 (Jul 11 2016)
-
--   Release with qTest 7.9.0
-
-#### 1.1.5 (Jan 25 2016)
-
--   Release with qTest 7.2.2
-
-#### 1.1.4 (Jan 17 2016)
-
--   Release with qTest 7.2.0
-
-#### 1.1.3 (Jan 04 2016)
-
--   Release with qTest 7.1.0
-
-#### 1.1.2 (Dec 13 2015)
-
--   Helios Release
-
-#### 1.1.1 (Nov 17 2015)
-
--   Beta Release
-
-#### 1.0 (Nov 13 2015)
-
--   Initial release
+The up to date release notes can be found here: [qTest Jenkins Plugin Release Notes](https://support.qasymphony.com/hc/en-us/articles/360000353403)
