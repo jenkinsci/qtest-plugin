@@ -58,6 +58,10 @@ software testing and software quality assurance solutions.
 
 # Changelog
 
+#### 1.4.5 (Feb 04, 2020)
+
+-   [qTest Jenkins Plugin 1.4.5 Release Notes - Feb 04, 2020](https://support.qasymphony.com/hc/en-us/articles/360000353403#0-qtest-jenkins-plugin-142-june-24-2018)
+
 #### 1.4.4 (Aug 09, 2019)
 
 -   [qTest Jenkins Plugin 1.4.4 Release Notes - Aug 09,
