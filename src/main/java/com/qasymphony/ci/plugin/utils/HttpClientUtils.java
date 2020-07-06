@@ -397,7 +397,7 @@ public class HttpClientUtils {
   /**
    * Trust all certificates.
    */
-  public static class TrustAllStrategy implements TrustStrategy {
+  public static class TrustAllStrategy implements TrustStrategy, org.apache.http.ssl.TrustStrategy  {
 
     @Override
     public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {

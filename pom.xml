@@ -30,9 +30,10 @@
 
   <properties>
     <findbugs.skip>true</findbugs.skip>
-    <jackson.version>2.10.3</jackson.version>
+    <jackson.version>2.9.10.4</jackson.version>
+    <jackson.core.version>2.9.10</jackson.core.version>
     <junit.plugin.version>1.9</junit.plugin.version>
-    <httpclient.version>4.5.1</httpclient.version>
+    <httpclient.version>4.5.12</httpclient.version>
     <jenkins.version>2.6</jenkins.version>
   </properties>
   <scm>
@@ -110,12 +111,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
+      <version>${jackson.core.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
+      <version>${jackson.core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
