@@ -30,9 +30,9 @@
 
   <properties>
     <findbugs.skip>true</findbugs.skip>
-    <jackson.version>2.10.3</jackson.version>
+    <jackson.version>2.10.4</jackson.version>
     <junit.plugin.version>1.9</junit.plugin.version>
-    <httpclient.version>4.5.1</httpclient.version>
+    <httpclient.version>4.5.12</httpclient.version>
     <jenkins.version>2.6</jenkins.version>
   </properties>
   <scm>
@@ -187,6 +187,36 @@
         <configuration>
           <skip>true</skip>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.8</maxJdkVersion>
+                  <ignoreClasses>
+                    <ignoreClass>module-info</ignoreClass>
+                  </ignoreClasses>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.0-beta-9</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <plugin>
