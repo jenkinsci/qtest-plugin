@@ -32,6 +32,9 @@ public class LoggerUtils {
   }
 
   public static void format(PrintStream logger, String level, String msg, Object... args) {
+    if(msg == null) {
+      return;
+    }
     logger.println(String.format("[qTest] [%s] %s", level, String.format(msg, args)));
   }
   public static void printLog(PrintStream logger, String msg, Object... args) {

@@ -16,7 +16,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.NoConnectionReuseStrategy;
@@ -397,7 +397,7 @@ public class HttpClientUtils {
   /**
    * Trust all certificates.
    */
-  public static class TrustAllStrategy implements TrustStrategy, org.apache.http.ssl.TrustStrategy  {
+  public static class TrustAllStrategy implements TrustStrategy  {
 
     @Override
     public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
