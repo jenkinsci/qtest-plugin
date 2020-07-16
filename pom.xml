@@ -34,6 +34,7 @@
     <junit.plugin.version>1.9</junit.plugin.version>
     <httpclient.version>4.5.12</httpclient.version>
     <jenkins.version>2.6</jenkins.version>
+    <commons-codec.version>1.13</commons-codec.version>
   </properties>
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
@@ -159,6 +160,11 @@
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-aggregator</artifactId>
       <version>1.15</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${commons-codec.version}</version>
     </dependency>
   </dependencies>
 
