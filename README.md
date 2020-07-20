@@ -53,4 +53,4 @@ software testing and software quality assurance solutions.
 
 # Release Notes:
 
-The up to date release notes can be found here: [qTest Jenkins Plugin Release Notes](https://support.qasymphony.com/hc/en-us/articles/360000353403)
+The up to date release notes can be found here: [qTest Jenkins Plugin Release Notes](https://documentation.tricentis.com/qtest/od/en/content/qtest_apis/release_notes/qtest_jenkins_plugin_release_notes.htm)
