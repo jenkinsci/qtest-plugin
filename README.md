@@ -2,7 +2,7 @@
 
 qTest by Tricentis now integrates seamlessly with Jenkins, helping make your
 Continuous Integration process more efficient. Click
-[**here**](https://support.qasymphony.com/hc/en-us/articles/115002955466-Jenkins-and-Bamboo-Integration)
+[**here**](https://documentation.tricentis.com/qtest/od/en/content/qtest_apis/ci_integrations/jenkins_and_bamboo_integration.htm)
 to access the qTest Integration with Jenkins user guide.  
 
 When creating builds in Jenkins, your JUnit test results can be sent
