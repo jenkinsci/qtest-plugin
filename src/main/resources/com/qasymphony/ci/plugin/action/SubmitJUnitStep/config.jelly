@@ -36,8 +36,6 @@
   <script>
     var $j = jQuery.noConflict();
   </script>
-
-  <form>
     <st:bind var="remoteAction" value="${descriptor}"/>
     <f:block>
       <table class="external-tool-config">
@@ -151,7 +149,6 @@
         </f:entry>
       </table>
     </f:block>
-  </form>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/service.js" name="qtestScript"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/app.js" name="qtestScript"></script>
 </j:jelly>
