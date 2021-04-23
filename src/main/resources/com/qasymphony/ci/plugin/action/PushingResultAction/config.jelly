@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <j:set var="pluginName" value="qtest"/>
 
@@ -120,7 +121,7 @@
         <f:entry field="checkedCreateNewTestRuns">
           <f:checkbox id="createNewTestRun" name="config.createNewTestSuiteEveryBuild" checked="${instance.configuration.createNewTestSuiteEveryBuild}"
                       class="checkbox-input" value="true"/>
-          <label for="createNewTestRun">${%label.checkedNewTestRuns}</label>
+          <label class="attach-previous">${%label.checkedNewTestRuns}</label>
         </f:entry>
       </f:radioBlock>
     </f:entry>
@@ -136,7 +137,7 @@
     <f:block>
       <f:checkbox  id="overwriteExistingTestSteps" name="config.overwriteExistingTestSteps" checked="${instance.configuration.overwriteExistingTestSteps}"
                       class="checkbox-input" value="true" default="true"/>
-      <label for="overwriteExistingTestSteps">${%label.overwriteExistingTestSteps}</label>
+      <label class="attach-previous">${%label.overwriteExistingTestSteps}</label>
     </f:block>
 
     <f:block>
