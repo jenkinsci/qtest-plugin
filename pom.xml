@@ -9,7 +9,7 @@
 
   <groupId>com.qasymphony.ci.jenkins</groupId>
   <artifactId>qtest</artifactId>
-  <version>1.4.7-SNAPSHOT</version>
+  <version>1.4.8-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
   <description>This plugin collects and reports unit test results to qTest.
