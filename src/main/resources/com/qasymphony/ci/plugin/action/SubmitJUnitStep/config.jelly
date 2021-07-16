@@ -30,7 +30,7 @@
     }
   </style>
 
-  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-3.5.1.min.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.min.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/radioBlockEvent.js"></script>
 
