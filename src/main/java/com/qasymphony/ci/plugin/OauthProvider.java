@@ -5,7 +5,7 @@ import com.qasymphony.ci.plugin.exception.OAuthException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-import org.apache.commons.httpclient.HttpStatus;
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -45,7 +45,7 @@ public class OauthProvider {
     headers.put(Constants.HEADER_AUTH, secretKey);
     try {
       ResponseEntity entity = HttpClientUtils.post(sb.toString(), headers, null);
-      if (HttpStatus.SC_OK != entity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != entity.getStatusCode()) {
         throw new OAuthException(entity.getBody(), entity.getStatusCode());
       }
       JsonNode node = JsonUtils.readTree(entity.getBody());

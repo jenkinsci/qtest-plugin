@@ -16,7 +16,7 @@ import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.model.Run;
-import org.apache.commons.httpclient.HttpStatus;
+import java.net.HttpURLConnection;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.PrintStream;
@@ -42,7 +42,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     ResponseEntity responseEntity = AutomationTestService.push(request.getBuildNumber(), request.getBuildPath(),
       request.getTestResults(), request, accessToken);
     AutomationTestResponse response = null;
-    if (responseEntity.getStatusCode() == HttpStatus.SC_CREATED) {
+    if (responseEntity.getStatusCode() == HttpURLConnection.HTTP_CREATED) {
       //receive task response
       SubmittedTask task = JsonUtils.fromJson(responseEntity.getBody(), SubmittedTask.class);
       if (task == null || task.getId() <= 0)
@@ -119,7 +119,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
     LOG.info(String.format("project:%s, status:%s, body:%s", request.getJenkinsProjectName(),
       null == responseEntity ? -1 : responseEntity.getStatusCode(), null == responseEntity ? "" : responseEntity.getBody()));
 
-    if ((null == responseEntity) || (responseEntity.getStatusCode() != HttpStatus.SC_OK)) {
+    if ((null == responseEntity) || (responseEntity.getStatusCode() != HttpURLConnection.HTTP_OK)) {
       throw new SubmittedException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
     }
     return new AutomationTestResponse(responseEntity.getBody());
