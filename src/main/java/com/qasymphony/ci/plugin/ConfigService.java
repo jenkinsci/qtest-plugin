@@ -14,7 +14,7 @@ import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.httpclient.HttpStatus;
+import java.net.HttpURLConnection;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
@@ -124,7 +124,7 @@ public class ConfigService {
     String url = String.format("%s/api/v3/projects?assigned=true", qTestUrl);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(qTestUrl, apiKey, null));
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         return null;
       }
       return responseEntity.getBody();
@@ -138,7 +138,7 @@ public class ConfigService {
     String url = String.format("%s/api/v3/projects/%s", qTestUrl, projectId);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         return null;
       }
       return responseEntity.getBody();
@@ -158,7 +158,7 @@ public class ConfigService {
     String url = String.format("%s/api/v3/projects/%s/releases?includeClosed=true", qTestUrl, projectId);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         return null;
       }
       return responseEntity.getBody();
@@ -180,7 +180,7 @@ public class ConfigService {
     String url = String.format("%s/api/v3/projects/%s/settings/test-suites/fields?includeInactive=true", qTestUrl, projectId);
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         return null;
       }
       JSONArray fields = StringUtils.isEmpty(responseEntity.getBody()) ? null : JSONArray.fromObject(responseEntity.getBody());
@@ -217,13 +217,13 @@ public class ConfigService {
       //get by qTestProjectId, ci project name, ci server name, type, ciid
       ResponseEntity responseEntity = HttpClientUtils.get(urlByProject, headers);
 
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         //in case not found by project, we try to get by id
         String urlById = String.format("%s/api/v3/projects/%s/ci/%s", qTestUrl, setting.getProjectId(), setting.getId());
         responseEntity = HttpClientUtils.get(urlById, headers);
       }
 
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot get config from qTest: %s, %s, error: %s", qTestUrl, setting, responseEntity.getBody()));
         return null;
       }
@@ -305,7 +305,7 @@ public class ConfigService {
         responseEntity = HttpClientUtils.post(url, headers, JsonUtils.toJson(setting));
       }
 
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         LOG.log(Level.WARNING, String.format("Cannot save config to qTest, statusCode:%s, error:%s",
           responseEntity.getStatusCode(), responseEntity.getBody()));
         throw new SaveSettingException(ConfigService.getErrorMessage(responseEntity.getBody()), responseEntity.getStatusCode());
@@ -408,7 +408,7 @@ public class ConfigService {
     }
     try {
       ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         return null;
       }
       return responseEntity.getBody();
@@ -428,7 +428,7 @@ public class ConfigService {
       }
       try {
           ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(accessToken, null));
-          if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+          if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
               return null;
           }
           return responseEntity.getBody();
@@ -457,7 +457,7 @@ public class ConfigService {
     try {
       String jsonData = JsonUtils.toJson(json);
       ResponseEntity responseEntity = HttpClientUtils.post(url, OauthProvider.buildHeaders(accessToken, null), jsonData);
-      if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
+      if (HttpURLConnection.HTTP_OK != responseEntity.getStatusCode()) {
         return null;
       }
       return responseEntity.getBody();
