@@ -10,6 +10,6 @@ import java.io.IOException;
 public class UserAgentHeaderInterceptor implements HttpRequestInterceptor {
     @Override
     public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
-        httpRequest.addHeader("User-Agent", "qTest-Jenkins/4.17");
+        httpRequest.addHeader("User-Agent", "qTest-Jenkins/1.4.9");
     }
 }
