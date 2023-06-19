@@ -358,7 +358,8 @@ public class HttpClientUtils {
 
     SSLConnectionSocketFactory sslSocketFactory = getSslSocketFactory();
     httpClientBuilder.setSSLSocketFactory(sslSocketFactory)
-            .setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+            .setConnectionReuseStrategy(new NoConnectionReuseStrategy())
+            .addInterceptorFirst(new UserAgentHeaderInterceptor());
 
     timeout = timeout * 1000;
 
