@@ -80,14 +80,14 @@
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
 
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
 
@@ -174,10 +174,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.${java.level}</source>
-          <target>1.${java.level}</target>
-        </configuration>
+          <configuration>
+              <source>1.${java.level}</source>
+              <target>1.${java.level}</target>
+          </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -204,7 +204,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.16</version>
+        <version>1.23</version>
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>

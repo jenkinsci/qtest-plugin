@@ -62,12 +62,12 @@ var qtest = (function ($j) {
   };
   module.showLoading = function (node) {
     if (!node) return;
-    node.parentElement.next().style.display = '';
+    node.parentElement.nextElementSibling.style.display = '';
   };
 
   module.hideLoading = function (node) {
     if (!node) return;
-    node.parentElement.next().style.display = 'none';
+    node.parentElement.nextElementSibling.style.display = 'none';
   };
 
   module.fetchProjects = function (onSuccess, onError) {
