@@ -91,7 +91,13 @@ $j(document).ready(function () {
   });
   $j(document).on("click", "#createNewTestRun", function (event) {
     currentJSONContainer.selectedContainer.dailyCreateTestSuite = $j(this).prop('disabled') ? false : $j(this).prop( "checked" );
-    document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
+      if (Object.toJSON) {
+          // Prototype.js
+          document.querySelector("input[name='config.containerSetting']").value =  Object.toJSON(currentJSONContainer);
+      } else {
+          // Standard
+          document.querySelector("input[name='config.containerSetting']").value =  JSON.stringify(currentJSONContainer);
+      }
   });
   $j(document).on("click", ".collapse-indicator, .expand-indicator", function(event) {
     //console.log(event);
@@ -104,18 +110,18 @@ $j(document).ready(function () {
     try {
         if (event.currentTarget) {
             if (event.currentTarget.hasAttribute("requested")){
-                toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.next()));
+                toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.nextElementSibling));
             } else {
                 changeIndicator($j(event.currentTarget), "loading-indicator");
                 var contentItem = event.currentTarget.parentElement.querySelector("div[class='content']");
                 var nodeId = contentItem.getAttribute("qtestid");
                 var nodeType = contentItem.getAttribute("qtesttype");
                 qtest.getContainerChildren(nodeId, nodeType, function(data) {
-                    if (!loadContainers($j(event.currentTarget.parentElement.next()), data, nodeId)) {
+                    if (!loadContainers($j(event.currentTarget.parentElement.nextElementSibling), data, nodeId)) {
                         changeIndicator($j(event.currentTarget), "empty-indicator");
                         return;
                     }
-                    toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.next()));
+                    toggleSubItem($j(event.currentTarget), $j(event.currentTarget.parentElement.nextElementSibling));
                 });
                 event.currentTarget.setAttribute("requested", "true");
             }
@@ -312,7 +318,13 @@ function loadProjectData() {
                     },
                     containerPath: []
                 };
-                document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
+                if (Object.toJSON) {
+                    // Prototype.js
+                    document.querySelector("input[name='config.containerSetting']").value =  Object.toJSON(currentJSONContainer);
+                } else {
+                    // Standard
+                    document.querySelector("input[name='config.containerSetting']").value =  JSON.stringify(currentJSONContainer);
+                }
                 $j("input[name='fakeContainerName']").val(currentJSONContainer.selectedContainer.name);
                 $j("input[name='fakeContainerName']").trigger('change');
             }
@@ -472,10 +484,15 @@ function updateSelectedContainer(htmlSelectedItem) {
         }
     }
 
-    document.querySelector("input[name='config.containerSetting']").value = JSON.stringify(currentJSONContainer);
+    if (Object.toJSON) {
+        // Prototype.js
+        document.querySelector("input[name='config.containerSetting']").value =  Object.toJSON(currentJSONContainer);
+    } else {
+        // Standard
+        document.querySelector("input[name='config.containerSetting']").value =  JSON.stringify(currentJSONContainer);
+    }
     $j("input[name='fakeContainerName']").val(itemName);
     $j("input[name='fakeContainerName']").trigger('change');
-    //console.log(JSON.stringify(currentJSONContainer));
 }
 
 function loadToCurrentSelectedContainer(callback) {
@@ -495,7 +512,7 @@ function loadToCurrentSelectedContainer(callback) {
                 // wait for sub-items completely loaded
                 var tryCount = 5000;
                 var interval = setInterval(function() {
-                    if ($j(htmlNode.parentElement.next()).is(":visible")) {
+                    if ($j(htmlNode.parentElement.nextElementSibling).is(":visible")) {
                         clearInterval(interval);
                         simulateClick(itemList, ++index, cb);
                     } else {
@@ -542,6 +559,15 @@ function initContainerJSON() {
         try {
             temp = JSON.parse(jsonString);
             if (0 < Object.keys(temp).length) {
+                // Check if temp.containerPath is now an object
+                if (typeof temp.containerPath === 'object' && temp.containerPath !== null) {
+                    // Convert the object to a JSON string
+                    temp.containerPath = JSON.stringify(temp.containerPath);
+                } else {
+                    console.error("Failed to parse 'containerPath' as an object.");
+                    // Handle the situation where parsing fails
+                    temp.containerPath = "[]"; // or some default value
+                }
                 temp.containerPath = JSON.parse(temp.containerPath || "[]");
             } else {
                 temp = undefined;
