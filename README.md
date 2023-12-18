@@ -7,7 +7,7 @@ to access the qTest Integration with Jenkins user guide.
 
 When creating builds in Jenkins, your JUnit test results can be sent
 directly to your [qTest Test Case
-Management](https://www.qasymphony.com/testing-platform/qtest-case-management/) software as
+Management](https://www.tricentis.com/products/unified-test-management-qtest/) software as
 test runs and test logs. This lets your team review the quality of your
 build process over time and across different environments, helping you
 quickly identify problem areas.
