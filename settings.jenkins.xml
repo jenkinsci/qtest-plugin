@@ -16,11 +16,11 @@
       <repositories>
         <repository>
           <id>repo.jenkins-ci.org</id>
-          <url>https://repo.jenkins-ci.org/public/</url>
+	  <url>https://repo.jenkins-ci.org/artifactory/public/</url>
         </repository>
         <repository>
           <id>maven.jenkins-ci.org</id>
-          <url>https://repo.jenkins-ci.org/releases</url>
+	  <url>https://repo.jenkins-ci.org/releases</url>
         </repository>
         <repository>
           <id>central</id>
@@ -30,24 +30,12 @@
           <snapshots>
             <enabled>false</enabled>
           </snapshots>
-        </repository>
+      </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
-          <id>central</id>
-          <name>Central Repository</name>
-          <url>https://repo.maven.apache.org/maven2</url>
-          <layout>default</layout>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <updatePolicy>never</updatePolicy>
-          </releases>
-        </pluginRepository>
-        <pluginRepository>
           <id>repo.jenkins-ci.org</id>
-          <url>http://repo.jenkins-ci.org/public/</url>
+	  <url>https://repo.jenkins-ci.org/artifactory/public/</url>
         </pluginRepository>
       </pluginRepositories>
     </profile>
@@ -59,13 +47,13 @@
           </snapshots>
           <id>central</id>
           <name>repo</name>
-          <url>http://repo.jenkins-ci.org/repo</url>
+          <url>https://repo.jenkins-ci.org/repo</url>
         </repository>
         <repository>
           <snapshots/>
           <id>snapshots</id>
           <name>public</name>
-          <url>http://repo.jenkins-ci.org/public</url>
+          <url>https://repo.jenkins-ci.org/public</url>
         </repository>
       </repositories>
       <pluginRepositories>
@@ -75,45 +63,44 @@
           </snapshots>
           <id>central</id>
           <name>repo</name>
-          <url>http://repo.jenkins-ci.org/repo</url>
+          <url>https://repo.jenkins-ci.org/repo</url>
         </pluginRepository>
         <pluginRepository>
           <snapshots/>
           <id>snapshots</id>
           <name>public</name>
-          <url>http://repo.jenkins-ci.org/public</url>
+          <url>https://repo.jenkins-ci.org/public</url>
         </pluginRepository>
       </pluginRepositories>
       <id>artifactory</id>
     </profile>
-
   </profiles>
   <mirrors>
     <mirror>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
       <mirrorOf>m.g.o-public</mirrorOf>
     </mirror>
   </mirrors>
   <servers>
     <server>
-      <id>maven.jenkins-ci.org</id>
-      <username>qasymphony</username>
+      <id>maven.jenkins-ci.org</id> 
+      <username></username>
       <password></password>
     </server>
     <server>
       <id>repo.jenkins-ci.org</id>
-      <username>qasymphony</username>
+      <username></username>
       <password></password>
     </server>
     <server>
       <id>central</id>
-      <username>qasymphony</username>
+      <username></username>
       <password></password>
     </server>
     <server>
       <id>snapshots</id>
-      <username>qasymphony</username>
+      <username></username>
       <password></password>
     </server>
   </servers>
