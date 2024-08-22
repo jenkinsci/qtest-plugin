@@ -5,7 +5,7 @@ import com.qasymphony.ci.plugin.exception.OAuthException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class OauthProvider {
   private static final Logger LOG = Logger.getLogger(OauthProvider.class.getName());
-  public static String HEADER_KEY = "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==";
+  public static final String HEADER_KEY = "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==";
 
   private OauthProvider() {
 
