@@ -130,10 +130,11 @@ public class TestResultFromxUnit extends TestAbstracts {
     String buildPath = "/jobs/TestResultFromxUnitProject/" + buildNumber;
     String projectName = "TestResultFromxUnitProject";
     String apiKey = "5d65f50e-b368-47a1-9bff-e0a710011a3f";
+    String secretKey = "5d65f50e-b368-47a1-9bff-e0a710011a3f";
     Long releaseId = 1L;
     Long ciId = 1L;
     Long qTestProjectId = 1L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
+    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, secretKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L,
             false, "", false,  "{}", false, 0);
 
@@ -144,7 +145,7 @@ public class TestResultFromxUnit extends TestAbstracts {
     FreeStyleBuild build = project.scheduleBuild2(0).get(100, TimeUnit.MINUTES);
     assertNotNull("Build is: ", build);
 
-    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
+    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), configuration.getSecretKey(), null);
     //AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
   }
 

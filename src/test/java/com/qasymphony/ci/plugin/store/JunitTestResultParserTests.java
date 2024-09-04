@@ -114,10 +114,11 @@ public class JunitTestResultParserTests extends TestAbstracts {
     String buildPath = "/jobs/AntProjectWithXMLContent/" + buildNumber;
     String projectName = "AntProjectWithXMLContent";
     String apiKey = "9d3971a6-f6d7-4e0b-996c-e2ade023b4e8";
+    String secretKey = "9d3971a6-f6d7-4e0b-996c-e2ade023b4e8";
     Long releaseId = 1L;
     Long ciId = 1L;
     Long qTestProjectId = 3L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
+    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, secretKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false, "{}" ,
             false,
             0);
@@ -134,6 +135,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
     String buildPath = "/jobs/TestPerformance/" + buildNumber;
     String projectName = "TestPerformance";
     String apiKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
+    String secretKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
     Long releaseId = 1L;
     Long ciId = 3L;
     Long qTestProjectId = 1L;
@@ -141,6 +143,7 @@ public class JunitTestResultParserTests extends TestAbstracts {
             ciId,
             "https://localhost:7443",
             apiKey,
+            secretKey,
             qTestProjectId,
             projectName,
             releaseId,
@@ -186,10 +189,11 @@ public class JunitTestResultParserTests extends TestAbstracts {
     String buildPath = "/jobs/TestPerformance/" + buildNumber;
     String projectName = "TestPerformance";
     String apiKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
+    String secretKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
     Long releaseId = 1L;
     Long ciId = 3L;
     Long qTestProjectId = 1L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
+    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, secretKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false,"{}" ,
             false,
             0);

@@ -8,6 +8,9 @@ var qtest = (function ($j) {
   var getAppKey = function () {
     return $j("input[name='config.appSecretKey']").val();
   };
+  var getSecretKey = function () {
+    return $j("input[name='config.secretKey']").val();
+  };
   module.getProjectId = function () {
     return $j("input[name='config.projectId']").val();
   };
@@ -71,14 +74,15 @@ var qtest = (function ($j) {
   };
 
   module.fetchProjects = function (onSuccess, onError) {
-    remoteAction.getProjects(getUrl(), getAppKey(), $j.proxy(function (t) {
+    console.log("fetchProjects");
+    remoteAction.getProjects(getUrl(), getAppKey(), getSecretKey(), $j.proxy(function (t) {
       if (onSuccess)
         onSuccess(t.responseObject());
     }, this));
   };
   module.fetchProjectData = function (onSuccess, onError) {
     var jenkinsProjectName = $j("input[name='name']").val() || "";
-    remoteAction.getProjectData(getUrl(), getAppKey(), this.getProjectId(), jenkinsProjectName,
+    remoteAction.getProjectData(getUrl(), getAppKey(), getSecretKey(), this.getProjectId(), jenkinsProjectName,
       $j.proxy(function (t) {
         if (onSuccess)
           onSuccess(t.responseObject());
@@ -86,7 +90,7 @@ var qtest = (function ($j) {
   };
 
   module.getContainerChildren = function (parentId, parentType, onSuccess, onError) {
-    remoteAction.getContainerChildren(getUrl(), getAppKey(), this.getProjectId(), parentId, parentType,
+    remoteAction.getContainerChildren(getUrl(), getAppKey(), getSecretKey(), this.getProjectId(), parentId, parentType,
         $j.proxy(function(t) {
             if (onSuccess){
                 onSuccess(t.responseObject());
