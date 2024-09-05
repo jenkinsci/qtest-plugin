@@ -92,6 +92,26 @@ public class ConfigService {
   }
 
   /**
+   * Validate apiKey is valid in qTest
+   *
+   * @param secretKey secretKey
+   * @return true if valid api key
+   */
+  public static Boolean validateSecretKey(String secretKey) {
+    try {
+      if(StringUtils.isEmpty(secretKey) || !secretKey.startsWith("Basic ")) {
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Error while validateApiKey:" + e.getMessage());
+      return false;
+    }
+  }
+
+
+
+  /**
    * Build testSuite link to qTest
    *
    * @param url         url

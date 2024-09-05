@@ -32,6 +32,12 @@ public class ValidationFormService {
         return FormValidation.ok();
     }
 
+    public static FormValidation checkSecretKey(String value, AbstractProject project) {
+        if (!ConfigService.validateSecretKey(value))
+            return FormValidation.error(ResourceBundle.MSG_INVALID_SECRET_KEY);
+        return FormValidation.ok();
+    }
+
     public static FormValidation checkProjectName(String value)
             throws IOException, ServletException {
         if (StringUtils.isBlank(value))

@@ -160,6 +160,11 @@ public class SubmitJUnitStep extends Step {
             return ValidationFormService.checkAppSecretKey(value, url, secretKey, project);
         }
 
+        public FormValidation doCheckSecretKey(@QueryParameter String value,  @AncestorInPath AbstractProject project)
+                throws IOException, ServletException {
+            return ValidationFormService.checkSecretKey(value, project);
+        }
+
         public FormValidation doCheckProjectName(@QueryParameter String value)
                 throws IOException, ServletException {
             return ValidationFormService.checkProjectName(value);
