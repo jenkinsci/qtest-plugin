@@ -53,11 +53,11 @@ public class qTestService {
         return null;
     }
 
-    public static JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
+    public static JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final String secretKey, final Long projectId, final Long parentId, final String parentType) {
         final JSONObject res = new JSONObject();
         String token = null;
         try {
-            token = OauthProvider.getAccessToken(qTestUrl, apiKey);
+            token = OauthProvider.getAccessToken(qTestUrl, apiKey, secretKey);
         } catch (Exception e) {
            // LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
             e.printStackTrace();
@@ -112,11 +112,11 @@ public class qTestService {
         }
     }
 
-    public static JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName, final String jenkinsServerName) {
+    public static JSONObject getProjectData(final String qTestUrl, final String apiKey, final String secretKey, final Long projectId, final String jenkinsProjectName, final String jenkinsServerName) {
         final JSONObject res = new JSONObject();
         String token = null;
         try {
-            token = OauthProvider.getAccessToken(qTestUrl, apiKey);
+            token = OauthProvider.getAccessToken(qTestUrl, apiKey, secretKey);
         } catch (Exception e) {
             //LOG.log(Level.WARNING, "Error while get projectData:" + e.getMessage());
             e.printStackTrace();

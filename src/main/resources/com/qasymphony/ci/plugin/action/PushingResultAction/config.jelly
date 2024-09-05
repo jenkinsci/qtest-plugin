@@ -59,6 +59,10 @@
       <f:password name="config.appSecretKey"
                   value="${instance.configuration.appSecretKey}"/>
     </f:entry>
+    <f:entry title="${%label.appHeaderKey}" field="secretKey">
+      <f:password name="config.secretKey"
+                  value="${instance.configuration.secretKey}"/>
+    </f:entry>
 
     <f:entry>
       <span class="yui-button yui-push-button apply-button applyButton qtest-retrieve-data">

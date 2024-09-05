@@ -13,12 +13,13 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfiguration> {
 
     public static PipelineConfiguration newInstance() {
-        return new PipelineConfiguration("", "", 0L, 0L, "",
+        return new PipelineConfiguration("", "", "",0L, 0L, "",
                 false, false,  false, false, true, true, true);
     }
     @DataBoundConstructor
     public PipelineConfiguration(String qtestURL,
             String apiKey,
+            String secretKey,
             Long projectID,
             Long containerID,
             String containerType,
@@ -31,6 +32,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
             Boolean createTestCaseForEachJUnitTestMethod) {
         this.qtestURL = qtestURL;
         this.apiKey = apiKey;
+        this.setSecretKey(secretKey);
         this.projectID = projectID;
         this.containerID = containerID;
         this.containerType = containerType;
@@ -150,6 +152,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
 
     protected String qtestURL;
     protected String apiKey;
+    private String secretKey;
     protected Long projectID;
     protected Long containerID;   // id of containerType
     protected String containerType; // release | test cycle | test suite
@@ -187,6 +190,14 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public Long getProjectID() {
@@ -275,7 +286,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
     public JunitSubmitterRequest createJunitSubmitRequest() {
         JunitSubmitterRequest request = new JunitSubmitterRequest();
         request.setqTestURL(this.qtestURL)
-                .setApiKey(this.apiKey)
+                .setApiKey(this.apiKey, this.secretKey)
                 .setConfigurationID(null)
                 .setSubmitToExistingContainer(this.submitToExistingContainer)
                 .setContainerID(containerID)
