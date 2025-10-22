@@ -15,10 +15,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Calendar;
 import java.util.logging.Logger;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * scan and parse Tosca Junit test results

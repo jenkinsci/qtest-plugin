@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.PatternScanParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;

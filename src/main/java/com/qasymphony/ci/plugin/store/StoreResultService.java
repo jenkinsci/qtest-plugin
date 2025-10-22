@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.exception.StoreResultException;
 import com.qasymphony.ci.plugin.model.SubmittedResult;
-import hudson.model.AbstractProject;
 import hudson.model.Job;
 
 /**
