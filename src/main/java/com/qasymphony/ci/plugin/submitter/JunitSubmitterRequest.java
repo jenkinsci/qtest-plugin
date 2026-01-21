@@ -18,6 +18,7 @@ public class JunitSubmitterRequest {
   private TaskListener listener;
   private String qTestURL;
   private String apiKey;
+  private String secretKey;
   private String jenkinsProjectName;
   private Boolean submitToExistingContainer;
   private String jenkinsServerURL;
@@ -92,9 +93,14 @@ public class JunitSubmitterRequest {
     return apiKey;
   }
 
-  public JunitSubmitterRequest setApiKey(String apiKey) {
+  public JunitSubmitterRequest setApiKey(String apiKey, String secretKey) {
     this.apiKey = apiKey;
+    this.secretKey = secretKey;
     return this;
+  }
+
+  public String getSecretKey() {
+    return secretKey;
   }
 
   public String getJenkinsProjectName() {

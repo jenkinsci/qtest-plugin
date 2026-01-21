@@ -82,14 +82,34 @@ public class ConfigService {
    * @param apiKey apiKey
    * @return true if valid api key
    */
-  public static Boolean validateApiKey(String url, String apiKey) {
+  public static Boolean validateApiKey(String url, String apiKey, String secretKey) {
     try {
-      return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey));
+      return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey, secretKey));
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Error while validateApiKey:" + e.getMessage());
       return false;
     }
   }
+
+  /**
+   * Validate apiKey is valid in qTest
+   *
+   * @param secretKey secretKey
+   * @return true if valid api key
+   */
+  public static Boolean validateSecretKey(String secretKey) {
+    try {
+      if(StringUtils.isEmpty(secretKey) || !secretKey.startsWith("Basic ")) {
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      LOG.log(Level.WARNING, "Error while validateApiKey:" + e.getMessage());
+      return false;
+    }
+  }
+
+
 
   /**
    * Build testSuite link to qTest
@@ -120,10 +140,10 @@ public class ConfigService {
    * @param apiKey   apiKey
    * @return a list of projects
    */
-  public static Object getProjects(String qTestUrl, String apiKey) {
+  public static Object getProjects(String qTestUrl, String apiKey, String secretKey) {
     String url = String.format("%s/api/v3/projects?assigned=true", qTestUrl);
     try {
-      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(qTestUrl, apiKey, null));
+      ResponseEntity responseEntity = HttpClientUtils.get(url, OauthProvider.buildHeaders(qTestUrl, apiKey, secretKey, null));
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         return null;
       }
@@ -272,14 +292,15 @@ public class ConfigService {
   /**
    * @param qTestUrl qTest URL
    * @param qTestApiKey qtest access token
+   * @param qTestSecretKey qtest secret key
    * @param  setting Setting object is built from local configuration
    * @return {@link Setting}
    * @throws Exception Exception
    */
-  public static Setting saveConfiguration(String qTestUrl, String qTestApiKey, Setting setting)
+  public static Setting saveConfiguration(String qTestUrl, String qTestApiKey, String qTestSecretKey, Setting setting)
     throws Exception {
     //LOG.info("Saving configuration to qTest:" + setting);
-    String accessToken = OauthProvider.getAccessToken(qTestUrl, qTestApiKey);
+    String accessToken = OauthProvider.getAccessToken(qTestUrl, qTestApiKey, qTestSecretKey);
     try {
 //      Boolean saveOldSetting;
 //      saveOldSetting = compareqTestVersion(qTestUrl, Constants.OLD_QTEST_VERSION);

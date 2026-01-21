@@ -23,12 +23,18 @@ public class ValidationFormService {
         }
     }
 
-    public static FormValidation checkAppSecretKey(String value, String url, AbstractProject project)
+    public static FormValidation checkAppSecretKey(String value, String url, String secretKey, AbstractProject project)
             throws IOException, ServletException {
         if (StringUtils.isEmpty(value) || StringUtils.isEmpty(url))
             return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
-        if (!ConfigService.validateApiKey(url, value))
+        if (!ConfigService.validateApiKey(url, value, secretKey))
             return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
+        return FormValidation.ok();
+    }
+
+    public static FormValidation checkSecretKey(String value, AbstractProject project) {
+        if (!ConfigService.validateSecretKey(value))
+            return FormValidation.error(ResourceBundle.MSG_INVALID_SECRET_KEY);
         return FormValidation.ok();
     }
 

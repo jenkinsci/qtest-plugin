@@ -155,9 +155,14 @@ public class SubmitJUnitStep extends Step {
             return ValidationFormService.checkUrl(value, project);
         }
 
-        public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @AncestorInPath AbstractProject project)
+        public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @QueryParameter("config.secretKey") final String secretKey, @AncestorInPath AbstractProject project)
                 throws IOException, ServletException {
-            return ValidationFormService.checkAppSecretKey(value, url, project);
+            return ValidationFormService.checkAppSecretKey(value, url, secretKey, project);
+        }
+
+        public FormValidation doCheckSecretKey(@QueryParameter String value,  @AncestorInPath AbstractProject project)
+                throws IOException, ServletException {
+            return ValidationFormService.checkSecretKey(value, project);
         }
 
         public FormValidation doCheckProjectName(@QueryParameter String value)
@@ -203,10 +208,10 @@ public class SubmitJUnitStep extends Step {
          * @return a list of project
          */
         @JavaScriptMethod
-        public JSONObject getProjects(String qTestUrl, String apiKey) {
+        public JSONObject getProjects(String qTestUrl, String apiKey, String secretKey) {
             JSONObject res = new JSONObject();
             //get project from qTest
-            Object projects = ConfigService.getProjects(qTestUrl, apiKey);
+            Object projects = ConfigService.getProjects(qTestUrl, apiKey, secretKey);
             res.put("projects", null == projects ? "" : JSONArray.fromObject(projects));
             return res;
         }
@@ -219,16 +224,16 @@ public class SubmitJUnitStep extends Step {
          * @return data
          */
         @JavaScriptMethod
-        public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
+        public JSONObject getProjectData(final String qTestUrl, final String apiKey, final String secretKey, final Long projectId, final String jenkinsProjectName) {
 
             final StaplerRequest request = Stapler.getCurrentRequest();
             final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
-            return qTestService.getProjectData(qTestUrl, apiKey, projectId, jenkinsProjectName, jenkinsServerName);
+            return qTestService.getProjectData(qTestUrl, apiKey, secretKey, projectId, jenkinsProjectName, jenkinsServerName);
         }
 
         @JavaScriptMethod
-        public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
-            return qTestService.getContainerChildren(qTestUrl, apiKey, projectId, parentId, parentType);
+        public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final String secretKey, final Long projectId, final Long parentId, final String parentType) {
+            return qTestService.getContainerChildren(qTestUrl, apiKey, secretKey, projectId, parentId, parentType);
         }
 
         @JavaScriptMethod
@@ -477,12 +482,12 @@ public class SubmitJUnitStep extends Step {
             saveOldSetting = ConfigService.compareqTestVersion(pipelineConfiguration.getQtestURL(), Constants.OLD_QTEST_VERSION);
             Setting settingFromConfig = pipelineConfiguration.toSetting(saveOldSetting, jenkinsServerURL, jenkinsProjectName);
 
-            Setting setting = ConfigService.saveConfiguration(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey(), settingFromConfig);
+            Setting setting = ConfigService.saveConfiguration(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey(), pipelineConfiguration.getSecretKey(), settingFromConfig);
             if (null != setting) {
                 junitSubmitterRequest.setModuleID(setting.getModuleId());
                 junitSubmitterRequest.setConfigurationID(setting.getId());
                 //junitSubmitterRequest.setEnvironmentParentID()
-                String accessToken = OauthProvider.getAccessToken(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey());
+                String accessToken = OauthProvider.getAccessToken(pipelineConfiguration.getQtestURL(), pipelineConfiguration.getApiKey(), pipelineConfiguration.getSecretKey());
                 Map<String, String> headers = OauthProvider.buildHeaders(accessToken, null);
                 // get project name
                 JSONObject projectInfo = qTestService.getProjectInfo(pipelineConfiguration.getQtestURL(), headers, pipelineConfiguration.getProjectID());
