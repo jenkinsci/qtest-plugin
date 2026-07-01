@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <!-- Same id is used for dependency mirror (dl.cloudsmith.io) and deploy (maven.cloudsmith.io) in pom.xml. -->
+    <server>
+      <id>cloudsmith</id>
+      <username>token</username>
+      <password>${env.CLOUDSMITH_API_KEY}</password>
+    </server>
+  </servers>
+  <mirrors>
+    <mirror>
+      <id>cloudsmith</id>
+      <mirrorOf>central</mirrorOf>
+      <url>https://dl.cloudsmith.io/basic/tricentis/qtest/maven/</url>
+    </mirror>
+  </mirrors>
+</settings>

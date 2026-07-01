@@ -38,7 +38,7 @@ import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;

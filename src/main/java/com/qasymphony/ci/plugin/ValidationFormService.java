@@ -4,7 +4,7 @@ import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import org.apache.commons.lang.StringUtils;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.net.URL;
 
