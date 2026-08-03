@@ -6,7 +6,6 @@ import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -51,10 +50,10 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
 
 
     public String getErrorString() {
-        if (StringUtils.isEmpty(this.getQtestURL())) {
+        if ((this.getQtestURL() == null || this.getQtestURL().isEmpty())) {
             return ("qtestURL must not be null or empty");
         }
-        if (StringUtils.isEmpty(this.getApiKey())) {
+        if ((this.getApiKey() == null || this.getApiKey().isEmpty())) {
             return ("apiKey must not be null or empty");
         }
         if (!validLong(this.getProjectID())) {
@@ -75,7 +74,7 @@ public class PipelineConfiguration extends AbstractDescribableImpl<PipelineConfi
             return "submitToAReleaseAsSettingFromqTest and submitToExistingContainer cannot be set to true or false for both parameters";
         }
         String containerType = this.getContainerType();
-        if (StringUtils.isEmpty(containerType)) {
+        if ((containerType == null || containerType.isEmpty())) {
             return ("containerType must not be null or empty");
         } else {
             containerType = containerType.toLowerCase();

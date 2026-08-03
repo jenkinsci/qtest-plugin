@@ -29,7 +29,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -274,7 +273,7 @@ public class SubmitJUnitStep extends Step {
                     .setBuildNumber(build.getNumber() + "")
                     .setBuildPath(build.getUrl())
                     .setJenkinsProjectName(ws.getName()/*build.getParent().getDisplayName()*/)
-                    .setJenkinsServerURL(StringUtils.isNotEmpty(url) ? url : Jenkins.getInstance().getRootUrl())
+                    .setJenkinsServerURL((url != null && !url.isEmpty()) ? url : Jenkins.getInstance().getRootUrl())
                     .setListener(listener);
 
             //RunWrapper runWrapper = new RunWrapper (this.build, true);

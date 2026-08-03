@@ -5,7 +5,6 @@ import com.qasymphony.ci.plugin.utils.ClientRequestException;
 import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -133,11 +132,11 @@ public class qTestService {
             res.put("testSuites", "");
             return res;
         }
-        final int threadCount = StringUtils.isEmpty(jenkinsProjectName) ? 4 : 5;
+        final int threadCount = (jenkinsProjectName == null || jenkinsProjectName.isEmpty()) ? 4 : 5;
         final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
         ExecutorService fixedPool = Executors.newFixedThreadPool(threadCount);
         Callable<Object> caGetSetting = null;
-        if (StringUtils.isNotEmpty(jenkinsProjectName)) {
+        if ((jenkinsProjectName != null && !jenkinsProjectName.isEmpty())) {
             caGetSetting = new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {

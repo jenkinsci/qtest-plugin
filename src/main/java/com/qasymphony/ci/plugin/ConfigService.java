@@ -15,7 +15,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class ConfigService {
     String versionUrl = String.format("%s%s", url, "/version");
     try {
       ResponseEntity entity = HttpClientUtils.get(versionUrl, null);
-      if (!StringUtils.isEmpty(entity.getBody())) {
+      if (!(entity.getBody() == null || entity.getBody().isEmpty())) {
         JsonNode node = JsonUtils.readTree(entity.getBody());
         String name = JsonUtils.getText(node, "name");
         return "test-conductor".equalsIgnoreCase(name) || "${pom.name}".equalsIgnoreCase(name);
@@ -84,7 +83,7 @@ public class ConfigService {
    */
   public static Boolean validateApiKey(String url, String apiKey) {
     try {
-      return !StringUtils.isEmpty(OauthProvider.getAccessToken(url, apiKey));
+      return !(OauthProvider.getAccessToken(url, apiKey) == null || OauthProvider.getAccessToken(url, apiKey).isEmpty());
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Error while validateApiKey:" + e.getMessage());
       return false;
@@ -183,7 +182,7 @@ public class ConfigService {
       if (HttpStatus.SC_OK != responseEntity.getStatusCode()) {
         return null;
       }
-      JSONArray fields = StringUtils.isEmpty(responseEntity.getBody()) ? null : JSONArray.fromObject(responseEntity.getBody());
+      JSONArray fields = (responseEntity.getBody() == null || responseEntity.getBody().isEmpty()) ? null : JSONArray.fromObject(responseEntity.getBody());
       if (null == fields || fields.size() <= 0)
         return null;
       JSONObject envObject = null;
@@ -230,7 +229,7 @@ public class ConfigService {
       Setting res = JsonUtils.fromJson(responseEntity.getBody(), Setting.class);
       LOG.info(String.format("Get config from qTest: %s, response: %s, setting: %s", qTestUrl, responseEntity.getBody(), res));
       if (null != res && Constants.CI_TYPE.equalsIgnoreCase(res.getCiType())) {
-        if (StringUtils.isEmpty(res.getServerId()) || setting.getServerId().equalsIgnoreCase(res.getServerId())) {
+        if ((res.getServerId() == null || res.getServerId().isEmpty()) || setting.getServerId().equalsIgnoreCase(res.getServerId())) {
           return responseEntity.getBody();
         }
       }
@@ -250,15 +249,15 @@ public class ConfigService {
    */
   public static Configuration validateConfiguration(Configuration configuration, JSONObject formData) {
     //make id is 0 when name is empty, we get name from selectize field.
-    if (StringUtils.isEmpty(formData.getString("environmentName1"))) {
+    if ((formData.getString("environmentName1") == null || formData.getString("environmentName1").isEmpty())) {
       configuration.setEnvironmentId(0L);
       configuration.setEnvironmentName("");
     }
-    if (StringUtils.isEmpty(formData.getString("projectName1"))) {
+    if ((formData.getString("projectName1") == null || formData.getString("projectName1").isEmpty())) {
       configuration.setProjectId(0L);
       configuration.setProjectName("");
     }
-    if (StringUtils.isEmpty(formData.getString("releaseName1"))) {
+    if ((formData.getString("releaseName1") == null || formData.getString("releaseName1").isEmpty())) {
       configuration.setReleaseId(0L);
       configuration.setReleaseName("");
     }
@@ -346,7 +345,7 @@ public class ConfigService {
    */
   public static String getBuildVersion() {
     Package pkg = ConfigService.class.getPackage();
-    return StringUtils.isEmpty(pkg.getImplementationVersion()) ?
+    return (pkg.getImplementationVersion() == null || pkg.getImplementationVersion().isEmpty()) ?
       pkg.getSpecificationVersion() : pkg.getImplementationVersion();
   }
 
@@ -380,14 +379,14 @@ public class ConfigService {
 
     try {
       String macAddress = HttpClientUtils.getMacAddress();
-      if (!StringUtils.isEmpty(macAddress)) {
+      if (!(macAddress == null || macAddress.isEmpty())) {
         hmac = String.format("%s:%s", macAddress, HttpClientUtils.getPort(jenkinsUrl));
       }
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Cannot get mac address" + e.getMessage());
     }
 
-    if (!StringUtils.isEmpty(hmac)) {
+    if (!(hmac == null || hmac.isEmpty())) {
       return hmac;
     }
     try {
@@ -395,7 +394,7 @@ public class ConfigService {
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Cannot get server id:" + e.getMessage());
     }
-    return StringUtils.isEmpty(hmac) ? Constants.JENKINS_SERVER_ID_DEFAULT : hmac;
+    return (hmac == null || hmac.isEmpty()) ? Constants.JENKINS_SERVER_ID_DEFAULT : hmac;
   }
 
   public static Object getTestCycleChildren(String qTestUrl, String accessToken, Long projectId, Long parentId, String parentType) {

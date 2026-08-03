@@ -12,7 +12,6 @@ import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResult;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 
@@ -221,7 +220,7 @@ public class CommonParsingUtils {
       resultFolders.add("");
 
     for (String notIncludedDirName : ds.getNotIncludedDirectories()) {
-      if (!StringUtils.isEmpty(notIncludedDirName)) {
+      if (!(notIncludedDirName == null || notIncludedDirName.isEmpty())) {
         File dirToScan = new File(currentBasedDir.getPath(), notIncludedDirName);
         FileSet subFileSet = Util.createFileSet(dirToScan, JUNIT_PREFIX);
         DirectoryScanner subDirScanner = subFileSet.getDirectoryScanner();
@@ -254,7 +253,7 @@ public class CommonParsingUtils {
   }
 
   public static Glob getBaseDirAndPattern(String pathToResults) throws Exception {
-    if (StringUtils.isEmpty(pathToResults)) {
+    if ((pathToResults == null || pathToResults.isEmpty())) {
       throw new Exception("Path to results is empty");
     }
     String baseDir = pathToResults;

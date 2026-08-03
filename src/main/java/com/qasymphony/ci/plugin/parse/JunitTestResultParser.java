@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin.parse;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class JunitTestResultParser {
       parser = new PublishResultParser();
     } else {
       //scan with configured pattern or scan all
-      if (!StringUtils.isBlank(request.getParseTestResultPattern())) {
+      if (!(request.getParseTestResultPattern() == null || request.getParseTestResultPattern().trim().isEmpty())) {
         parser = new PatternScanParser();
       } else {
         parser = new AutoScanParser();

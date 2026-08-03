@@ -6,7 +6,6 @@ import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -42,13 +41,13 @@ public class ToscaIntegration extends AbstractDescribableImpl<ToscaIntegration> 
 
     @Override
     public String validate() {
-        if (StringUtils.isEmpty(this.command)) {
+        if ((this.command == null || this.command.isEmpty())) {
             return "command property cannot be null or empty";
         }
-        if (StringUtils.isEmpty(this.arguments)) {
+        if ((this.arguments == null || this.arguments.isEmpty())) {
             return "arguments property cannot be null or empty";
         }
-        if (StringUtils.isEmpty(this.pathToResults)) {
+        if ((this.pathToResults == null || this.pathToResults.isEmpty())) {
             return "pathToResults property cannot be null or empty";
         }
         return null;

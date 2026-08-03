@@ -29,7 +29,6 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
@@ -96,7 +95,7 @@ public class PushingResultAction extends Notifier {
     } else {
       if (null != externalTool) {
         String errorString = externalTool.validate();
-        if (StringUtils.isNotEmpty(errorString)) {
+        if ((errorString != null && !errorString.isEmpty())) {
           LoggerUtils.formatError(logger, errorString);
           return false;
         }
@@ -235,8 +234,8 @@ public class PushingResultAction extends Notifier {
 
   private Boolean validateConfig(Configuration configuration) {
     if (null == configuration
-            || StringUtils.isEmpty(configuration.getUrl())
-            || StringUtils.isEmpty(configuration.getAppSecretKey())
+            || (configuration.getUrl() == null || configuration.getUrl().isEmpty())
+            || (configuration.getAppSecretKey() == null || configuration.getAppSecretKey().isEmpty())
             || 0 >= configuration.getProjectId()) {
       return false;
     }
@@ -410,7 +409,7 @@ public class PushingResultAction extends Notifier {
 
       configuration.setJenkinsProjectName(req.getParameter("name"));
 
-      if (StringUtils.isEmpty(configuration.getJenkinsProjectName())) {
+      if ((configuration.getJenkinsProjectName() == null || configuration.getJenkinsProjectName().isEmpty())) {
         if (req != null) {
           final Ancestor ancestor = req.findAncestor(AbstractItem.class);
           if (ancestor != null) {
@@ -431,7 +430,7 @@ public class PushingResultAction extends Notifier {
       configuration = ConfigService.validateConfiguration(configuration, formData);
 
       //if have url, we try to update configuration to qTest
-      if (!StringUtils.isEmpty(configuration.getUrl())) {
+      if (!(configuration.getUrl() == null || configuration.getUrl().isEmpty())) {
         Setting setting = null;
         try {
           Boolean saveOldSetting;

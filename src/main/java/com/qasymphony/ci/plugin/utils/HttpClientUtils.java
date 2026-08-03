@@ -2,8 +2,6 @@ package com.qasymphony.ci.plugin.utils;
 
 import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -192,7 +190,7 @@ public class HttpClientUtils {
           throws ClientRequestException {
     HttpPost request = new HttpPost(url);
     addHeader(request, headers);
-    if (!StringUtils.isEmpty(data))
+    if (!(data == null || data.isEmpty()))
       request.setEntity(new StringEntity(data, contentType));
     return execute(request);
   }
@@ -220,7 +218,7 @@ public class HttpClientUtils {
           throws ClientRequestException {
     HttpPut request = new HttpPut(url);
     addHeader(request, headers);
-    if (!StringUtils.isEmpty(data))
+    if (!(data == null || data.isEmpty()))
       request.setEntity(new StringEntity(data, contentType));
     return execute(request);
   }
@@ -318,7 +316,7 @@ public class HttpClientUtils {
 
   private static void setHttpProxy(HttpClientBuilder httpClientBuilder, String hostUrl) {
     ProxyConfiguration proxyConfig = Jenkins.getInstance().proxy;
-    LOG.log(Level.INFO, "-- Proxy info: " +  ReflectionToStringBuilder.toString(proxyConfig));
+    LOG.log(Level.INFO, "-- Proxy info: " +  proxyConfig);
     if (proxyConfig != null) {
       List<Pattern> proxyHostPatterns = proxyConfig.getNoProxyHostPatterns();
       LOG.log(Level.INFO, "-- No proxy host info: " + Arrays.toString(proxyHostPatterns.toArray()));
@@ -331,7 +329,7 @@ public class HttpClientUtils {
       String password = proxyConfig.getPassword();
 
       Credentials credentials;
-      if (username != null && StringUtils.isNotEmpty(username) == true) {
+      if (username != null && (username != null && !username.isEmpty()) == true) {
         credentials = new UsernamePasswordCredentials(username, password);
       } else  {
         credentials = new UsernamePasswordCredentials("", "");

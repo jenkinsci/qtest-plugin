@@ -17,7 +17,6 @@ import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.model.Run;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.PrintStream;
 import java.util.Map;
@@ -35,7 +34,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
 
   @Override public JunitSubmitterResult submit(JunitSubmitterRequest request) throws Exception {
     String accessToken = OauthProvider.getAccessToken(request.getqTestURL(), request.getApiKey());
-    if (StringUtils.isEmpty(accessToken))
+    if ((accessToken == null || accessToken.isEmpty()))
       throw new SubmittedException(String.format("Cannot get access token from: %s, API key is: %s",
         request.getqTestURL(), request.getApiKey()));
 
@@ -82,7 +81,7 @@ public class JunitQtestSubmitterImpl implements JunitSubmitter {
       } else {
         if (!previousState.equalsIgnoreCase(response.getState())) {
           LoggerUtils.formatInfo(logger, "%s: Submission status: %s", JsonUtils.getCurrentDateString(), response.getState());
-          previousState = StringUtils.isEmpty(response.getState()) ? "" : response.getState();
+          previousState = (response.getState() == null || response.getState().isEmpty()) ? "" : response.getState();
         }
         if (response.hasError()) {
           //if has error while get task status

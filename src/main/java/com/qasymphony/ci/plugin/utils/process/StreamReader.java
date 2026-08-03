@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin.utils.process;
 
 import jline.internal.InputStreamReader;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 
 
 import java.io.BufferedReader;
@@ -34,7 +33,7 @@ public final class StreamReader implements Runnable {
                         String encoding) {
         this.streamConsumer = streamConsumer;
         try {
-            this.reader = (StringUtils.isEmpty(encoding) ? new LineNumberReader(new InputStreamReader(input))
+            this.reader = ((encoding == null || encoding.isEmpty()) ? new LineNumberReader(new InputStreamReader(input))
                     : new LineNumberReader(new InputStreamReader(input, encoding)));
         } catch (UnsupportedEncodingException uee) {
             throw new RuntimeException(String.format("Unable to use [%s] to decode stream. The current charset is [%s]", encoding, defaultCharset()));

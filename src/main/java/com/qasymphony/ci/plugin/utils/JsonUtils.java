@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -111,7 +110,7 @@ public class JsonUtils {
 
   public static JsonNode parseTree(String body) throws IOException {
     JsonNode node = null;
-    if (StringUtils.isEmpty(body))
+    if ((body == null || body.isEmpty()))
       return node;
     return mapper.readTree(body);
   }
@@ -154,14 +153,14 @@ public class JsonUtils {
    * @throws IOException IOException
    */
   public static <T> T parseJson(String body, Class<T> valueType) throws IOException {
-    if (StringUtils.isEmpty(body))
+    if ((body == null || body.isEmpty()))
       return null;
     return mapper.readValue(body, valueType);
   }
 
   public static <T> T fromJson(String body, TypeReference<T> type) {
     try {
-      if (StringUtils.isEmpty(body))
+      if ((body == null || body.isEmpty()))
         return null;
       return mapper.readValue(body, type);
     } catch (IOException e) {
@@ -215,7 +214,7 @@ public class JsonUtils {
    * @return
    */
   public static Date parseTimestamp(String timestamp) {
-    if (StringUtils.isEmpty(timestamp)) {
+    if ((timestamp == null || timestamp.isEmpty())) {
       return null;
     }
     try {

@@ -11,7 +11,6 @@ import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.remoting.VirtualChannel;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.BufferedWriter;
@@ -200,7 +199,7 @@ public class StoreResultServiceImpl implements StoreResultService {
     for (Map.Entry<Integer, String> entry : lines.entrySet()) {
       SubmittedResult submitResult = JsonUtils.fromJson(entry.getValue(), SubmittedResult.class);
       if (null != submitResult) {
-        if (StringUtils.isEmpty(submitResult.getUrl())) {
+        if ((submitResult.getUrl() == null || submitResult.getUrl().isEmpty())) {
           submitResult.setTestSuiteLink(ConfigService.formatTestSuiteLink(url, projectId, submitResult.getTestSuiteId()));
         } else {
           submitResult.setTestSuiteLink(ConfigService.formatTestSuiteLink(submitResult.getUrl(), submitResult.getProjectId(), submitResult.getTestSuiteId()));

@@ -1,6 +1,5 @@
 package com.qasymphony.ci.plugin.utils.process;
 
-import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.util.logging.Level;
@@ -14,7 +13,7 @@ public class ProcessWrapper {
     public boolean createProcess(File workingDir, String command, String arguments, String encoding, IStreamConsumer outStreamConsumer, IStreamConsumer errorStreamConsumer) throws Exception {
         StringBuilder commandBuilder = new StringBuilder();
         commandBuilder.append("\"").append(command).append("\"");
-        if (StringUtils.isNotEmpty(arguments)) {
+        if ((arguments != null && !arguments.isEmpty())) {
             commandBuilder.append(" ");
             commandBuilder.append(arguments);
         }

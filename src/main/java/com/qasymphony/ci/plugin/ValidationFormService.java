@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin;
 
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
-import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -12,7 +11,7 @@ public class ValidationFormService {
 
     public static FormValidation checkUrl(String value, AbstractProject project)
             throws IOException, ServletException {
-        if (StringUtils.isEmpty(value))
+        if ((value == null || value.isEmpty()))
             return FormValidation.error(ResourceBundle.MSG_INVALID_URL);
         try {
             new URL(value);
@@ -25,7 +24,7 @@ public class ValidationFormService {
 
     public static FormValidation checkAppSecretKey(String value, String url, AbstractProject project)
             throws IOException, ServletException {
-        if (StringUtils.isEmpty(value) || StringUtils.isEmpty(url))
+        if ((value == null || value.isEmpty()) || (url == null || url.isEmpty()))
             return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
         if (!ConfigService.validateApiKey(url, value))
             return FormValidation.error(ResourceBundle.MSG_INVALID_API_KEY);
@@ -34,14 +33,14 @@ public class ValidationFormService {
 
     public static FormValidation checkProjectName(String value)
             throws IOException, ServletException {
-        if (StringUtils.isBlank(value))
+        if ((value == null || value.trim().isEmpty()))
             return FormValidation.error(ResourceBundle.MSG_INVALID_PROJECT);
         return FormValidation.ok();
     }
 
     public static FormValidation checkReleaseName(String value)
             throws IOException, ServletException {
-        if (StringUtils.isBlank(value))
+        if ((value == null || value.trim().isEmpty()))
             return FormValidation.error(ResourceBundle.MSG_INVALID_RELEASE);
         return FormValidation.ok();
     }
@@ -57,25 +56,25 @@ public class ValidationFormService {
     }
 
     public static FormValidation checkFakeContainerName(String value) {
-        if (!StringUtils.isBlank(value)) {
+        if (!(value == null || value.trim().isEmpty())) {
             return FormValidation.ok();
         }
         return FormValidation.error(ResourceBundle.MSG_INVALID_CONTAINER);
     }
     public static FormValidation checkExternalCommand(String value) {
-        if (!StringUtils.isBlank(value)) {
+        if (!(value == null || value.trim().isEmpty())) {
             return FormValidation.ok();
         }
         return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_COMMAND);
     }
     public static FormValidation checkExternalArguments(String value) {
-        if (!StringUtils.isBlank(value)) {
+        if (!(value == null || value.trim().isEmpty())) {
             return FormValidation.ok();
         }
         return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_ARGUMENTS);
     }
     public static FormValidation checkExternalPathToResults(String value) {
-        if (!StringUtils.isBlank(value)) {
+        if (!(value == null || value.trim().isEmpty())) {
             return FormValidation.ok();
         }
         return FormValidation.error(ResourceBundle.MSG_INVALID_EXTERNAL_RESULT_PATH);
