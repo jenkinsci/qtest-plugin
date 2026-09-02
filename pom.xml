@@ -142,7 +142,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-api</artifactId>
-      <version>1164.v760c223ddb_32</version>
+      <version>1413.v2ff1a_5e720fa_</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
