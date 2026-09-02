@@ -33,7 +33,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <findbugs.skip>true</findbugs.skip>
     <jackson.version>2.12.4</jackson.version>
-    <junit.plugin.version>1.9</junit.plugin.version>
+    <junit.plugin.version>1424.vc64a_edde7777</junit.plugin.version>
     <httpclient.version>4.5.14</httpclient.version>
     <jenkins.version>2.426.3</jenkins.version>
     <commons-codec.version>1.16.0</commons-codec.version>
