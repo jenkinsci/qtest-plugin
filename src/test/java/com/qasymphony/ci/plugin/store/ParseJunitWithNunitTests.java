@@ -52,11 +52,16 @@ public class ParseJunitWithNunitTests extends TestAbstracts {
         }
         automationTestResultList = JunitTestResultParser.parse(new ParseRequest()
         .setBuild(build)
+        .setWorkSpace(build.getWorkspace())
         .setListener(listener)
         .setLauncher(launcher)
+        .setUtilizeTestResultFromCITool(true)
+        .setParseTestResultPattern("generatedJUnitFiles/NUnit/*.xml")
+        .setCreateEachMethodAsTestCase(false)
+        .setOverwriteExistingTestSteps(false)
         );
       } catch (Exception e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
       return true;
     }
@@ -77,6 +82,6 @@ public class ParseJunitWithNunitTests extends TestAbstracts {
     project.getBuildersList().add(new ParseJunitFromNunitProject());
     FreeStyleBuild build = project.scheduleBuild2(0).get(100, TimeUnit.MINUTES);
     assertNotNull("Build is: ", build);
-    assertEquals("", 2, automationTestResultList.size());
+    assertEquals("", 1, automationTestResultList.size());
   }
 }

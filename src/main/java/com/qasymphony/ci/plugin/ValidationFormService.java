@@ -2,7 +2,7 @@ package com.qasymphony.ci.plugin;
 
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.ServletException;
 import java.io.IOException;

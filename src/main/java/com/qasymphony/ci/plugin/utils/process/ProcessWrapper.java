@@ -1,6 +1,6 @@
 package com.qasymphony.ci.plugin.utils.process;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.logging.Level;

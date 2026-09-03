@@ -1,7 +1,7 @@
 package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.AutomationTestService;
-import com.qasymphony.ci.plugin.OauthProvider;
+import com.qasymphony.ci.plugin.exception.OAuthException;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.Configuration;
@@ -9,6 +9,9 @@ import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
+import com.qasymphony.ci.plugin.support.QTestMockServerRule;
+import com.qasymphony.ci.plugin.support.SubmitTestFixtures;
+import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -16,6 +19,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -23,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -36,6 +39,8 @@ import static org.junit.Assert.assertNotNull;
  * @since 1.0
  */
 public class TestResultFromxUnit extends TestAbstracts {
+
+  @Rule public QTestMockServerRule qtest = new QTestMockServerRule();
 
   public static final class TestResultFromxUnitProject extends Builder implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -78,7 +83,7 @@ public class TestResultFromxUnit extends TestAbstracts {
 
 );
       } catch (Exception e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
       return true;
     }
@@ -91,7 +96,7 @@ public class TestResultFromxUnit extends TestAbstracts {
 
   @LocalData
   @Test public void testParser()
-    throws InterruptedException, ExecutionException, TimeoutException, IOException {
+    throws InterruptedException, ExecutionException, TimeoutException, IOException, SubmittedException, OAuthException {
     project = j.createFreeStyleProject("xunit-project");
 
     Configuration configuration = Configuration.newInstance();
@@ -102,7 +107,7 @@ public class TestResultFromxUnit extends TestAbstracts {
     configuration.setReleaseId(1L);
     configuration.setId(1L);
     configuration.setProjectId(1L);
-    configuration.setUrl("https://localhost:7443");
+    configuration.setUrl(qtest.baseUrl());
     configuration.setJenkinsProjectName("TestResultFromxUnitProject");
     configuration.setJenkinsServerUrl("http://localhost:8080/jenkins");
 
@@ -115,16 +120,22 @@ public class TestResultFromxUnit extends TestAbstracts {
     String buildNumber = "1";
     String buildPath = "/jobs/TestResultFromxUnitProject/" + buildNumber;
     JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
-    try {
-      AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), submitterRequest, configuration.getAppSecretKey());
-    } catch (SubmittedException e) {
-      e.printStackTrace();
-    }
+    submitterRequest.setBuildNumber(buildNumber).setBuildPath(buildPath);
+    String accessToken = SubmitTestFixtures.oauthAccessToken(qtest, configuration);
+    ResponseEntity response = AutomationTestService.push(
+      buildNumber,
+      buildPath,
+      testResultFromxUnitProject.getAutomationTestResultList(),
+      submitterRequest,
+      accessToken);
+    SubmitTestFixtures.assertSubmitSuccess(response);
+    qtest.getServer().verifyOAuthCalledOnce();
+    qtest.getServer().verifyCiSubmitCalledOnce();
   }
 
   @LocalData
   @Test public void testSubmit()
-    throws InterruptedException, ExecutionException, TimeoutException, IOException, SubmittedException {
+    throws InterruptedException, ExecutionException, TimeoutException, IOException, SubmittedException, OAuthException {
     project = j.createFreeStyleProject("xunit-project");
     String buildNumber = "1";
     String buildPath = "/jobs/TestResultFromxUnitProject/" + buildNumber;
@@ -133,7 +144,7 @@ public class TestResultFromxUnit extends TestAbstracts {
     Long releaseId = 1L;
     Long ciId = 1L;
     Long qTestProjectId = 1L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, qTestProjectId, projectName,
+    Configuration configuration = new Configuration(ciId, qtest.baseUrl(), apiKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L,
             false, "", false,  "{}", false, 0);
 
@@ -144,8 +155,18 @@ public class TestResultFromxUnit extends TestAbstracts {
     FreeStyleBuild build = project.scheduleBuild2(0).get(100, TimeUnit.MINUTES);
     assertNotNull("Build is: ", build);
 
-    Map<String, String> headers = OauthProvider.buildHeaders(configuration.getUrl(), configuration.getAppSecretKey(), null);
-    //AutomationTestService.push(buildNumber, buildPath, testResultFromxUnitProject.getAutomationTestResultList(), configuration, headers);
+    JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
+    submitterRequest.setBuildNumber(buildNumber).setBuildPath(buildPath);
+    String accessToken = SubmitTestFixtures.oauthAccessToken(qtest, configuration);
+    ResponseEntity response = AutomationTestService.push(
+      buildNumber,
+      buildPath,
+      testResultFromxUnitProject.getAutomationTestResultList(),
+      submitterRequest,
+      accessToken);
+    SubmitTestFixtures.assertSubmitSuccess(response);
+    qtest.getServer().verifyOAuthCalledOnce();
+    qtest.getServer().verifyCiSubmitCalledOnce();
   }
 
 }

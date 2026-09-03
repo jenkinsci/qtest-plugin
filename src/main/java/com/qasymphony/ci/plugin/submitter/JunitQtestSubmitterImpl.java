@@ -17,7 +17,7 @@ import com.qasymphony.ci.plugin.utils.LoggerUtils;
 import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.model.Run;
 import org.apache.http.HttpStatus;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.PrintStream;
 import java.util.Map;

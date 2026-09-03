@@ -2,7 +2,7 @@ package com.qasymphony.ci.plugin.utils.process;
 
 import jline.internal.InputStreamReader;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.BufferedReader;

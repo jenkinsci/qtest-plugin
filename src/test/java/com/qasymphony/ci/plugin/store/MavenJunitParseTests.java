@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.PatternScanParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -56,9 +55,13 @@ public class MavenJunitParseTests extends TestAbstracts {
         .setLauncher(launcher)
         .setListener(listener)
         .setBuild(build)
-        .setUtilizeTestResultFromCITool(true));
+        .setWorkSpace(build.getWorkspace())
+        .setUtilizeTestResultFromCITool(true)
+        .setParseTestResultPattern("target/surefire-reports/*.xml")
+        .setCreateEachMethodAsTestCase(false)
+        .setOverwriteExistingTestSteps(true));
       } catch (Exception e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
       return true;
     }

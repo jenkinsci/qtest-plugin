@@ -11,7 +11,7 @@ import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.remoting.VirtualChannel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.BufferedWriter;

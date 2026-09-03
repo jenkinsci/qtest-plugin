@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.Calendar;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * scan and parse Tosca Junit test results

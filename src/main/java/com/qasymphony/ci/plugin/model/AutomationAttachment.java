@@ -3,7 +3,7 @@ package com.qasymphony.ci.plugin.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.qasymphony.ci.plugin.Constants;
 import hudson.tasks.junit.CaseResult;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author anpham
