@@ -2,8 +2,8 @@ package com.qasymphony.ci.plugin.utils;
 
 import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -39,7 +39,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -56,6 +55,13 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
 public class HttpClientUtils {
   public static Integer RETRY_MAX_COUNT = 5;
   public static Boolean RETRY_REQUEST_SEND_RETRY_ENABLED = false;
+  /**
+   * Opt-in escape hatch for on-prem qTest servers with a self-signed certificate.
+   * Off by default: TLS certificate and hostname validation are always enforced unless an
+   * operator explicitly sets this JVM system property to "true" on the Jenkins controller.
+   * See QTEST-39511 / Jenkins SECURITY-3841.
+   */
+  public static final String ALLOW_INSECURE_SSL_PROPERTY = "qtest.plugin.allowInsecureSsl";
   private static final Integer DEFAULT_SOCKET_TIMEOUT = 60;//seconds
   private static HttpClient CLIENT;
   private static final Logger LOG = Logger.getLogger(HttpClientUtils.class.getName());
@@ -76,6 +82,20 @@ public class HttpClientUtils {
         throw new ClientRequestException(e.getMessage());
       }
     }
+  }
+
+  /**
+   * Test-only: drop the cached client so the next call rebuilds it (e.g. against a different
+   * test server or SSL configuration). Not used by production code paths. Public so tests in
+   * other packages can reset the cache between runs, since CLIENT is otherwise built once per
+   * JVM and Surefire typically runs the whole plugin's test suite in a single fork.
+   */
+  public static synchronized void resetClient() {
+    CLIENT = null;
+  }
+
+  private static boolean isInsecureSslAllowed() {
+    return Boolean.getBoolean(ALLOW_INSECURE_SSL_PROPERTY);
   }
 
   /**
@@ -294,10 +314,19 @@ public class HttpClientUtils {
     return responseEntity;
   }
 
-  private static void addHeader(HttpRequestBase httpRequestBase, Map<String, String> headers) {
+  /**
+   * Strips CR/LF from a header name or value. Apache HttpClient 4.x does not itself reject
+   * embedded CRLF sequences, so header values built from config-provided strings (server URL,
+   * project name, etc.) are a CRLF/header-injection sink (CWE-113) otherwise.
+   */
+  static String stripCrlf(String value) {
+    return value == null ? null : value.replaceAll("[\\r\\n]", "");
+  }
+
+  static void addHeader(HttpRequestBase httpRequestBase, Map<String, String> headers) {
     if (headers != null) {
       for (Map.Entry<String, String> entry : headers.entrySet()) {
-        httpRequestBase.addHeader(entry.getKey(), entry.getValue());
+        httpRequestBase.addHeader(stripCrlf(entry.getKey()), stripCrlf(entry.getValue()));
       }
     }
   }
@@ -317,7 +346,11 @@ public class HttpClientUtils {
   }
 
   private static void setHttpProxy(HttpClientBuilder httpClientBuilder, String hostUrl) {
-    ProxyConfiguration proxyConfig = Jenkins.getInstance().proxy;
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
+    if (jenkins == null) {
+      return;
+    }
+    ProxyConfiguration proxyConfig = jenkins.proxy;
     LOG.log(Level.INFO, "-- Proxy info: " +  ReflectionToStringBuilder.toString(proxyConfig));
     if (proxyConfig != null) {
       List<Pattern> proxyHostPatterns = proxyConfig.getNoProxyHostPatterns();
@@ -383,20 +416,37 @@ public class HttpClientUtils {
 
   private static SSLConnectionSocketFactory getSslSocketFactory()
           throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-    SSLContext sslContext = getSslContext();
-    return new SSLConnectionSocketFactory(sslContext, ALLOW_ALL_HOSTNAME_VERIFIER);
+    if (isInsecureSslAllowed()) {
+      LOG.log(Level.WARNING, "-- " + ALLOW_INSECURE_SSL_PROPERTY + " is set: TLS certificate and "
+              + "hostname validation are DISABLED for all qTest connections. Do not use this in "
+              + "production; it exists only for on-prem servers with a self-signed certificate "
+              + "that cannot be imported into the Jenkins controller's truststore.");
+      return new SSLConnectionSocketFactory(getInsecureSslContext(), ALLOW_ALL_HOSTNAME_VERIFIER);
+    }
+    return new SSLConnectionSocketFactory(getDefaultSslContext(),
+            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
   }
 
-  private static SSLContext getSslContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+  /**
+   * The JVM's default SSLContext: validates the server certificate chain against the
+   * controller's own truststore (cacerts, plus anything imported via keytool) and does not
+   * override hostname verification. This is the only path used unless
+   * {@link #ALLOW_INSECURE_SSL_PROPERTY} is explicitly set.
+   */
+  private static SSLContext getDefaultSslContext() throws NoSuchAlgorithmException {
+    return SSLContext.getDefault();
+  }
+
+  private static SSLContext getInsecureSslContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
     org.apache.http.ssl.SSLContextBuilder sslContextBuilder = new org.apache.http.ssl.SSLContextBuilder();
-    KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
     TrustStrategy trustStrategy = new TrustAllStrategy();
-    sslContextBuilder.loadTrustMaterial(keyStore, trustStrategy);
+    sslContextBuilder.loadTrustMaterial(null, trustStrategy);
     return sslContextBuilder.build();
   }
 
   /**
-   * Trust all certificates.
+   * Trust all certificates. Only reachable when an operator has explicitly opted in via
+   * {@link #ALLOW_INSECURE_SSL_PROPERTY} -- see QTEST-39511.
    */
   public static class TrustAllStrategy implements TrustStrategy  {
 

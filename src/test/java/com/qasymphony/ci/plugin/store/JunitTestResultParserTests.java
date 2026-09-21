@@ -7,7 +7,10 @@ import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
 import com.qasymphony.ci.plugin.submitter.JunitSubmitterRequest;
+import com.qasymphony.ci.plugin.testsupport.LocalHttpsFixture;
+import com.qasymphony.ci.plugin.utils.HttpClientUtils;
 import com.qasymphony.ci.plugin.utils.LoggerUtils;
+import com.qasymphony.ci.plugin.utils.ResponseEntity;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -15,8 +18,11 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
 import hudson.tasks.junit.CaseResult;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
@@ -60,21 +66,48 @@ public class JunitTestResultParserTests extends TestAbstracts {
         }
         automationTestResultList = JunitTestResultParser.parse(new ParseRequest()
           .setBuild(build)
+          .setWorkSpace(build.getWorkspace())
           .setListener(listener)
           .setLauncher(launcher)
           .setUtilizeTestResultFromCITool(true)
+          .setCreateEachMethodAsTestCase(false)
+          .setOverwriteExistingTestSteps(false)
           );
       } catch (Exception e) {
         e.printStackTrace();
+        throw new IOException("JUnitParserTestAntProject.perform failed", e);
       }
       return true;
     }
   }
 
+  // Not real secrets: fixed, non-random placeholder values for a fake qTest project used only
+  // to exercise AutomationTestService.push() against the local fixture server below.
+  private static final String FAKE_ANT_PROJECT_KEY = "fake-ant-project-api-key";
+  private static final String FAKE_PERFORMANCE_PROJECT_KEY = "fake-performance-project-api-key";
+
   private FreeStyleProject project;
   private static List<AutomationTestResult> automationTestResultList;
 
+  @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
+  private LocalHttpsFixture qtestFixture;
+
   @Before public void setUp() throws Exception {
+    // The submission-path tests below used to point at a dead https://localhost:7443 with no
+    // server behind it. Stand up a real local HTTPS server (self-signed cert) as a stand-in
+    // qTest endpoint, and use HttpClientUtils' documented escape hatch for on-prem self-signed
+    // servers (see QTEST-39511) rather than importing a throwaway cert into a trust store.
+    HttpClientUtils.resetClient();
+    System.setProperty(HttpClientUtils.ALLOW_INSECURE_SSL_PROPERTY, "true");
+    qtestFixture = LocalHttpsFixture.startRespondingWith(tempFolder.getRoot(), "{}");
+  }
+
+  @After public void tearDown() {
+    if (qtestFixture != null) {
+      qtestFixture.close();
+    }
+    HttpClientUtils.resetClient();
+    System.clearProperty(HttpClientUtils.ALLOW_INSECURE_SSL_PROPERTY);
   }
 
   @LocalData
@@ -86,7 +119,14 @@ public class JunitTestResultParserTests extends TestAbstracts {
     project.getBuildersList().add(new JUnitParserTestAntProject());
     FreeStyleBuild build = project.scheduleBuild2(0).get(100, TimeUnit.MINUTES);
     assertNotNull("Build is: ", build);
-    assertEquals("", 1, automationTestResultList.size());
+    // The ant-project fixture's build/test/ also contains TEST-method-with-params.xml, a
+    // misplaced/mislabeled fixture holding 226 NUnit.ProjectEditor.Tests.* cases across 22
+    // distinct classes inside a <testsuites> (plural) root -- a different format from the
+    // real HelloWorldTest's bare <testsuite> root. The historical "1" expectation here relied
+    // on an old JUnitParser silently failing to parse the <testsuites> wrapper (swallowed by
+    // AutoScanParser's per-folder catch), which no longer happens on a modern Jenkins core.
+    // 22 NUnit classes + 1 real helloWorld.HelloWorldTest = 23.
+    assertEquals("", 23, automationTestResultList.size());
   }
 
   @LocalData
@@ -112,12 +152,12 @@ public class JunitTestResultParserTests extends TestAbstracts {
     String buildNumber = "1";
     String buildPath = "/jobs/AntProjectWithXMLContent/" + buildNumber;
     String projectName = "AntProjectWithXMLContent";
-    String apiKey = "9d3971a6-f6d7-4e0b-996c-e2ade023b4e8";
-    String secretKey = "9d3971a6-f6d7-4e0b-996c-e2ade023b4e8";
+    String apiKey = FAKE_ANT_PROJECT_KEY;
+    String secretKey = FAKE_ANT_PROJECT_KEY;
     long releaseId = 1L;
     Long ciId = 1L;
     long qTestProjectId = 3L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, secretKey, qTestProjectId, projectName,
+    Configuration configuration = new Configuration(ciId, qtestFixture.getBaseUrl(), apiKey, secretKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false, "{}" ,
             false,
             0);
@@ -125,21 +165,23 @@ public class JunitTestResultParserTests extends TestAbstracts {
     submitterRequest.setBuildNumber("1")
             .setBuildPath(buildPath);
 
-    AutomationTestService.push(buildNumber, buildPath, automationTestResultList, submitterRequest, configuration.getAppSecretKey());
+    ResponseEntity response = AutomationTestService.push(buildNumber, buildPath, automationTestResultList, submitterRequest, configuration.getAppSecretKey());
+    assertNotNull("push() should have reached the fixture server and returned a response", response);
+    assertEquals(Integer.valueOf(200), response.getStatusCode());
   }
 
   @Test public void testSubmitLog() throws SubmittedException {
     String buildNumber = "1";
     String buildPath = "/jobs/TestPerformance/" + buildNumber;
     String projectName = "TestPerformance";
-    String apiKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
-    String secretKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
+    String apiKey = FAKE_PERFORMANCE_PROJECT_KEY;
+    String secretKey = FAKE_PERFORMANCE_PROJECT_KEY;
     long releaseId = 1L;
     Long ciId = 3L;
     long qTestProjectId = 1L;
     Configuration configuration = new Configuration(
             ciId,
-            "https://localhost:7443",
+            qtestFixture.getBaseUrl(),
             apiKey,
             secretKey,
             qTestProjectId,
@@ -178,19 +220,21 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setTestLogs(testLogs);
     }
     JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
-    AutomationTestService.push(buildNumber, buildPath, results, submitterRequest, configuration.getAppSecretKey());
+    ResponseEntity response = AutomationTestService.push(buildNumber, buildPath, results, submitterRequest, configuration.getAppSecretKey());
+    assertNotNull("push() should have reached the fixture server and returned a response", response);
+    assertEquals(Integer.valueOf(200), response.getStatusCode());
   }
 
   @Test public void testSubmitLogWithAttachment() throws SubmittedException {
     String buildNumber = "1";
     String buildPath = "/jobs/TestPerformance/" + buildNumber;
     String projectName = "TestPerformance";
-    String apiKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
-    String secretKey = "3c76feb4-b91f-4a53-8643-bd1ce2f01a3e";
+    String apiKey = FAKE_PERFORMANCE_PROJECT_KEY;
+    String secretKey = FAKE_PERFORMANCE_PROJECT_KEY;
     long releaseId = 1L;
     Long ciId = 3L;
     long qTestProjectId = 1L;
-    Configuration configuration = new Configuration(ciId, "https://localhost:7443", apiKey, secretKey, qTestProjectId, projectName,
+    Configuration configuration = new Configuration(ciId, qtestFixture.getBaseUrl(), apiKey, secretKey, qTestProjectId, projectName,
       releaseId, "releaseName", 0L, "environment", 0L, 0L, false, "", false,"{}" ,
             false,
             0);
@@ -225,7 +269,9 @@ public class JunitTestResultParserTests extends TestAbstracts {
       automationTestResult.setAttachments(automationAttachments);
     }
     JunitSubmitterRequest submitterRequest = configuration.createJunitSubmitRequest();
-    AutomationTestService.push(buildNumber, buildPath, results, submitterRequest, configuration.getAppSecretKey());
+    ResponseEntity response = AutomationTestService.push(buildNumber, buildPath, results, submitterRequest, configuration.getAppSecretKey());
+    assertNotNull("push() should have reached the fixture server and returned a response", response);
+    assertEquals(Integer.valueOf(200), response.getStatusCode());
     System.out.println("End submit in: " + LoggerUtils.elapsedTime(start));
   }
 }

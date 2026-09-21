@@ -1,3 +1,4 @@
+var $j = jQuery.noConflict();
 var qtest = (function ($j) {
   var module = {};
   module.init = function () {
@@ -14,18 +15,15 @@ var qtest = (function ($j) {
   module.getProjectId = function () {
     return $j("input[name='config.projectId']").val();
   };
+  // Selectize's own "change" event (fired via instance.on('change', ...)) is what actually reflects
+  // a selection, whether made by a real click or setValue(); the bundled selectize.min.js does not also
+  // dispatch a native DOM "change" event on the underlying <input>, so binding via jQuery on the raw
+  // node (as done previously) never fires. Since the selectize instance doesn't exist yet when this is
+  // called (document-ready, before Retrieve Data has run), the sync spec is registered here and wired
+  // up by initSelectize once the instance is actually created.
+  var selectizeChangeBindings = {};
   module.bindSelectizeValue = function (src, dest, dest2, field, field2, onChange) {
-    var srcNode = $j(src);
-    srcNode.on('change', function () {
-      var item = this.selectize.options[this.value];
-      if (!item) return;
-      var destNode = $j(dest);
-      destNode.val(destNode ? item[field] : null);
-      var destNode2 = $j(dest2);
-      destNode2.val(destNode2 ? item[field2] : null);
-      if (onChange)
-        onChange(item);
-    });
+    selectizeChangeBindings[src] = {dest: dest, dest2: dest2, field: field, field2: field2, onChange: onChange};
   };
   module.initSelectize = function (inputName, selectizeId, data, options) {
     var selectizeNode = $j(inputName);
@@ -49,6 +47,19 @@ var qtest = (function ($j) {
       if (!data || data.length <= 0) {
         qtest[selectizeId].clear();
         qtest[selectizeId].clearOptions();
+      }
+      var binding = selectizeChangeBindings[inputName];
+      if (binding) {
+        qtest[selectizeId].on('change', function (value) {
+          var item = this.options[value];
+          if (!item) return;
+          var destNode = $j(binding.dest);
+          destNode.val(destNode ? item[binding.field] : null);
+          var destNode2 = $j(binding.dest2);
+          destNode2.val(destNode2 ? item[binding.field2] : null);
+          if (binding.onChange)
+            binding.onChange(item);
+        });
       }
     }
     return qtest[selectizeId];

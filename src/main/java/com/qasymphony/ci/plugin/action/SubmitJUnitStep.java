@@ -1,6 +1,5 @@
 package com.qasymphony.ci.plugin.action;
 
-import com.google.common.collect.ImmutableSet;
 import com.qasymphony.ci.plugin.*;
 import com.qasymphony.ci.plugin.ResourceBundle;
 import com.qasymphony.ci.plugin.exception.StoreResultException;
@@ -29,7 +28,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -77,7 +76,7 @@ public class SubmitJUnitStep extends Step {
         }
 
         @Override public Set<? extends Class<?>> getRequiredContext() {
-            return ImmutableSet.of(Run.class, FilePath.class, TaskListener.class);
+            return Set.of(Run.class, FilePath.class, TaskListener.class);
         }
 
         @Nonnull

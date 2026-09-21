@@ -56,9 +56,14 @@ public class MavenJunitParseTests extends TestAbstracts {
         .setLauncher(launcher)
         .setListener(listener)
         .setBuild(build)
-        .setUtilizeTestResultFromCITool(true));
+        .setWorkSpace(build.getWorkspace())
+        .setUtilizeTestResultFromCITool(true)
+        .setCreateEachMethodAsTestCase(false)
+        .setOverwriteExistingTestSteps(true)
+        .setParseTestResultPattern(com.qasymphony.ci.plugin.parse.AutoScanParser.TEST_RESULT_LOCATIONS));
       } catch (Exception e) {
         e.printStackTrace();
+        throw new IOException("MavenParseTestMavenProject.perform failed", e);
       }
       return true;
     }

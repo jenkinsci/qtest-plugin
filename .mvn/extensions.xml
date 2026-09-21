@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<extensions>
-  <extension>
-    <groupId>org.jenkins-ci.tools</groupId>
-    <artifactId>maven-hpi-plugin</artifactId>
-    <version>3.1814.v77d15159f9b_d</version>
-  </extension>
-</extensions>

@@ -29,7 +29,7 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
@@ -204,6 +204,7 @@ public class PushingResultAction extends Notifier {
     } else {
       Long nodeId = 0L;
       String nodeType = "N/A";
+      String containerName = "N/A";
       JSONObject json = configuration.getContainerJSONObject();
       if (null != json) {
         JSONArray containerPath = json.optJSONArray("containerPath");
@@ -211,11 +212,14 @@ public class PushingResultAction extends Notifier {
           nodeId = containerPath.getJSONObject(containerPath.size() - 1).optLong("nodeId", 0L);
           nodeType = containerPath.getJSONObject(containerPath.size() - 1).optString("nodeType", "");
         }
+        JSONObject selectedContainer = json.optJSONObject("selectedContainer");
+        if (null != selectedContainer) {
+          containerName = selectedContainer.optString("name", "N/A");
+        }
       }
 
       LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
-              json.getJSONObject("selectedContainer").getString("name"),
-              nodeId, nodeType);
+              containerName, nodeId, nodeType);
     }
 
     if (null != externalTool) {
@@ -264,7 +268,7 @@ public class PushingResultAction extends Notifier {
   private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
     String currentJenkinsProjectName = build.getProject().getName();
     PrintStream logger = listener.getLogger();
-    if (!configuration.getJenkinsProjectName().equals(currentJenkinsProjectName)) {
+    if (!StringUtils.equals(configuration.getJenkinsProjectName(), currentJenkinsProjectName)) {
       LoggerUtils.formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinsProjectName);
       configuration.setJenkinsProjectName(currentJenkinsProjectName);
     }

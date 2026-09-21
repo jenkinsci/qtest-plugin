@@ -10,9 +10,6 @@
       <link href="${resBase}/css/app.css" rel="stylesheet" type="text/css"/>
       <script type="text/javascript" src="${resBase}/jquery/js/jquery-3.5.1.min.js"></script>
       <script type="text/javascript" src="${resBase}/datatable/js/jquery.dataTables.min.js"></script>
-      <script>
-        var $j = jQuery.noConflict();
-      </script>
       <div class="qTest_submittedResultWrapper">
         <div>
           <div class="submitted-result-title"><h4>${%result.title}</h4></div>
