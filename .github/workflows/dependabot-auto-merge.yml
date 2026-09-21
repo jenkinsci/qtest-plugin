@@ -1,0 +1,40 @@
+name: Dependabot auto-merge
+
+# Auto-approves Dependabot PRs that only bump a patch/minor version, once all
+# required checks pass, then merges them directly via the REST API. Major
+# version bumps are left for manual review.
+#
+# Runs as pull_request_target so it executes with the workflow file from the
+# default branch (with write permissions), rather than the (untrusted)
+# Dependabot branch. No PR code is checked out, so this is safe even though
+# the token has write access.
+#
+# Delegates to the reusable workflow in devops-templates, which approves via
+# a dedicated GitHub App (org policy blocks Actions from self-approving PRs
+# with GITHUB_TOKEN). Mirrors parameters' setup; unlike that repo this one
+# has no CODEOWNERS-enforced Ruleset on main yet, but merge-strategy: direct
+# is kept for consistency and because it doesn't depend on native auto-merge
+# being enabled on the repo.
+#
+# Needs secrets DEPENDABOT_APPROVE_APP_ID / DEPENDABOT_APPROVE_APP_PRIVATE_KEY
+# (the same GitHub App used by parameters) and GHA_SLACK_BOT_TOKEN. Not yet
+# configured -- runs will fail until those are added.
+
+on:
+  pull_request_target:
+    branches: [main]
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: Tricentis-qTest/devops-templates/.github/workflows/dependabot-auto-merge.yml@wf-dependabot-auto-merge-v0.4.2
+    with:
+      pr-url: ${{ github.event.pull_request.html_url }}
+      merge-strategy: direct
+    secrets:
+      app-id: ${{ secrets.DEPENDABOT_APPROVE_APP_ID }}
+      app-private-key: ${{ secrets.DEPENDABOT_APPROVE_APP_PRIVATE_KEY }}
+      slack-bot-token: ${{ secrets.GHA_SLACK_BOT_TOKEN }}

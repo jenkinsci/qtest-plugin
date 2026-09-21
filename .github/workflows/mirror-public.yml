@@ -1,0 +1,36 @@
+name: mirror-public
+
+# Keeps the public jenkinsci/qtest-plugin mirror in sync with this repo, which is the
+# primary/canonical source. Code-only mirror -- no build, test, or release happens here or
+# on the public side; see cd.yml for our own build/deploy pipeline.
+#
+# jenkinsci/qtest-plugin has an independent, diverged git history (unrelated to ours), so a
+# plain push would be rejected as non-fast-forward. This force-pushes our main over the
+# public main on every push, which is a destructive, one-way sync: any commits/tags on the
+# public repo not present in our history become unreachable there. That's intentional given
+# this repo is the source of truth, but keep it in mind before changing this trigger.
+#
+# Needs a secret PUBLIC_MIRROR_TOKEN: a GitHub PAT (classic or fine-grained) belonging to an
+# account with push access to jenkinsci/qtest-plugin. Not yet configured -- runs will fail
+# with an authentication error until that secret is added.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-stepsecurity-x64
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Force-push to jenkinsci/qtest-plugin main
+        env:
+          PUBLIC_MIRROR_TOKEN: ${{ secrets.PUBLIC_MIRROR_TOKEN }}
+        run: |
+          git push --force "https://x-access-token:${PUBLIC_MIRROR_TOKEN}@github.com/jenkinsci/qtest-plugin.git" HEAD:main
