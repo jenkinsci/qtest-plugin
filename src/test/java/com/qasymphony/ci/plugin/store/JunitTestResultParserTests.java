@@ -1,9 +1,11 @@
 package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.AutomationTestService;
-import com.qasymphony.ci.plugin.OauthProvider;
 import com.qasymphony.ci.plugin.exception.SubmittedException;
-import com.qasymphony.ci.plugin.model.*;
+import com.qasymphony.ci.plugin.model.AutomationAttachment;
+import com.qasymphony.ci.plugin.model.AutomationTestResult;
+import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
+import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.JunitTestResultParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -26,7 +28,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;

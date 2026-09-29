@@ -2,7 +2,7 @@ package com.qasymphony.ci.plugin.utils.process;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.io.*;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

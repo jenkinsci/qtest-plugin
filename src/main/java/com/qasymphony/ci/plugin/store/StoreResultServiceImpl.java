@@ -8,7 +8,6 @@ import com.qasymphony.ci.plugin.store.file.FileReader;
 import com.qasymphony.ci.plugin.utils.JobUtils;
 import com.qasymphony.ci.plugin.utils.JsonUtils;
 import hudson.FilePath;
-import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.remoting.VirtualChannel;
 import org.apache.commons.lang.StringUtils;

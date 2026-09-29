@@ -7,7 +7,6 @@ import com.qasymphony.ci.plugin.store.StoreResultService;
 import com.qasymphony.ci.plugin.store.StoreResultServiceImpl;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Actionable;
 import hudson.model.Item;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
