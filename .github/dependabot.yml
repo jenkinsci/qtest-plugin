@@ -7,7 +7,7 @@ version: 2
 registries:
   cloudsmith-maven:
     type: maven-repository
-    url: https://maven.cloudsmith.io/tricentis/qtest/
+    url: https://dl.cloudsmith.io/basic/tricentis/qtest/maven/
     namespace: tricentis
     service-slug: qtest-ci
     audience: https://github.com/Tricentis-qTest/
