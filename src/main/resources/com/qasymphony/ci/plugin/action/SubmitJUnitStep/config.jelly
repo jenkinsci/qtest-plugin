@@ -34,9 +34,6 @@
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.min.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/radioBlockEvent.js"></script>
 
-  <script>
-    var $j = jQuery.noConflict();
-  </script>
     <st:bind var="remoteAction" value="${descriptor}"/>
     <f:block>
       <table class="external-tool-config">
@@ -59,6 +56,9 @@
     </f:entry>
     <f:entry title="${%label.apiKey}" field="appSecretKey">
       <f:password name="config.appSecretKey" value="${instance.configuration.appSecretKey}"/>
+    </f:entry>
+    <f:entry title="${%label.apiHeaderKey}" field="secretKey">
+      <f:password name="config.secretKey" value="${instance.configuration.secretKey}"/>
     </f:entry>
 
     <f:entry>

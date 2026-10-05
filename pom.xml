@@ -3,13 +3,13 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.86</version> <!-- See https://github.com/jenkinsci/plugin-pom/releases for available versions-->
+    <version>6.2236.v12dd4c483242</version>
     <relativePath />
   </parent>
 
   <groupId>com.qasymphony.ci.jenkins</groupId>
   <artifactId>qtest</artifactId>
-  <version>${revision}.${changelist}</version>
+  <version>2025.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins qTest Plugin</name>
   <description>This plugin collects and reports unit test results to qTest.
@@ -29,20 +29,29 @@
   </organization>
 
   <properties>
-    <revision>2028.0</revision>
-    <changelist>999999-SNAPSHOT</changelist>
     <findbugs.skip>true</findbugs.skip>
-    <jackson.version>2.12.4</jackson.version>
-    <junit.plugin.version>1.9</junit.plugin.version>
     <httpclient.version>4.5.14</httpclient.version>
-    <jenkins.version>2.426.3</jenkins.version>
+    <!-- 2.555.x stopped receiving security backports on 2026-09-02 (Jenkins Security Advisory
+         2026-09-02, 13 core CVEs fixed in LTS 2.568.3). See upgrade-plan.md. -->
+    <jenkins.baseline>2.568</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <commons-codec.version>1.16.0</commons-codec.version>
+    <!-- No OSS fix for CVE-2026-59282 exists on the Spring 6.x line (6.2.20 is
+         Enterprise-Support-only); jenkins-core 2.568.3 itself only reaches Spring 7.0.8, one
+         patch short of the fix. NOTE: the override below cannot actually close this on a real
+         Jenkins install (provided-scope, inert in production), see its comment. -->
+    <spring.framework.version>7.0.9</spring.framework.version>
+    <spring.security.version>7.1.1</spring.security.version>
+    <maven.compiler.release>21</maven.compiler.release>
+    <cloudsmith.maven.deploy.url>https://maven.cloudsmith.io/tricentis/qtest/</cloudsmith.maven.deploy.url>
+    <!-- Use `mvn deploy -Dmaven.deploy.skip=false` when intentionally publishing to Cloudsmith. -->
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
   <scm>
     <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>${scmTag}</tag>
+    <tag>qtest-1.4.8</tag>
   </scm>
 
   <developers>
@@ -70,31 +79,137 @@
 
   <distributionManagement>
     <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/releases</url>
+      <id>cloudsmith</id>
+      <name>Tricentis qTest (Cloudsmith)</name>
+      <url>${cloudsmith.maven.deploy.url}</url>
     </repository>
+    <snapshotRepository>
+      <id>cloudsmith</id>
+      <name>Tricentis qTest (Cloudsmith)</name>
+      <url>${cloudsmith.maven.deploy.url}</url>
+    </snapshotRepository>
   </distributionManagement>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
+        <version>7046.v43536164769c</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- LIMITATION, read before trusting this: this override does NOT close these CVEs on a
+           real Jenkins install. spring-security-web/-core/-crypto and spring-* below all
+           resolve `provided` (confirmed: no Spring jar is bundled in the built .hpi);
+           they're supplied by jenkins-core's own classloader at runtime, so whatever Spring
+           version the *installed jenkins.war* actually ships is what executes, regardless of
+           what this pom.xml declares. jenkins-core 2.568.3 itself only ships spring-security-web
+           7.1.0 / spring-framework 7.0.8, one patch short of the fixes below, and there is
+           no way for a plugin to override a provided-scope dependency's runtime version. This
+           override only affects our own compile-time resolution and the Maven-driven JenkinsRule
+           test harness (which assembles its runtime classpath from the resolved dependency
+           graph, not from a packaged jenkins.war), that's why the test suite exercises 7.0.9
+           successfully despite this being inert in production. Kept anyway so our own declared/
+           resolved dependency metadata is accurate for Snyk and other SCA tooling scanning this
+           pom, but the actual fix for SNYK-JAVA-ORGSPRINGFRAMEWORKSECURITY-17305998 (originally)
+           and CVE-2026-59282 (this pass) can only come from Jenkins core itself shipping
+           Spring >=7.0.9 / spring-security >=7.1.1, track upstream, not this plugin. -->
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-core</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-crypto</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
+      <!-- Same limitation as above: provided-scope, not bundled, inert in production. Pinned
+           for accurate build metadata only. See the comment on spring-security-web above. -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-expression</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jcl</artifactId>
+        <version>${spring.framework.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
+    <!-- Jenkins plugin deps — versions managed by bom-${jenkins.baseline}.x -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.plugin.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-job</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-step-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-support</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-cps</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-scm-step</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>apache-httpcomponents-client-4-api</artifactId>
+    </dependency>
+
+    <!-- External library deps — explicit versions -->
+    <!-- Jackson provided via Jenkins plugin wrapper to avoid JAR duplication -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>jackson2-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -104,70 +219,23 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>1.8.5</version>
+      <version>${mockito.version}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hamcrest</groupId>
-          <artifactId>hamcrest-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-project</artifactId>
-      <version>1.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-job</artifactId>
-      <version>1145.v7f2433caa07f</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-step-api</artifactId>
-      <version>639.v6eca_cd8c04a_a_</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-support</artifactId>
-      <version>839.v35e2736cfd5c</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-aggregator</artifactId>
-      <version>596.v8c21c963d92d</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-api</artifactId>
-      <version>1164.v760c223ddb_32</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>6.740.ve4f4ffa_dea_54</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>remoting</artifactId>
-      <version>3160.vd76b_9ddd10cc</version>
+      <version>3355.v388858a_47b_33</version>
     </dependency>
+    <!-- SnakeYAML and JSON via Jenkins plugin wrappers -->
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-      <version>324.va_f5d6774f3a_d</version>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>json-api</artifactId>
     </dependency>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
       <version>4.7.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>6.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -177,12 +245,13 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.13.0</version>
+      <version>2.21.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
-      <version>1.10.14</version>
+      <!-- 1.10.18 fixes SNYK-JAVA-ORGAPACHEANT-19653601 (Relative Path Traversal) -->
+      <version>1.10.18</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -209,11 +278,6 @@
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>${commons-codec.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>32.1.2-jre</version>
     </dependency>
   </dependencies>
 
@@ -242,27 +306,6 @@
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.23</version>
-        <configuration>
-          <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java17</artifactId>
-            <version>1.0</version>
-          </signature>
-        </configuration>
-        <executions>
-          <execution>
-            <id>animal-sniffer</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>

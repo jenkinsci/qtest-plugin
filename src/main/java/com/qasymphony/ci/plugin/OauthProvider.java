@@ -18,22 +18,9 @@ import java.util.logging.Logger;
  */
 public class OauthProvider {
   private static final Logger LOG = Logger.getLogger(OauthProvider.class.getName());
-  public static final String HEADER_KEY = "Basic amVua2luczpkZEtzVjA4NmNRbW8wWjZNUzBCaU4wekpidVdLbk5oNA==";
 
   private OauthProvider() {
 
-  }
-
-  /**
-   * Get access token from apiKey
-   *
-   * @param url    url
-   * @param apiKey apiKey
-   * @return access token
-   * @throws OAuthException OAuthException
-   */
-  public static String getAccessToken(String url, String apiKey) throws OAuthException {
-    return getAccessToken(url, apiKey, HEADER_KEY);
   }
 
   public static String getAccessToken(String url, String apiKey, String secretKey) throws OAuthException {
@@ -66,10 +53,10 @@ public class OauthProvider {
    * @param headers headers
    * @return headers
    */
-  public static Map<String, String> buildHeaders(String url, String apiKey, Map<String, String> headers) {
+  public static Map<String, String> buildHeaders(String url, String apiKey, String secretKey, Map<String, String> headers) {
     String accessToken = null;
     try {
-      accessToken = getAccessToken(url, apiKey);
+      accessToken = getAccessToken(url, apiKey, secretKey);
     } catch (Exception e) {
       LOG.log(Level.WARNING, "Error while build header:" + e.getMessage());
     }
