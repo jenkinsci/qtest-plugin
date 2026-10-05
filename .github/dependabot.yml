@@ -1,39 +1,12 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates
+---
 version: 2
-registries:
-  cloudsmith-maven:
-    type: maven-repository
-    url: https://dl.cloudsmith.io/basic/tricentis/qtest/maven/
-    namespace: tricentis
-    service-slug: qtest-ci
-    audience: https://github.com/Tricentis-qTest/
-    replaces-base: true
 updates:
   - package-ecosystem: maven
-    directories:
-      - "/**/*"
+    directory: /
     schedule:
-      interval: "daily"
-      time: "10:00"
-      timezone: "Europe/Prague"
-    cooldown:
-      default-days: 3
-    registries:
-      - cloudsmith-maven
-    commit-message:
-      prefix: "QTEST-39880"
-    groups:
-      maven-minor:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-    ignore:
-      - dependency-name: "*"
-        update-types:
-          - "version-update:semver-major"
+      interval: monthly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
