@@ -16,6 +16,7 @@ public class ResourceBundle {
   public static final String EXT_URL_SEARCH_NAME = get("extension.url.search");
   public static final String MSG_INVALID_URL = get("validation.invalid.url");
   public static final String MSG_INVALID_API_KEY = get("validation.invalid.api.key");
+  public static final String MSG_INVALID_SECRET_KEY = get("validation.invalid.secret.key");
   public static final String MSG_INVALID_PROJECT = get("validation.invalid.project");
   public static final String MSG_INVALID_RELEASE = get("validation.invalid.release");
   public static final String MSG_INVALID_CONTAINER = get("validation.invalid.container");

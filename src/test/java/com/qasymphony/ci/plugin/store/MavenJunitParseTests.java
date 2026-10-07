@@ -2,7 +2,6 @@ package com.qasymphony.ci.plugin.store;
 
 import com.qasymphony.ci.plugin.model.AutomationTestResult;
 import com.qasymphony.ci.plugin.model.AutomationTestStepLog;
-import com.qasymphony.ci.plugin.model.Configuration;
 import com.qasymphony.ci.plugin.parse.CommonParsingUtils;
 import com.qasymphony.ci.plugin.parse.PatternScanParser;
 import com.qasymphony.ci.plugin.parse.ParseRequest;
@@ -20,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -42,7 +42,7 @@ public class MavenJunitParseTests extends TestAbstracts {
       Launcher launcher, BuildListener listener)
       throws InterruptedException, IOException {
       try {
-        File currentBasedDir = new File(build.getWorkspace().toURI());
+        File currentBasedDir = new File(Objects.requireNonNull(build.getWorkspace()).toURI());
         List<String> matchDirs = CommonParsingUtils.scanJunitTestResultFolder(currentBasedDir.getPath());
         long current = System.currentTimeMillis();
         for (String dir : matchDirs) {
@@ -56,9 +56,14 @@ public class MavenJunitParseTests extends TestAbstracts {
         .setLauncher(launcher)
         .setListener(listener)
         .setBuild(build)
-        .setUtilizeTestResultFromCITool(true));
+        .setWorkSpace(build.getWorkspace())
+        .setUtilizeTestResultFromCITool(true)
+        .setCreateEachMethodAsTestCase(false)
+        .setOverwriteExistingTestSteps(true)
+        .setParseTestResultPattern(com.qasymphony.ci.plugin.parse.AutoScanParser.TEST_RESULT_LOCATIONS));
       } catch (Exception e) {
         e.printStackTrace();
+        throw new IOException("MavenParseTestMavenProject.perform failed", e);
       }
       return true;
     }

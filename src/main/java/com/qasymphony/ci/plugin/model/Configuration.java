@@ -21,6 +21,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
    * Refresh token
    */
   private String appSecretKey;
+  private String secretKey;
   private long projectId;
   private String projectName;
   private long releaseId;
@@ -56,17 +57,18 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
 
   public static Configuration newInstance() {
-    return new Configuration(0L, "", "", 0, "", 0L, "", 0, "",
+    return new Configuration(0L, "", "", "",0, "", 0L, "", 0, "",
             0, 0, false, "", false, "{}", false, 0);
   }
 
   @DataBoundConstructor
-  public Configuration(Long id, String url, String appSecretKey, long projectId,
+  public Configuration(Long id, String url, String appSecretKey, String secretKey, long projectId,
                        String projectName, long releaseId, String releaseName, long environmentId,
                        String environmentName, long testSuiteId, long moduleId, Boolean readFromJenkins, String resultPattern,
                        Boolean submitToContainer, String containerSetting, Boolean overwriteExistingTestSteps, long environmentParentId) {
     this.url = url;
     this.appSecretKey = appSecretKey;
+    this.secretKey = secretKey;
     this.projectId = projectId;
     this.projectName = projectName;
     this.releaseId = releaseId;
@@ -115,6 +117,14 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
 
   public void setAppSecretKey(String appSecretKey) {
     this.appSecretKey = appSecretKey;
+  }
+
+  public String getSecretKey() {
+    return secretKey;
+  }
+
+  public void setSecretKey(String secretKey) {
+    this.secretKey = secretKey;
   }
 
   public long getProjectId() {
@@ -391,7 +401,7 @@ public class Configuration extends AbstractDescribableImpl<Configuration> {
     }
     JunitSubmitterRequest request = new JunitSubmitterRequest();
     request.setqTestURL(this.url)
-            .setApiKey(this.appSecretKey)
+            .setApiKey(this.appSecretKey, this.secretKey)
             .setConfigurationID(this.id)
             .setSubmitToExistingContainer(this.submitToContainer)
             .setContainerID(containerID)

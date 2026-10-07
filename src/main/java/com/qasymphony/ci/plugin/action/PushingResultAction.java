@@ -29,11 +29,11 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
@@ -204,6 +204,7 @@ public class PushingResultAction extends Notifier {
     } else {
       Long nodeId = 0L;
       String nodeType = "N/A";
+      String containerName = "N/A";
       JSONObject json = configuration.getContainerJSONObject();
       if (null != json) {
         JSONArray containerPath = json.optJSONArray("containerPath");
@@ -211,11 +212,14 @@ public class PushingResultAction extends Notifier {
           nodeId = containerPath.getJSONObject(containerPath.size() - 1).optLong("nodeId", 0L);
           nodeType = containerPath.getJSONObject(containerPath.size() - 1).optString("nodeType", "");
         }
+        JSONObject selectedContainer = json.optJSONObject("selectedContainer");
+        if (null != selectedContainer) {
+          containerName = selectedContainer.optString("name", "N/A");
+        }
       }
 
       LoggerUtils.formatInfo(logger, "With container: %s (id=%s, type=%s).",
-              json.getJSONObject("selectedContainer").getString("name"),
-              nodeId, nodeType);
+              containerName, nodeId, nodeType);
     }
 
     if (null != externalTool) {
@@ -264,7 +268,7 @@ public class PushingResultAction extends Notifier {
   private Setting checkProjectNameChanged(AbstractBuild build, BuildListener listener) {
     String currentJenkinsProjectName = build.getProject().getName();
     PrintStream logger = listener.getLogger();
-    if (!configuration.getJenkinsProjectName().equals(currentJenkinsProjectName)) {
+    if (!StringUtils.equals(configuration.getJenkinsProjectName(), currentJenkinsProjectName)) {
       LoggerUtils.formatInfo(logger, "Current job name [%s] is changed with previous configuration, update configuration to qTest.", currentJenkinsProjectName);
       configuration.setJenkinsProjectName(currentJenkinsProjectName);
     }
@@ -273,7 +277,7 @@ public class PushingResultAction extends Notifier {
       Boolean saveOldSetting;
       saveOldSetting = ConfigService.compareqTestVersion(configuration.getUrl(), Constants.OLD_QTEST_VERSION);
       Setting settingFromConfig = configuration.toSetting(saveOldSetting);
-      setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), settingFromConfig);
+      setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), configuration.getSecretKey(), settingFromConfig);
     } catch (Exception e) {
       LoggerUtils.formatWarn(logger, "Cannot update ci setting to qTest:");
       LoggerUtils.formatWarn(logger, "  Error: %s", e.getMessage());
@@ -437,7 +441,7 @@ public class PushingResultAction extends Notifier {
           Boolean saveOldSetting;
           saveOldSetting = ConfigService.compareqTestVersion(configuration.getUrl(), Constants.OLD_QTEST_VERSION);
           Setting settingFromConfig = configuration.toSetting(saveOldSetting);
-          setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), settingFromConfig);
+          setting = ConfigService.saveConfiguration(configuration.getUrl(), configuration.getAppSecretKey(), configuration.getSecretKey(), settingFromConfig);
         } catch (Exception e) {
           LOG.log(Level.WARNING, e.getMessage());
           e.printStackTrace();
@@ -468,9 +472,14 @@ public class PushingResultAction extends Notifier {
       return ValidationFormService.checkUrl(value, project);
     }
 
-    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url, @AncestorInPath AbstractProject project)
+    public FormValidation doCheckAppSecretKey(@QueryParameter String value, @QueryParameter("config.url") final String url,  @QueryParameter("config.secretKey") final String secretKey, @AncestorInPath AbstractProject project)
             throws IOException, ServletException {
-      return ValidationFormService.checkAppSecretKey(value, url, project);
+      return ValidationFormService.checkAppSecretKey(value, url, secretKey, project);
+    }
+
+    public FormValidation doCheckSecretKey(@QueryParameter String value,  @AncestorInPath AbstractProject project)
+            throws IOException, ServletException {
+      return ValidationFormService.checkSecretKey(value, project);
     }
 
     public FormValidation doCheckProjectName(@QueryParameter String value)
@@ -515,10 +524,10 @@ public class PushingResultAction extends Notifier {
      * @return a list of project
      */
     @JavaScriptMethod
-    public JSONObject getProjects(String qTestUrl, String apiKey) {
+    public JSONObject getProjects(String qTestUrl, String apiKey, String secretKey) {
       JSONObject res = new JSONObject();
       //get project from qTest
-      Object projects = ConfigService.getProjects(qTestUrl, apiKey);
+      Object projects = ConfigService.getProjects(qTestUrl, apiKey, secretKey);
       res.put("projects", null == projects ? "" : JSONArray.fromObject(projects));
       return res;
     }
@@ -531,15 +540,15 @@ public class PushingResultAction extends Notifier {
      * @return data
      */
     @JavaScriptMethod
-    public JSONObject getProjectData(final String qTestUrl, final String apiKey, final Long projectId, final String jenkinsProjectName) {
+    public JSONObject getProjectData(final String qTestUrl, final String apiKey, final String secretKey, final Long projectId, final String jenkinsProjectName) {
       final StaplerRequest request = Stapler.getCurrentRequest();
       final String jenkinsServerName = HttpClientUtils.getServerUrl(request);
-      return qTestService.getProjectData(qTestUrl, apiKey, projectId, jenkinsProjectName, jenkinsServerName);
+      return qTestService.getProjectData(qTestUrl, apiKey, secretKey, projectId, jenkinsProjectName, jenkinsServerName);
     }
 
     @JavaScriptMethod
-    public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final Long projectId, final Long parentId, final String parentType) {
-      return qTestService.getContainerChildren(qTestUrl, apiKey, projectId, parentId, parentType);
+    public JSONObject getContainerChildren(final  String qTestUrl, final String apiKey, final String secretKey, final Long projectId, final Long parentId, final String parentType) {
+      return qTestService.getContainerChildren(qTestUrl, apiKey, secretKey, projectId, parentId, parentType);
     }
 
     @JavaScriptMethod

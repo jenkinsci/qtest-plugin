@@ -52,11 +52,15 @@ public class ParseJunitWithNunitTests extends TestAbstracts {
         }
         automationTestResultList = JunitTestResultParser.parse(new ParseRequest()
         .setBuild(build)
+        .setWorkSpace(build.getWorkspace())
         .setListener(listener)
         .setLauncher(launcher)
+        .setCreateEachMethodAsTestCase(false)
+        .setOverwriteExistingTestSteps(false)
         );
       } catch (Exception e) {
         e.printStackTrace();
+        throw new IOException("ParseJunitFromNunitProject.perform failed", e);
       }
       return true;
     }
