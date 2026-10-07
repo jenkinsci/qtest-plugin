@@ -31,11 +31,6 @@
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/jquery/js/jquery-3.5.1.min.js"></script>
   <script type="text/javascript" src="${resURL}/plugin/${pluginName}/js/selectize.min.js"></script>
 
-  <script>
-    var $j = jQuery.noConflict();
-  </script>
-
-
     <st:bind var="remoteAction" value="${descriptor}"/>
 
     <f:block>
@@ -58,6 +53,10 @@
     <f:entry title="${%label.apiKey}" field="appSecretKey">
       <f:password name="config.appSecretKey"
                   value="${instance.configuration.appSecretKey}"/>
+    </f:entry>
+    <f:entry title="${%label.appHeaderKey}" field="secretKey">
+      <f:password name="config.secretKey"
+                  value="${instance.configuration.secretKey}"/>
     </f:entry>
 
     <f:entry>
