@@ -35,7 +35,7 @@
          2026-09-02, 13 core CVEs fixed in LTS 2.568.3). -->
     <jenkins.baseline>2.568</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
-    <commons-codec.version>1.22.1</commons-codec.version>
+    <commons-codec.version>1.23.0</commons-codec.version>
     <!-- No OSS fix for CVE-2026-59282 exists on the Spring 6.x line (6.2.20 is
          Enterprise-Support-only); jenkins-core 2.568.3 itself only reaches Spring 7.0.8, one
          patch short of the fix. NOTE: the override below cannot actually close this on a real
@@ -227,7 +227,7 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>4.10.4</version>
+      <version>4.10.5</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
