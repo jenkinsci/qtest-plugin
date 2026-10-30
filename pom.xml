@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>6.2236.v12dd4c483242</version>
+    <version>6.2250.va_d01d559a_209</version>
     <relativePath />
   </parent>
 
@@ -35,13 +35,13 @@
          2026-09-02, 13 core CVEs fixed in LTS 2.568.3). -->
     <jenkins.baseline>2.568</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
-    <commons-codec.version>1.22.1</commons-codec.version>
+    <commons-codec.version>1.23.0</commons-codec.version>
     <!-- No OSS fix for CVE-2026-59282 exists on the Spring 6.x line (6.2.20 is
          Enterprise-Support-only); jenkins-core 2.568.3 itself only reaches Spring 7.0.8, one
          patch short of the fix. NOTE: the override below cannot actually close this on a real
          Jenkins install (provided-scope, inert in production), see its comment. -->
     <spring.framework.version>7.0.9</spring.framework.version>
-    <spring.security.version>7.1.1</spring.security.version>
+    <spring.security.version>7.1.2</spring.security.version>
     <maven.compiler.release>21</maven.compiler.release>
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
@@ -87,7 +87,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>7046.v43536164769c</version>
+        <version>7237.v5071b_f4589f1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -227,7 +227,7 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>4.10.4</version>
+      <version>4.10.5</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
